@@ -1,7 +1,9 @@
 #include <chrono>
 #include <cstdio>
+#include <ios>
 #include <iostream>
 #include <limits>
+#include <ostream>
 #include <ratio>
 #include <thread>
 #include <stdio.h>
@@ -12,7 +14,7 @@ void countingTimer(double currentTimer)
 	{
 		auto startFrame = std::chrono::system_clock::now();
 
-		printf( "countdown: %i \n \ec", (int)currentTimer/1000);
+		printf( "countdown: %i \n \e[1;1H\e[2J", (int)currentTimer/1000);
 
 
 
@@ -30,44 +32,46 @@ void countingTimer(double currentTimer)
 }
 
 int main (int argc, char *argv[]) {
-	printf("\ec");
-	printf("Starting PomoRPG... \n");
+	std::cout << "\e[1;1H\e[2J" <<"Starting PomoRPG... \n";
 
 	double worktimer(10);
 	double braketimer(2);
 	double countdown(10000);
+	bool running(true);
 
-	printf("welcome to your own liddle pomodoro timer \n:\n");
-	printf("how long do you want to work ? (minutes)");
-	scanf("%lf", &worktimer);
-	printf("how long do you want your brake to be? (minutes)");
-	scanf("%lf", &braketimer);
+	std::cout << "welcome to your own liddle pomodoro timer \n \n";
+	std::cout << "how long do you want to work ? (minutes)";
+	std::cin >> worktimer;
+	std::cout << "how long do you want your brake to be? (minutes)";
+	std::cin >> braketimer;
+	std::cout << "\e[1;1H\e[2J";
 	
 	while(countdown > 0)
 	{
 		auto startFrame = std::chrono::system_clock::now();
-		std::cout << "starting in:" << (int)(countdown/1000) << "%i \n \ec";
+		std::cout << (int)(countdown/1000) << "\n";
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/15));
 		auto endFrame = std::chrono::system_clock::now();
 		double deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
 		countdown -= deltaTime;
+		std::cout << "\e[1;1H\e[2J";
 	}
-	std::cout << "To Start Working press any key" << std::cin.get();
+	std::cout << "To Start Working press any key...";
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n').get();
 
-	bool running(true);
 	while(running)
 	{
 		countingTimer(worktimer * 1000 * 60);
 		//	notify
 		//	breaketime
-		printf("Press Enter key to continue...");
+		std::cout << "Press Enter key to continue...";
 		std::cin.get();
 		
 		countingTimer(braketimer * 1000 * 60);
 		//	notify
 		//	wait for user imput
-		printf("Press Enter key to continue...");
+		std::cout << "Press Enter key to continue...";
 		std::cin.get();
 	}
 
