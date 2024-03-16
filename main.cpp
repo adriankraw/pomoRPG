@@ -1,26 +1,32 @@
 #include <chrono>
 #include <cstdio>
+#include <iomanip>
 #include <ios>
 #include <iostream>
 #include <limits>
+#include <locale>
 #include <ostream>
 #include <ratio>
 #include <thread>
 #include <stdio.h>
 
+std::chrono::time_point<std::chrono::system_clock> startFrame;
+std::chrono::time_point<std::chrono::system_clock> endFrame;
+double deltaTime(0);
+
 void countingTimer(double currentTimer)
 {	
 	while(currentTimer > 0)
 	{
-		auto startFrame = std::chrono::system_clock::now();
+		std::cout << "\e[1H" << std::flush;
+		startFrame = std::chrono::system_clock::now();
+		std::cout << std::left << "countdown: \e[1m"<< std::setfill('.') << std::setw(50) << std::right << currentTimer/1000 << "\e[0m";
 
-		printf( "countdown: %i \n \e[1;1H\e[2J", (int)currentTimer/1000);
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		
+		endFrame = std::chrono::system_clock::now();
+		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
 
-
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000/15));
-		auto endFrame = std::chrono::system_clock::now();
-		double deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
 		if(currentTimer-deltaTime < 0)
 		{
 			currentTimer = 0;
@@ -32,7 +38,7 @@ void countingTimer(double currentTimer)
 }
 
 int main (int argc, char *argv[]) {
-	std::cout << "\e[1;1H\e[2J" <<"Starting PomoRPG... \n";
+	std::cout << "\e[2J \e[1H" <<"Starting PomoRPG... \n";
 
 	double worktimer(10);
 	double braketimer(2);
@@ -42,36 +48,27 @@ int main (int argc, char *argv[]) {
 	std::cout << "welcome to your own liddle pomodoro timer \n \n";
 	std::cout << "how long do you want to work ? (minutes)";
 	std::cin >> worktimer;
+	worktimer*= 60000;
 	std::cout << "how long do you want your brake to be? (minutes)";
 	std::cin >> braketimer;
-	std::cout << "\e[1;1H\e[2J";
-	
-	while(countdown > 0)
-	{
-		auto startFrame = std::chrono::system_clock::now();
-		std::cout << (int)(countdown/1000) << "\n";
+	braketimer *= 60000;
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000/15));
-		auto endFrame = std::chrono::system_clock::now();
-		double deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
-		countdown -= deltaTime;
-		std::cout << "\e[1;1H\e[2J";
-	}
 	std::cout << "To Start Working press any key...";
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n').get();
 
+	std::cout << "\e[2J";
 	while(running)
 	{
-		countingTimer(worktimer * 1000 * 60);
+		countingTimer(worktimer);
 		//	notify
 		//	breaketime
-		std::cout << "Press Enter key to continue...";
+		std::cout << "\e[1J \e[1H" << "Press Enter key to continue...";
 		std::cin.get();
 		
-		countingTimer(braketimer * 1000 * 60);
+		countingTimer(braketimer);
 		//	notify
 		//	wait for user imput
-		std::cout << "Press Enter key to continue...";
+		std::cout << "\e[1J \e[1H" << "Press Enter key to continue...";
 		std::cin.get();
 	}
 
