@@ -7,12 +7,17 @@
 #include <locale>
 #include <ostream>
 #include <ratio>
+#include <string>
 #include <thread>
 #include <stdio.h>
+
+
+#include "render.cpp"
 
 std::chrono::time_point<std::chrono::system_clock> startFrame;
 std::chrono::time_point<std::chrono::system_clock> endFrame;
 double deltaTime(0);
+render ren;
 
 void countingTimer(double currentTimer)
 {	
@@ -20,7 +25,9 @@ void countingTimer(double currentTimer)
 	{
 		std::cout << "\e[1H" << std::flush;
 		startFrame = std::chrono::system_clock::now();
+		
 		std::cout << std::left << "countdown: \e[1m"<< std::setfill('.') << std::setw(50) << std::right << currentTimer/1000 << "\e[0m";
+
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		
@@ -47,6 +54,14 @@ int main (int argc, char *argv[]) {
 
 	std::cout << "welcome to your own liddle pomodoro timer \n \n";
 	std::cout << "how long do you want to work ? (minutes)";
+	for(int i = 0; i < 10; ++i)
+	{
+		std::cout << std::endl;
+		for(std::string s: *ren.renderTime(i))
+		{
+			std::cout << s <<std::endl;
+		}
+	}
 	std::cin >> worktimer;
 	worktimer*= 60000;
 	std::cout << "how long do you want your brake to be? (minutes)";
