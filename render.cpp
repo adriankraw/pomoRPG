@@ -20,6 +20,10 @@ public:
 		//return a string that got modified into a time 
 		std::list<int> splitTime;
 		int time = (int)currentTime;
+		int mili = (time%1000);
+		int minutes = ((time/1000)/60);
+		int seconds = ((((time/1000.0)/60.0)-minutes)*60);
+		time = mili + (seconds*1000) + (minutes*100000);
 		while (time >0)
 		{
 			splitTime.push_front(time % 10);
@@ -29,17 +33,24 @@ public:
 		{
 			result[i] = "";
 		}
+		int splitTimesize = splitTime.size();
 		for (int i = 0; splitTime.size()>0; ++i) {
 			for(int r = 0; r < result.size(); ++r)
 			{
-				result[r].append(" ");
+				(result[r]).append(" ");
 			}
 			for(int s = 0; s < result.size(); ++s)
 			{
 				(result[s]).append((*numbers(splitTime.front()))[s]);
 			}
+			if(i == (splitTimesize-6) || i == (splitTimesize-4))
+			{
+				for(int r = 0; r < result.size(); ++r)
+				{
+					(result[r]).append(number_space[r]);
+				}
+			}
 			splitTime.pop_front();
-			
 		}
 		return resultpointer;
 	}

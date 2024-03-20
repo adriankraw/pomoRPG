@@ -24,17 +24,17 @@ void countingTimer(double currentTimer)
 {	
 	while(currentTimer > 0)
 	{
-		std::cout << "\e[1J \e[1H" << std::flush;
+		std::cout << "\033[1J \033[1H" << std::flush;
 		startFrame = std::chrono::system_clock::now();
 		
 		std::cout << std::left << "countdown: "<< std::endl;
 		ren.renderTime(currentTimer);
-		std::cout << "\e[1m";
-		for(std::string s: *ren.resultpointer)
+		std::cout << "\033[1m";
+		for(int i(0); i < (*ren.resultpointer).size(); ++i)
 		{
-			std::cout << s <<std::endl;
+			std::cout << (*ren.resultpointer)[i] <<std::endl;
 		}
-		std::cout << "\e[0m";
+		std::cout << "\033[0m";
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		
@@ -52,7 +52,7 @@ void countingTimer(double currentTimer)
 }
 
 int main (int argc, char *argv[]) {
-	std::cout << "\e[2J \e[1H" <<"Starting PomoRPG... \n";
+	std::cout << "\033[2J \033[1H" <<"Starting PomoRPG... \n";
 
 	double worktimer(10);
 	double braketimer(2);
@@ -72,19 +72,19 @@ int main (int argc, char *argv[]) {
 	std::cout << "To Start Working press any key...";
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n').get();
 
-	std::cout << "\e[2J";
+	std::cout << "\033[2J";
 	while(running)
 	{
 		countingTimer(worktimer);
 		//	notify
 		//	breaketime
-		std::cout << "\e[1J \e[1H" << "Press Enter key to continue...";
+		std::cout << "\033[1J \033[1H" << "Press Enter key to continue...";
 		std::cin.get();
 		
 		countingTimer(braketimer);
 		//	notify
 		//	wait for user imput
-		std::cout << "\e[1J \e[1H" << "Press Enter key to continue...";
+		std::cout << "\033[1J \033[1H" << "Press Enter key to continue...";
 		std::cin.get();
 	}
 
