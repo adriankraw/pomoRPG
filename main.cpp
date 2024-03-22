@@ -12,6 +12,7 @@
 #include <thread>
 #include <stdio.h>
 
+#define frames 60
 
 #include "render.cpp"
 
@@ -36,7 +37,7 @@ void countingTimer(double currentTimer)
 		}
 		std::cout << "\033[0m";
 
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
 		
 		endFrame = std::chrono::system_clock::now();
 		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
