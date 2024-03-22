@@ -3,6 +3,7 @@
 #include <list>
 #include <iostream>
 
+#define stringarrayResolution 8
 
 class render {
 public:
@@ -13,9 +14,9 @@ public:
 	render &operator=(const render &) = default;
 	~render();
 
-	std::array<std::string, 8>* resultpointer = &result;
+	std::array<std::string, stringarrayResolution>* resultpointer = &result;
 
-	std::array<std::string, 8>* renderTime(double currentTime)
+	std::array<std::string, stringarrayResolution>* renderTime(double currentTime)
 	{
 		//return a string that got modified into a time 
 		std::list<int> splitTime;
@@ -57,120 +58,87 @@ public:
 
 private:
 
-	std::array<std::string, 8> result;
+	std::array<std::string, stringarrayResolution> result;
 	
-	std::array<std::string, 8> number_zero = {
+	std::array<std::string, stringarrayResolution> number_zero = {
 		"xxxx",
-		"x  x",
-		"x  x",
-		"x  x",
 		"x  x",
 		"x  x",
 		"x  x",
 		"xxxx"
 	};
-	std::array<std::string, 8> number_one = {
-		"   x",
-		"   x",
-		"   x",
+	std::array<std::string, stringarrayResolution> number_one = {
 		"   x",
 		"   x",
 		"   x",
 		"   x",
 		"   x"
 	};
-	std::array<std::string, 8> number_two = {
+	std::array<std::string, stringarrayResolution> number_two = {
 		"xxxx",
 		"x  x",
-		"   x",
 		"  x ",
 		" x  ",
-		"x   ",
-		"x  x",
 		"xxxx"
 	};
-	std::array<std::string, 8> number_three = {
+	std::array<std::string, stringarrayResolution> number_three = {
 		"xxxx",
-		"x  x",
 		"   x",
 		" xxx",
-		" xxx",
 		"   x",
-		"x  x",
 		"xxxx"
 	};
-	std::array<std::string, 8> number_four = {
-		"x  x",
+	std::array<std::string, stringarrayResolution> number_four = {
 		"x  x",
 		"x  x",
 		"xxxx",
-		"   x",
-		"   x",
 		"   x",
 		"   x"
 	};
-	std::array<std::string, 8> number_five = {
+	std::array<std::string, stringarrayResolution> number_five = {
 		"xxxx",
-		"x   ",
 		"x   ",
 		"xxxx",
 		"   x",
-		"   x",
-		"x  x",
 		"xxxx"
 	};
-	std::array<std::string, 8> number_six = {
+	std::array<std::string, stringarrayResolution> number_six = {
 		"xxxx",
-		"x  x",
-		"x   ",
 		"x   ",
 		"xxxx",
 		"x  x",
+		"xxxx"
+	};
+	std::array<std::string, stringarrayResolution> number_seven = {
+		"xxxx",
+		"x  x",
+		"   x",
+		"   x",
+		"   x",
+	};
+	std::array<std::string, stringarrayResolution> number_eight = {
+		"xxxx",
+		"x  x",
+		"xxxx",
 		"x  x",
 		"xxxx"
 	};
-	std::array<std::string, 8> number_seven = {
+	std::array<std::string, stringarrayResolution> number_nine = {
 		"xxxx",
 		"x  x",
-		"   x",
-		"   x",
-		"   x",
-		"   x",
-		"   x",
-		"   x"
-	};
-	std::array<std::string, 8> number_eight = {
 		"xxxx",
-		"x  x",
-		"x  x",
-		"xxxx",
-		"xxxx",
-		"x  x",
-		"x  x",
+		"   x",
 		"xxxx"
 	};
-	std::array<std::string, 8> number_nine = {
-		"xxxx",
-		"x  x",
-		"x  x",
-		"xxxx",
-		"   x",
-		"   x",
-		"x  x",
-		"xxxx"
-	};
-	std::array<std::string, 8> number_space = {
-		"   ",
+	std::array<std::string, stringarrayResolution> number_space = {
 		"   ",
 		" x ",
 		"   ",
-		"   ",
 		" x ",
-		"   ",
 		"   "
 	};
-	std::array<std::array<std::string, 8>*, 10> numbersPointer = {&number_zero, &number_one, &number_two, &number_three, &number_four, &number_five, &number_six, &number_seven, &number_eight, &number_nine};
-	std::array<std::string, 8>* numbers(int number)
+	std::array<std::array<std::string, stringarrayResolution>*, 10> numbersPointer = {&number_zero, &number_one, &number_two, &number_three, &number_four, &number_five, &number_six, &number_seven, &number_eight, &number_nine};
+	std::array<std::string, stringarrayResolution>* numbers(int number)
 	{
 		return numbersPointer[number];
 	};
