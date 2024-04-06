@@ -1,6 +1,8 @@
 #include <array>
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
+#include <fstream>
 #include <iomanip>
 #include <ios>
 #include <iostream>
@@ -15,6 +17,7 @@
 #define frames 60
 
 #include "render.cpp"
+#include "saveGame.cpp"
 
 std::chrono::time_point<std::chrono::system_clock> startFrame;
 std::chrono::time_point<std::chrono::system_clock> endFrame;
@@ -28,7 +31,7 @@ void countingTimer(double currentTimer)
 		std::cout << "\033[1J \033[1H" << std::flush;
 		startFrame = std::chrono::system_clock::now();
 		
-		std::cout << std::left << "countdown: "<< std::endl;
+		std::cout << std::left << "PomoRPG: "<< std::endl;
 		ren.renderTime(currentTimer);
 		std::cout << "\033[1m";
 		for(int i(0); i < (*ren.resultpointer).size(); ++i)
@@ -48,12 +51,19 @@ void countingTimer(double currentTimer)
 		}else{
 			currentTimer -= deltaTime;
 		}
+
+		//rpg
+		std::cout << std::endl << "RPG:";
 	}
 
 }
 
 int main (int argc, char *argv[]) {
+	
+	saveGame mySave = saveGame();
+
 	std::cout << "\033[2J \033[1H" <<"Starting PomoRPG... \n";
+	std::cout << "lvl: " << mySave.lvl << std::endl;
 
 	double worktimer(10);
 	double braketimer(2);
@@ -74,6 +84,9 @@ int main (int argc, char *argv[]) {
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n').get();
 
 	std::cout << "\033[2J";
+
+	
+
 	while(running)
 	{
 		countingTimer(worktimer);
