@@ -3,7 +3,7 @@
 #include <list>
 #include <iostream>
 
-#define stringarrayResolution 8
+#define stringarrayResolution 5
 
 class render {
 public:
@@ -16,7 +16,7 @@ public:
 
 	std::array<std::string, stringarrayResolution>* resultpointer = &result;
 
-	std::array<std::string, stringarrayResolution>* renderTime(double currentTime)
+	std::array<std::string, stringarrayResolution>* renderTime(const double &currentTime)
 	{
 		//return a string that got modified into a time 
 		std::list<int> splitTime;
@@ -35,7 +35,7 @@ public:
 			result[i] = "";
 		}
 		int splitTimesize = splitTime.size();
-		for (int i = 0; splitTime.size()>0; ++i) {
+		for (size_t i = 0; splitTime.size()>0; ++i) {
 			for(int r = 0; r < result.size(); ++r)
 			{
 				(result[r]).append(" ");

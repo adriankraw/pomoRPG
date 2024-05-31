@@ -7,3 +7,7 @@
     * how much time do you spend on xyz
     * when are you doing xyz
 
+#Lets RPG a bit 
+* create multiple files and folders.(builded)
+* user ist able to save his pomotime and use it as exp.
+* a character is created ( in a new folder/file structure )
