@@ -15,10 +15,6 @@ private:
 
 public:
 	saveGame();
-	saveGame(saveGame &&) = default;
-	saveGame(const saveGame &) = default;
-	saveGame &operator=(saveGame &&) = default;
-	saveGame &operator=(const saveGame &) = default;
 	~saveGame();
 	
 	Character* Char(){return character;};
@@ -31,22 +27,9 @@ public:
 		{saveGame::SaveGameKeys::exp, "exp"},
 		{saveGame::SaveGameKeys::name, "name"},
 	};
-	std::string GetKeyValue(SaveGameKeys key)
-	{
-		switch (key) {
-			case saveGame::SaveGameKeys::lvl:
-				return std::to_string(character->Lvl());
-			break;
-			case saveGame::SaveGameKeys::exp:
-				return std::to_string(character->Exp());
-			break;
-			case saveGame::SaveGameKeys::name:
-				return saveGame::character->Name();
-			break;
-		}
-	}
-	
-	void Save(const saveGame::SaveGameKeys);
+	std::string GetKeyValue(SaveGameKeys);	
+
+	void Save(const saveGame::SaveGameKeys, const std::string);
 	void Load();
 };
 
@@ -54,23 +37,38 @@ saveGame::saveGame() {
 	character = new Character();
 };
 
-void saveGame::Save(const saveGame::SaveGameKeys Keyword) {	
+std::string saveGame::GetKeyValue(SaveGameKeys key)
+{
+	switch (key) {
+		case saveGame::SaveGameKeys::lvl:
+			return std::to_string(this->character->Lvl());
+		break;
+		case saveGame::SaveGameKeys::exp:
+			return std::to_string(this->character->Exp());
+		break;
+		case saveGame::SaveGameKeys::name:
+			return this->character->Name();
+		break;
+	}
+}
+
+void saveGame::Save(const saveGame::SaveGameKeys Keyword, const std::string value) {	
 	std::fstream saveFile;
 
 	saveFile.open("saveFile.txt", std::ios::in);
 	std::string line = "";
 	std::string newFile = "";
-	const std::string key = SaveGameKeywords[Keyword].c_str();
+	const std::string key = saveGame::SaveGameKeywords[Keyword].c_str();
 	if(saveFile.is_open())
 	{
 		while(std::getline(saveFile, line))
 		{
-			if(line.find(key) == 1)
+			if(line.find(key)!=line.npos)
 			{
 				std::string startingWith = line.substr(0, line.find(":::"));
 				
 				newFile.append(startingWith+":::");
-				newFile.append(GetKeyValue(Keyword));
+				newFile.append(value);
 				newFile.append("\n");
 			}
 			else{
