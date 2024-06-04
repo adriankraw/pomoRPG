@@ -20,21 +20,19 @@ public:
 private:
 	float starttime;
 	float time;
-	TimerState currentState = TimerState::paused;
+	TimerState currentState;
 };
 
 
-Timer::Timer(){}
+Timer::Timer(){
+	currentState = TimerState::countDown;
+}
 Timer::Timer(TimerState state, float time) {
 	currentState = state;
 	starttime = time;
 	isRunning = false;
 }
 void Timer::Tick(double &currentTime, double &deltaTime){
-	if(!isRunning)
-	{
-		isRunning = true;
-	}
 	switch(currentState)
 	{
 		case TimerState::countDown:

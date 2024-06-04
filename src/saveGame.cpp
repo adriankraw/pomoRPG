@@ -1,11 +1,18 @@
 #include <_ctype.h>
+#include <cstring>
 #include <fstream>
+#include <ios>
 #include <iostream>
+#include <map>
 #include <string>
 
 #include "Character.cpp"
 
+
 class saveGame{
+private:
+	Character *character;	
+
 public:
 	saveGame();
 	saveGame(saveGame &&) = default;
@@ -14,16 +21,74 @@ public:
 	saveGame &operator=(const saveGame &) = default;
 	~saveGame();
 	
-	void Save();
+	Character* Char(){return character;};
+
+	enum SaveGameKeys{
+		lvl, exp, name
+	};
+	std::map<SaveGameKeys, std::string> SaveGameKeywords{
+		{saveGame::SaveGameKeys::lvl, "lvl"},
+		{saveGame::SaveGameKeys::exp, "exp"},
+		{saveGame::SaveGameKeys::name, "name"},
+	};
+	std::string GetKeyValue(SaveGameKeys key)
+	{
+		switch (key) {
+			case saveGame::SaveGameKeys::lvl:
+				return std::to_string(character->Lvl());
+			break;
+			case saveGame::SaveGameKeys::exp:
+				return std::to_string(character->Exp());
+			break;
+			case saveGame::SaveGameKeys::name:
+				return saveGame::character->Name();
+			break;
+		}
+	}
+	
+	void Save(const saveGame::SaveGameKeys);
 	void Load();
-	Character Char(){return saveGame::character;}
-private:
-	Character character = Character();	
 };
 
-saveGame::saveGame() {};
+saveGame::saveGame() {
+	character = new Character();
+};
 
-void saveGame::Save() {};
+void saveGame::Save(const saveGame::SaveGameKeys Keyword) {	
+	std::fstream saveFile;
+
+	saveFile.open("saveFile.txt", std::ios::in);
+	std::string line = "";
+	std::string newFile = "";
+	const std::string key = SaveGameKeywords[Keyword].c_str();
+	if(saveFile.is_open())
+	{
+		while(std::getline(saveFile, line))
+		{
+			if(line.find(key) == 1)
+			{
+				std::string startingWith = line.substr(0, line.find(":::"));
+				
+				newFile.append(startingWith+":::");
+				newFile.append(GetKeyValue(Keyword));
+				newFile.append("\n");
+			}
+			else{
+				newFile.append(line+"\n");
+			}
+			line.clear();
+		}
+		saveFile.clear();
+		saveFile.close();
+	}
+
+	saveFile.open("saveFile.txt", std::ios::out);
+	if(saveFile.is_open())
+	{
+		saveFile << newFile;
+		saveFile.close();
+	}
+};
 void saveGame::Load() {
 
 	std::ifstream saveFile;
@@ -37,17 +102,17 @@ void saveGame::Load() {
 			{
 				const std::string startingWith = line.substr(0, line.find(":::"));
 				
-				if(startingWith.compare("LVL") == 0)
+				if(startingWith.compare(SaveGameKeywords[SaveGameKeys::lvl]) == 0)
 				{
-					character.SetLvl(std::stoi(line.substr(line.find(":::")+3, line.length())));
+					character->SetLvl(std::stoi(line.substr(line.find(":::")+3, line.length())));
 				}
-				if(startingWith.compare("name") == 0)
+				if(startingWith.compare(SaveGameKeywords[SaveGameKeys::name]) == 0)
 				{
-					character.SetName(line.substr(line.find(":::")+3, line.length()));
+					character->SetName(line.substr(line.find(":::")+3, line.length()));
 				}
-				if(startingWith.compare("exp") == 0)
+				if(startingWith.compare(SaveGameKeywords[SaveGameKeys::exp]) == 0)
 				{
-					character.SetExp(std::stoi(line.substr(line.find(":::")+3, line.length())));
+					character->SetExp(std::stoi(line.substr(line.find(":::")+3, line.length())));
 				}
 			}
 		}
