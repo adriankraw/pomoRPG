@@ -29,9 +29,9 @@ render ren;
 
 std::vector<std::string> ARGV = {"-countUp","-countDown","-time"};
 
-void countingTimer(double &currentTimer, Timer &timer, saveGame &save)
+void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 {	
-	while(timer.isRunning)
+	while(timer->isRunning)
 	{
 		std::cout << "\033[1J \033[1H" << std::flush;
 		startFrame = std::chrono::system_clock::now();
@@ -41,6 +41,8 @@ void countingTimer(double &currentTimer, Timer &timer, saveGame &save)
 		std::cout << std::setw(100) << std::setfill('_') << '_' << std::endl << std::endl;
 
 		ren.renderTime(currentTimer);
+		save->Char()->SetExp((int)(save->Char()->Exp()+1));
+		save->Save(saveGame::SaveGameKeys::exp);
 
 		std::cout << "\033[1m";
 		for(int i(0); i < (*ren.resultpointer).size(); ++i)
@@ -54,26 +56,28 @@ void countingTimer(double &currentTimer, Timer &timer, saveGame &save)
 		//rpg
 		std::cout << "RPG:" << std::endl << std::endl;
 
-		std::cout << "LVL " << save.Char().Lvl() << std::endl;
+		std::cout << "Name " << save->Char()->Name() << std::endl;
+		std::cout << "LVL " << save->Char()->Lvl() << std::endl;
+		std::cout << "Exp " << save->Char()->Exp() << std::endl;
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
 		
 		endFrame = std::chrono::system_clock::now();
 		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
-		timer.Tick(currentTimer, deltaTime);
+		timer->Tick(currentTimer, deltaTime);
 	}
 
 }
 
 int main (int argc, char *argv[]) {
-	double worktimer(10);
-	double braketimer(2);
-	double countdown(10000);
-	double running(true);		
-	Timer timer(TimerState::paused);
+	double worktimer = 10;
+	double braketimer = 2;
+	double countdown = 10000;
+	double running = true;		
+	Timer* timer = new Timer(TimerState::countDown);
 
-	saveGame mySave = saveGame();
-	mySave.Load();
+	saveGame *mySave = new saveGame();
+	mySave->Load();
 
 	std::cout << "\033[2J \033[1H" <<"Starting PomoRPG... \n";
 
@@ -88,20 +92,20 @@ int main (int argc, char *argv[]) {
 				if(ARGV[0].compare(argv[i])==0)
 				{
 					//countUp
-					timer.SetState(TimerState::countUp);
-					timer.SetTime(0);
+					timer->SetState(TimerState::countUp);
+					timer->SetTime(0);
 					worktimer = 0;
 				}
 				if(ARGV[1].compare(argv[i])==0)
 				{
 					//countdown
-					timer.SetState(TimerState::countDown);
+					timer->SetState(TimerState::countDown);
 				}
 			}
 
 		}
 	}else {
-		timer.SetState(TimerState::countDown);
+		timer->SetState(TimerState::countDown);
 		std::cout << "how long do you want to work ? (minutes)";
 		std::cin >> worktimer;
 
@@ -112,8 +116,7 @@ int main (int argc, char *argv[]) {
 	}
 	worktimer *= 60000;
 	braketimer *= 60000;
-	char test;
-
+	timer->isRunning = true;
 	while(running)
 	{
 		countingTimer(worktimer, timer, mySave);
