@@ -30,7 +30,8 @@ render ren;
 std::vector<std::string> ARGV = {"-countUp","-countDown","-time"};
 
 void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
-{	
+{
+	double exp = 0;
 	while(timer->isRunning)
 	{
 		std::cout << "\033[1J \033[1H" << std::flush;
@@ -38,11 +39,9 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 		
 		std::cout << std::left << "PomoRPG: "<< std::endl;
 
-		std::cout << std::setw(100) << std::setfill('_') << '_' << std::endl << std::endl;
+		std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 
 		ren.renderTime(currentTimer);
-		save->Char()->SetExp((int)(save->Char()->Exp()+1));
-		save->Save(saveGame::SaveGameKeys::exp);
 
 		std::cout << "\033[1m";
 		for(int i(0); i < (*ren.resultpointer).size(); ++i)
@@ -51,7 +50,7 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 		}
 		std::cout << "\033[0m";
 
-		std::cout << std::setw(100) << std::setfill('_') << '_' << std::endl << std::endl;
+		std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
  
 		//rpg
 		std::cout << "RPG:" << std::endl << std::endl;
@@ -65,6 +64,14 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 		endFrame = std::chrono::system_clock::now();
 		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
 		timer->Tick(currentTimer, deltaTime);
+
+		exp += (deltaTime);
+		if (exp >= 1000)
+		{
+			save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000));
+			save->Save(saveGame::SaveGameKeys::exp, save->GetKeyValue(saveGame::SaveGameKeys::exp));
+			exp = 0;
+		}
 	}
 
 }
