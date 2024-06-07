@@ -32,6 +32,7 @@ std::vector<std::string> ARGV = {"-countUp","-countDown","-time"};
 void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 {
 	double exp = 0;
+	double animationTimer = 0;
 	while(timer->isRunning)
 	{
 		std::cout << "\033[1J \033[1H" << std::flush;
@@ -61,6 +62,12 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 
 		std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 
+		std::cout << "animation: ";
+		for(int i = 0; i < (int)animationTimer; ++i){
+			std::cout << "=";
+		}
+		std::cout << std::endl;
+
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
 		
 		endFrame = std::chrono::system_clock::now();
@@ -73,9 +80,12 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 			save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000));
 			save->Save(saveGame::SaveGameKeys::exp, save->GetKeyValue(saveGame::SaveGameKeys::exp));
 			exp = 0;
+			++animationTimer;
 		}
-	}
-
+		if(animationTimer >= 25){
+			animationTimer=0;
+		}
+	};
 }
 
 int main (int argc, char *argv[]) {
