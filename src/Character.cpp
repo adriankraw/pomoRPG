@@ -1,3 +1,5 @@
+#include <cmath>
+#include <regex>
 #include <string>
 
 class Character{
@@ -39,7 +41,12 @@ void Character::SetLvl(const int &_lvl) {
 	Character::lvl = _lvl;
 }
 void Character::SetExp(const int &_exp) {
-	Character::exp = _exp;
+	if(_exp >= (std::pow(2,(3+Character::lvl)))){
+		Character::exp = (_exp%(int)std::pow(2,(3+Character::lvl)));
+		Character::levelUp();
+	}else{
+		Character::exp = _exp;
+	}
 }
 
 void Character::levelUp(){
