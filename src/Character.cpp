@@ -21,6 +21,7 @@ public:
 	const int Exp(){return Character::exp;}
 
 	void levelUp();
+	int GetNextLevelExp();
 
 private:
 	std::string name;
@@ -41,8 +42,8 @@ void Character::SetLvl(const int &_lvl) {
 	Character::lvl = _lvl;
 }
 void Character::SetExp(const int &_exp) {
-	if(_exp >= std::pow(std::pow(Character::lvl-1,2)+4,2)){
-		Character::exp = std::pow(std::pow(Character::lvl-1,2)+4,2);
+	if(_exp >= GetNextLevelExp()){
+		Character::exp = _exp%GetNextLevelExp();
 		Character::levelUp();
 	}else{
 		Character::exp = _exp;
@@ -52,4 +53,7 @@ void Character::SetExp(const int &_exp) {
 void Character::levelUp(){
 	++lvl;
 	//save the char
+}
+int Character::GetNextLevelExp(){
+	return std::pow(std::pow(Character::lvl-1,2)+4,2);
 }
