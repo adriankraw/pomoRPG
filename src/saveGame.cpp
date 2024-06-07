@@ -13,6 +13,8 @@ class saveGame{
 private:
 	Character *character;	
 
+	void GenerateSave();
+
 public:
 	saveGame();
 	~saveGame();
@@ -50,6 +52,11 @@ std::string saveGame::GetKeyValue(SaveGameKeys key)
 			return this->character->Name();
 		break;
 	}
+}
+
+void saveGame::GenerateSave(){
+	std::fstream saveFile("saveFile.txt", std::ios::in);
+	//muss ich noch schreiben... will aber gerade nicht.
 }
 
 void saveGame::Save(const saveGame::SaveGameKeys Keyword, const std::string value) {	
