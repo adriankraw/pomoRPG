@@ -55,9 +55,11 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 		//rpg
 		std::cout << "RPG:" << std::endl << std::endl;
 
-		std::cout << "Name " << save->Char()->Name() << std::endl;
-		std::cout << "LVL " << save->Char()->Lvl() << std::endl;
-		std::cout << "Exp " << save->Char()->Exp() << std::endl;
+		std::cout << "Name \t" << save->Char()->Name() << std::endl;
+		std::cout << "LVL \t" << save->Char()->Lvl() << std::endl;
+		std::cout << "Exp \t" << save->Char()->Exp() << std::endl;
+
+		std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
 		

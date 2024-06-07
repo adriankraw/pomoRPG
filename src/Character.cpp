@@ -41,8 +41,8 @@ void Character::SetLvl(const int &_lvl) {
 	Character::lvl = _lvl;
 }
 void Character::SetExp(const int &_exp) {
-	if(_exp >= (std::pow(2,(3+Character::lvl)))){
-		Character::exp = (_exp%(int)std::pow(2,(3+Character::lvl)));
+	if(_exp >= std::pow(std::pow(Character::lvl-1,2)+4,2)){
+		Character::exp = std::pow(std::pow(Character::lvl-1,2)+4,2);
 		Character::levelUp();
 	}else{
 		Character::exp = _exp;
