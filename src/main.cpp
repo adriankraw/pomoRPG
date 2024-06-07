@@ -58,7 +58,7 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 
 		std::cout << "Name \t" << save->Char()->Name() << std::endl;
 		std::cout << "LVL \t" << save->Char()->Lvl() << std::endl;
-		std::cout << "Exp \t" << save->Char()->Exp() << std::endl;
+		std::cout << "Exp \t" << save->Char()->Exp() << "/" << save->Char()->GetNextLevelExp() << std::endl;
 
 		std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 
@@ -82,7 +82,7 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 			exp = 0;
 			++animationTimer;
 		}
-		if(animationTimer >= 25){
+		if(animationTimer >= 60){
 			animationTimer=0;
 		}
 	};
