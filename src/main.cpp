@@ -42,6 +42,9 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 {
 	double exp = 0;
 	double animationTimer = 0;
+	//ask for input
+	std::thread thread_obj(&sleepfuntion, keyboardInput);
+	thread_obj.detach();
 	while(timer->isRunning)
 	{
 		//print header
@@ -78,15 +81,25 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 			std::cout << "=";
 		}
 
-		//ask for input
-		std::thread thread_obj(&sleepfuntion, keyboardInput);
-		thread_obj.detach();
+
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
 		if(*keyboardInput != "")
 		{
-			std::cout << "found: " << *keyboardInput << std::endl;
-			std::this_thread::sleep_for(std::chrono::milliseconds(100000000));
+			//now we have to change the setting of the statemachine. this will change wether the timer goes up or down 
+			if(*keyboardInput == "up")
+			{
+				timer->SetState(TimerState::countUp);
+				*keyboardInput = "";	
+				std::thread thread_obj(&sleepfuntion, keyboardInput);
+				thread_obj.detach();
+			}else if(*keyboardInput == "down")
+			{
+				timer->SetState(TimerState::countDown);
+				*keyboardInput = "";
+				std::thread thread_obj(&sleepfuntion, keyboardInput);
+				thread_obj.detach();
+			}
 		}
 
 		endFrame = std::chrono::system_clock::now();
