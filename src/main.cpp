@@ -4,11 +4,14 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <future>
 #include <iomanip>
 #include <ios>
 #include <iostream>
 #include <limits>
 #include <locale>
+#include <memory>
+#include <new>
 #include <ostream>
 #include <ratio>
 #include <string>
@@ -29,12 +32,19 @@ render ren;
 
 std::vector<std::string> ARGV = {"-countUp","-countDown","-time"};
 
+std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
+
+void sleepfuntion(std::shared_ptr<std::string> cinText)
+{
+	std::cin >> *cinText;
+}
 void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 {
 	double exp = 0;
 	double animationTimer = 0;
 	while(timer->isRunning)
 	{
+		//print header
 		std::cout << "\033[1J \033[1H" << std::flush;
 		startFrame = std::chrono::system_clock::now();
 		
@@ -44,6 +54,7 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 
 		ren.renderTime(currentTimer);
 
+		//print timer
 		std::cout << "\033[1m";
 		for(int i(0); i < (*ren.resultpointer).size(); ++i)
 		{
@@ -53,7 +64,7 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 
 		std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
  
-		//rpg
+		//print char stats
 		std::cout << "RPG:" << std::endl << std::endl;
 
 		std::cout << "Name \t" << save->Char()->Name() << std::endl;
@@ -66,14 +77,23 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 		for(int i = 0; i < (int)animationTimer; ++i){
 			std::cout << "=";
 		}
-		std::cout << std::endl;
+
+		//ask for input
+		std::thread thread_obj(&sleepfuntion, keyboardInput);
+		thread_obj.detach();
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
-		
+		if(*keyboardInput != "")
+		{
+			std::cout << "found: " << *keyboardInput << std::endl;
+			std::this_thread::sleep_for(std::chrono::milliseconds(100000000));
+		}
+
 		endFrame = std::chrono::system_clock::now();
 		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
 		timer->Tick(currentTimer, deltaTime);
 
+		//pseudo saving 
 		exp += (deltaTime);
 		if (exp >= 1000)
 		{
@@ -82,6 +102,10 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 			exp = 0;
 			++animationTimer;
 		}
+		
+
+
+
 		if(animationTimer >= 60){
 			animationTimer=0;
 		}
