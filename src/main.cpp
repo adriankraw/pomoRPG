@@ -21,14 +21,13 @@
 
 #define frames 60
 
-#include "render.cpp"
 #include "saveGame.cpp"
 #include "Timer.cpp"
+#include "printer.cpp"
 
 std::chrono::time_point<std::chrono::system_clock> startFrame;
 std::chrono::time_point<std::chrono::system_clock> endFrame;
 double deltaTime(0);
-render ren;
 
 std::vector<std::string> ARGV = {"-countUp","-countDown","-time"};
 
@@ -38,7 +37,7 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 {
 	std::cin >> *cinText;
 }
-void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
+void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &print)
 {
 	double exp = 0;
 	double animationTimer = 0;
@@ -47,35 +46,14 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save)
 	thread_obj.detach();
 	while(timer->isRunning)
 	{
-		//print header
-		std::cout << "\033[1J \033[1H" << std::flush;
+		print.flush();	
 		startFrame = std::chrono::system_clock::now();
+
+		print.header();
+		print.ren->renderTime(currentTimer);
+		print.timer();
+		print.characterStats(save->Char());
 		
-		std::cout << std::left << "PomoRPG: "<< std::endl;
-
-		std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
-
-		ren.renderTime(currentTimer);
-
-		//print timer
-		std::cout << "\033[1m";
-		for(int i(0); i < (*ren.resultpointer).size(); ++i)
-		{
-			std::cout << (*ren.resultpointer)[i] << std::endl;
-		}
-		std::cout << "\033[0m";
-
-		std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
- 
-		//print char stats
-		std::cout << "RPG:" << std::endl << std::endl;
-
-		std::cout << "Name \t" << save->Char()->Name() << std::endl;
-		std::cout << "LVL \t" << save->Char()->Lvl() << std::endl;
-		std::cout << "Exp \t" << save->Char()->Exp() << "/" << save->Char()->GetNextLevelExp() << std::endl;
-
-		std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
-
 		std::cout << "animation: ";
 		for(int i = 0; i < (int)animationTimer; ++i){
 			std::cout << "=";
@@ -135,6 +113,8 @@ int main (int argc, char *argv[]) {
 	saveGame *mySave = new saveGame();
 	mySave->Load();
 
+	printer print;
+
 	std::cout << "\033[2J \033[1H" <<"Starting PomoRPG... \n";
 
 	std::cout << "welcome to your own liddle pomodoro timer \n \n";
@@ -175,7 +155,7 @@ int main (int argc, char *argv[]) {
 	timer->isRunning = true;
 	while(running)
 	{
-		countingTimer(worktimer, timer, mySave);
+		countingTimer(worktimer, timer, mySave, print);
 		//	notify
 		//	breaketime
 		std::cout << "\033[1J \033[1H" << "Press Enter key to continue...";
