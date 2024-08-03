@@ -37,7 +37,6 @@
 #include "saveGame.cpp"
 #include "Timer.cpp"
 #include "printer.cpp"
-#include "Core.cpp"
 
 std::chrono::time_point<std::chrono::system_clock> startFrame;
 std::chrono::time_point<std::chrono::system_clock> endFrame;
@@ -47,8 +46,6 @@ int instanceID;
 std::vector<std::string> ARGV = {"-countUp","-countDown","-time","-coreAdress"};
 
 std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
-
-Core core;
 
 std::vector<double> idleTimerVector;
 
@@ -196,7 +193,6 @@ int main (int argc, char *argv[]) {
 	std::cout << "\033[2J \033[1H" <<"Starting PomoRPG... \n";
 
 	std::cout << "welcome to your own liddle pomodoro timer \n \n";
-	bool customCore = false;
 	if(argc > 1)
 	{	
 		for (int i = 1; i < argc; ++i) {
@@ -215,12 +211,6 @@ int main (int argc, char *argv[]) {
 					//countdown
 					timer->SetState(TimerState::countDown);
 				}
-				if(ARGV[3].compare(argv[i])==0)
-				{
-
-					//core = reinterpret_cast<Core*>(argv[i+1]);
-					customCore = true;
-				}
 			}
 
 		}
@@ -234,17 +224,10 @@ int main (int argc, char *argv[]) {
 
 		std::cout << "\033[2J";
 	}
-	if(!customCore){
-		core = Core(std::make_shared<Core>());
-	}
 
 	worktimer *= 60000;
 	braketimer *= 60000;
 	timer->isRunning = true;
-
-	core.Timer = timer;
-	core.SaveGame = mySave;
-	core.Character = mySave->Char();
 
 	while(running)
 	{
