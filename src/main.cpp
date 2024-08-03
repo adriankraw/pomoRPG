@@ -94,6 +94,9 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 				*keyboardInput = "";
 				std::thread thread_obj(&sleepfuntion, keyboardInput);
 				thread_obj.detach();
+			}else if(*keyboardInput == "save")
+			{
+				save->Save(saveGame::SaveGameKeys::exp, save->GetKeyValue(saveGame::SaveGameKeys::exp));
 			}
 		}
 
@@ -101,14 +104,11 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
 		timer->Tick(currentTimer, deltaTime);
 
-		//pseudo saving 
 		exp += (deltaTime);
-		if (exp >= 1000)
+		if(exp >= 1000)
 		{
 			save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000));
-			save->Save(saveGame::SaveGameKeys::exp, save->GetKeyValue(saveGame::SaveGameKeys::exp));
 			exp = 0;
-			++animationTimer;
 		}
 		
 		if(idleTimerVector[0] >= 10000)
