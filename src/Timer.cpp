@@ -3,7 +3,8 @@
 enum TimerState{
 	paused,
 	countDown,
-	countUp
+	countUp,
+	ticking
 };
 
 class Timer {
@@ -11,6 +12,7 @@ public:
 	Timer();
 	Timer(TimerState state, float startTime = 0.0f);
 	bool isRunning;
+	void Tick(const TimerState &state, double &currentTime, double &deltaTime);
 	void Tick(double &currentTime, double &deltaTime);
 	void SetState(TimerState);
 	TimerState GetState();
@@ -21,6 +23,7 @@ private:
 	float starttime;
 	float time;
 	TimerState currentState;
+	void loopTimerTicks(float*);
 };
 
 
@@ -32,8 +35,15 @@ Timer::Timer(TimerState state, float time) {
 	starttime = time;
 	isRunning = false;
 }
+void loopTimerTicks(const float &currentTimer, const double &deltaTime)
+{
+
+}
 void Timer::Tick(double &currentTime, double &deltaTime){
-	switch(currentState)
+	Timer::Tick(currentState, currentTime, deltaTime);
+}
+void Timer::Tick(const TimerState &state, double &currentTime, double &deltaTime){
+	switch(state)
 	{
 		case TimerState::countDown:
 			if(currentTime-deltaTime < 0)

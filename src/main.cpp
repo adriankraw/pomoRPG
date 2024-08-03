@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <array>
+#include <charconv>
 #include <chrono>
+#include <complex>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -14,24 +16,41 @@
 #include <new>
 #include <ostream>
 #include <ratio>
+#include <sstream>
 #include <string>
+#include <sys/_types/_uintptr_t.h>
 #include <thread>
 #include <stdio.h>
 #include <vector>
+
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
+#include <boost/asio/connect.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include "boost/beast/http/message.hpp"
+#include "boost/beast/http/string_body.hpp"
+#include "boost/beast/websocket/rfc6455.hpp"
+#include "boost/beast/websocket/stream.hpp"
 
 #define frames 60
 
 #include "saveGame.cpp"
 #include "Timer.cpp"
 #include "printer.cpp"
+#include "Core.cpp"
 
 std::chrono::time_point<std::chrono::system_clock> startFrame;
 std::chrono::time_point<std::chrono::system_clock> endFrame;
 double deltaTime(0);
+int instanceID;
 
-std::vector<std::string> ARGV = {"-countUp","-countDown","-time"};
+std::vector<std::string> ARGV = {"-countUp","-countDown","-time","-coreAdress"};
 
 std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
+
+Core core;
+
+std::vector<double> idleTimerVector;
 
 void sleepfuntion(std::shared_ptr<std::string> cinText)
 {
@@ -48,17 +67,18 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 	{
 		print.flush();	
 		startFrame = std::chrono::system_clock::now();
-
 		print.header();
 		print.ren->renderTime(currentTimer);
 		print.timer();
 		print.characterStats(save->Char());
 		
-		std::cout << "animation: ";
-		for(int i = 0; i < (int)animationTimer; ++i){
-			std::cout << "=";
+		for (int i = 0; i<idleTimerVector.size(); ++i) {
+			timer->Tick(TimerState::countUp, idleTimerVector[i], deltaTime);
+			double testdouble = idleTimerVector[i]/1000;
+			print.Bar("timer: ", testdouble);
 		}
 
+		std::cout << ""<< std::endl;
 
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
@@ -94,31 +114,89 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 			++animationTimer;
 		}
 		
-
-
-
-		if(animationTimer >= 60){
-			animationTimer=0;
+		if(idleTimerVector[0] >= 10000)
+		{
+			idleTimerVector[0] = 0;
+		}
+		if(idleTimerVector[1] >= 5000)
+		{
+			idleTimerVector[1] = 0;
 		}
 	};
 }
 
+void websocketStart()
+{
+	std::string host("127.0.0.1");
+	auto const port("8080");
+	boost::asio::io_context ioc;
+	boost::asio::ip::tcp::resolver ioc_resolver{ioc};
+	boost::beast::websocket::stream<boost::asio::ip::tcp::socket> ws{ioc};
+	auto const results = ioc_resolver.resolve(host, port);        
+        auto ep = boost::asio::connect(ws.next_layer(), results);
+
+        host += ':' + std::to_string(ep.port());
+	std::string ip(results->endpoint().address().to_string());
+
+        ws.set_option(boost::beast::websocket::stream_base::decorator(
+            [&ep, &ip](boost::beast::websocket::request_type& req)
+            {
+                req.set(boost::beast::http::field::user_agent,
+                    std::string(BOOST_BEAST_VERSION_STRING) +
+                        " websocket-client-coro");
+		req.set("instanceID", std::to_string(instanceID));
+		req.set("ip",ip);
+            })
+	);
+
+        ws.handshake(host, "/");
+
+        // Send the message
+        ws.write(boost::asio::buffer(std::string("text")) );
+
+        // This buffer will hold the incoming message
+	boost::beast::flat_buffer buffer;
+
+        // Read a message into our buffer
+        ws.read(buffer);
+
+        // Close the WebSocket connection
+        ws.close(boost::beast::websocket::close_code::normal);
+
+        // If we get here then the connection is closed gracefully
+
+        // The make_printable() function helps print a ConstBufferSequence
+        std::cout << boost::beast::make_printable(buffer.data()) << std::endl;
+}
+
 int main (int argc, char *argv[]) {
+	std::srand(std::time(nullptr));
+	instanceID = std::rand();
+
 	double worktimer = 10;
 	double braketimer = 2;
 	double countdown = 10000;
-	double running = true;		
+	double running = true;
+
 	Timer* timer = new Timer(TimerState::countDown);
 
 	saveGame *mySave = new saveGame();
 	mySave->Load();
+
+	//websocketStart();
+
+	float searchingAreaTimer(0);
+	float dungeonAreaTimer(0);
+
+	idleTimerVector.push_back(searchingAreaTimer);
+	idleTimerVector.push_back(dungeonAreaTimer);
 
 	printer print;
 
 	std::cout << "\033[2J \033[1H" <<"Starting PomoRPG... \n";
 
 	std::cout << "welcome to your own liddle pomodoro timer \n \n";
-
+	bool customCore = false;
 	if(argc > 1)
 	{	
 		for (int i = 1; i < argc; ++i) {
@@ -137,6 +215,12 @@ int main (int argc, char *argv[]) {
 					//countdown
 					timer->SetState(TimerState::countDown);
 				}
+				if(ARGV[3].compare(argv[i])==0)
+				{
+
+					//core = reinterpret_cast<Core*>(argv[i+1]);
+					customCore = true;
+				}
 			}
 
 		}
@@ -150,9 +234,18 @@ int main (int argc, char *argv[]) {
 
 		std::cout << "\033[2J";
 	}
+	if(!customCore){
+		core = Core(std::make_shared<Core>());
+	}
+
 	worktimer *= 60000;
 	braketimer *= 60000;
 	timer->isRunning = true;
+
+	core.Timer = timer;
+	core.SaveGame = mySave;
+	core.Character = mySave->Char();
+
 	while(running)
 	{
 		countingTimer(worktimer, timer, mySave, print);
