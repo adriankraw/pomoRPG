@@ -96,7 +96,7 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 				thread_obj.detach();
 			}else if(*keyboardInput == "save")
 			{
-				save->Save(saveGame::SaveGameKeys::exp, save->GetKeyValue(saveGame::SaveGameKeys::exp));
+				save->Save();
 			}
 		}
 
