@@ -31,8 +31,9 @@ public:
 		{saveGame::SaveGameKeys::name, "name"},
 	};
 	std::string GetKeyValue(SaveGameKeys);	
-
+	
 	void Save(const saveGame::SaveGameKeys, const std::string);
+	void Save();
 	void Load();
 };
 
@@ -95,6 +96,20 @@ void saveGame::Save(const saveGame::SaveGameKeys Keyword, const std::string valu
 		saveFile.close();
 	}
 };
+void saveGame::Save()
+{
+	std::fstream saveFile;
+
+	saveFile.open("saveFile.txt", std::ios::out);
+	if(saveFile.is_open())
+	{
+		for (auto key : saveGame::SaveGameKeywords) {
+			saveFile << key.second.c_str() << ":::" << this->GetKeyValue(key.first);
+			saveFile << "\n";
+		}
+		saveFile.close();
+	}
+}
 void saveGame::Load() {
 
 	std::ifstream saveFile;
