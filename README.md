@@ -16,3 +16,11 @@ Example:
     * level up you char when working (timer goes up)
     * char needs to sleep/eat/fight/search/brew ...
         * this will only happen when the user is taking a break (timer goes down)
+
+Idea:
+* create a todo list
+* save timers in saveFile:
+* create new timers
+* set name for timers
+* render last line to see input
+* tap to complete
