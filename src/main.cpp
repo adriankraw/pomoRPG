@@ -1,20 +1,10 @@
-#include <charconv>
 #include <chrono>
-#include <complex>
 #include <cstdio>
 #include <cstdlib>
-#include <fstream>
-#include <future>
-#include <iomanip>
-#include <ios>
 #include <iostream>
-#include <limits>
-#include <locale>
 #include <memory>
-#include <new>
 #include <ostream>
 #include <ratio>
-#include <sstream>
 #include <string>
 #include <sys/termios.h>
 #include <thread>
@@ -27,8 +17,6 @@
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include "boost/beast/http/message.hpp"
-#include "boost/beast/http/string_body.hpp"
 #include "boost/beast/websocket/rfc6455.hpp"
 #include "boost/beast/websocket/stream.hpp"
 
@@ -73,7 +61,18 @@ int getkey(int fd)
 }
 void sleepfuntion(std::shared_ptr<std::string> cinText)
 {
-	*cinText += getkey(STDIN_FILENO);
+if(char c = getkey(STDIN_FILENO))
+	{
+		if(c == '\n')
+		{
+			*cinText += c;
+		}else if(c == 127)
+		{
+			cinText->pop_back();
+		}else {
+			*cinText += c;
+		}
+	}
 }
 void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &print)
 {
@@ -84,7 +83,6 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 	//ask for input
 	std::thread thread_obj(&sleepfuntion, keyboardInput);
 	thread_obj.detach();
-	std::string testtext("");
 	char *buff;
 
 	while(timer->isRunning)
@@ -112,25 +110,26 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
-		if(testtext != "")
+		if(keyboardInput->back() == '\n')
 		{
+			keyboardInput->pop_back();
 			//now we have to change the setting of the statemachine. this will change wether the timer goes up or down 
-			if(testtext == "up")
+			if(*keyboardInput == "up")
 			{
 				timer->SetState(TimerState::countUp);
 				std::thread thread_obj(&sleepfuntion, keyboardInput);
 				thread_obj.detach();
-				testtext = "";	
-			}else if(testtext == "down")
+				keyboardInput->clear();	
+			}else if(*keyboardInput == "down")
 			{
 				timer->SetState(TimerState::countDown);
 				std::thread thread_obj(&sleepfuntion, keyboardInput);
 				thread_obj.detach();
-				testtext = "";	
-			}else if(testtext == "save")
+				keyboardInput->clear();	
+			}else if(*keyboardInput == "save")
 			{
 				save->Save();
-				testtext = "";	
+				keyboardInput->clear();	
 			}
 		}
 
@@ -210,13 +209,9 @@ int main (int argc, char *argv[]) {
 
 	//websocketStart();
 
-	float searchingAreaTimer(0);
-	float dungeonAreaTimer(0);
-
 	printer print;
 
 	std::cout << "\033[2J \033[1H" <<"Starting PomoRPG... \n";
-
 	std::cout << "welcome to your own liddle pomodoro timer \n \n";
 	if(argc > 1)
 	{	
@@ -228,8 +223,14 @@ int main (int argc, char *argv[]) {
 				{
 					//countUp
 					timer->SetState(TimerState::countUp);
-					timer->SetTime(0);
-					worktimer = 0;
+					if(argc>2)
+					{
+						timer->SetTime(std::stoi(argv[i+1]));
+						worktimer = std::stoi(argv[i+1]);
+					}else {
+						timer->SetTime(0);
+						worktimer = 0;
+					}
 				}
 				if(ARGV[1].compare(argv[i])==0)
 				{
