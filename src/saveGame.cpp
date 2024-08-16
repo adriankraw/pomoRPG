@@ -5,9 +5,12 @@
 #include <ios>
 #include <iostream>
 #include <map>
+#include <ostream>
 #include <string>
+#include <vector>
 
 #include "Character.cpp"
+#include "stopwatch.cpp"
 
 
 class saveGame{
@@ -15,7 +18,7 @@ private:
 	Character *character;	
 
 	void GenerateSave();
-
+	std::vector<stopwatch> stopwatchList;
 public:
 	saveGame();
 	~saveGame();
@@ -31,6 +34,7 @@ public:
 		{saveGame::SaveGameKeys::name, "name"},
 	};
 	std::string GetKeyValue(SaveGameKeys);	
+	std::vector<stopwatch>& GetStopWatch() {return stopwatchList;};
 	
 	void Save(const saveGame::SaveGameKeys, const std::string);
 	void Save();
@@ -138,6 +142,25 @@ void saveGame::Load() {
 			}
 		}
 		saveFile.close();
+	}
+	saveFile.clear();
+	saveFile.open("timerList.txt");
+	line = "";
+	if(saveFile.is_open())
+	{
+		while (std::getline(saveFile, line)) 
+		{
+			if(line.find(":::") != 0)
+			{
+				int l = line.find(":::");
+				const std::string startingWith = line.substr(0, l);
+				std::cout <<"starting with: "<< startingWith << std::endl;
+				std::string endingwith = line.substr(l+3);
+				std::cout <<"ending with:"<< endingwith << std::endl;
+				double time = std::stoi(endingwith);
+				stopwatchList.push_back(stopwatch(startingWith, time));
+			}
+		}
 	}
 }
 
