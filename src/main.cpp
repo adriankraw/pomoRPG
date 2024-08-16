@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -31,7 +32,7 @@ std::chrono::time_point<std::chrono::system_clock> endFrame;
 double deltaTime(0);
 int instanceID;
 
-std::vector<std::string> ARGV = {"-countUp","-countDown","-time","-coreAdress"};
+std::vector<std::string> ARGV = {"-countUp","-countDown","-time","-start"};
 
 std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
 
@@ -94,7 +95,7 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 		print.timer();
 		print.characterStats(save->Char());
 		
-		std::vector<stopwatch>& stopwatchList =  save->GetStopWatch();
+		std::vector<stopwatch>& stopwatchList =  save->GetStopWatchList();
 		for (int i = 0; i<stopwatchList.size(); ++i) {
 			stopwatchList[i].GetTimer().Tick(TimerState::countUp, stopwatchList[i].GetcurrentTime(), deltaTime);
 			print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime());
@@ -225,14 +226,21 @@ int main (int argc, char *argv[]) {
 					timer->SetState(TimerState::countUp);
 					if(argc>2)
 					{
-						timer->SetTime(std::stoi(argv[i+1]));
-						worktimer = std::stoi(argv[i+1]);
+						auto foundwatch = mySave->GetStopwatchIndex(argv[i+1]);
+						std::cout << foundwatch->GetName() << std::endl;
+						timer->SetTime(foundwatch->GetcurrentTime());
+						worktimer = foundwatch->GetcurrentTime();
 					}else {
 						timer->SetTime(0);
 						worktimer = 0;
 					}
 				}
 				if(ARGV[1].compare(argv[i])==0)
+				{
+					//countdown
+					timer->SetState(TimerState::countDown);
+				}
+				if(ARGV[3].compare(argv[i])==0)
 				{
 					//countdown
 					timer->SetState(TimerState::countDown);
