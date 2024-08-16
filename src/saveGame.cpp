@@ -1,10 +1,12 @@
 #pragma once
 #include <_ctype.h>
+#include <cstddef>
 #include <cstring>
 #include <fstream>
 #include <ios>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -34,11 +36,13 @@ public:
 		{saveGame::SaveGameKeys::name, "name"},
 	};
 	std::string GetKeyValue(SaveGameKeys);	
-	std::vector<stopwatch>& GetStopWatch() {return stopwatchList;};
+	std::vector<stopwatch>& GetStopWatchList() {return stopwatchList;};
 	
 	void Save(const saveGame::SaveGameKeys, const std::string);
 	void Save();
 	void Load();
+
+	std::shared_ptr<stopwatch> GetStopwatchIndex(std::string name);
 };
 
 saveGame::saveGame() {
@@ -58,6 +62,19 @@ std::string saveGame::GetKeyValue(SaveGameKeys key)
 			return this->character->Name();
 		break;
 	}
+}
+std::shared_ptr<stopwatch> saveGame::GetStopwatchIndex(std::string nameOfWatch)
+{
+
+	for(auto watch: stopwatchList)
+	{
+		if(watch.GetName() == nameOfWatch)
+		{
+			
+			return std::make_shared<stopwatch>(watch);
+		}
+	}
+	return NULL;
 }
 
 void saveGame::GenerateSave(){
