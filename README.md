@@ -18,9 +18,13 @@ Example:
         * this will only happen when the user is taking a break (timer goes down)
 
 Idea:
-* create a todo list
-* save timers in saveFile:
-* create new timers
-* set name for timers
-* render last line to see input
-* tap to complete
+* [ ] create a todo list
+* [x] save timers in saveFile:
+* [x] create new timers
+* [x] set name for timers
+* [ ] render last line to see input
+* [ ] tap to complete
+* [x] render timer in listformat
+* [x] start pomoRPG with specific timer
+* [ ] save addedTime[all timer added into 1 digid] in server;
+
