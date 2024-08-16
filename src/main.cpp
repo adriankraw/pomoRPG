@@ -1,5 +1,3 @@
-#include <algorithm>
-#include <array>
 #include <charconv>
 #include <chrono>
 #include <complex>
@@ -18,10 +16,12 @@
 #include <ratio>
 #include <sstream>
 #include <string>
-#include <sys/_types/_uintptr_t.h>
+#include <sys/termios.h>
 #include <thread>
 #include <stdio.h>
+#include <unistd.h>
 #include <vector>
+#include <termios.h>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
@@ -47,19 +47,46 @@ std::vector<std::string> ARGV = {"-countUp","-countDown","-time","-coreAdress"};
 
 std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
 
-std::vector<double> idleTimerVector;
+struct termios tio_save;
+void ttyinit(int fd)
+{
+    struct termios tio;
+    tcgetattr(fd,&tio);
+    tio_save = tio;
 
+    tio.c_lflag &= ~(ECHO | ICANON);
+
+    tcsetattr(fd,TCSANOW,&tio);
+}
+
+int getkey(int fd)
+{
+    unsigned char buf[1];
+    int len;
+
+    len = read(fd,buf,1);
+
+    if (len > 0)
+        len = buf[0];
+
+    return len;
+}
 void sleepfuntion(std::shared_ptr<std::string> cinText)
 {
-	std::cin >> *cinText;
+	*cinText += getkey(STDIN_FILENO);
 }
 void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &print)
 {
+	ttyinit(STDIN_FILENO);
+
 	double exp = 0;
 	double animationTimer = 0;
 	//ask for input
 	std::thread thread_obj(&sleepfuntion, keyboardInput);
 	thread_obj.detach();
+	std::string testtext("");
+	char *buff;
+
 	while(timer->isRunning)
 	{
 		print.flush();	
@@ -69,34 +96,41 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 		print.timer();
 		print.characterStats(save->Char());
 		
-		for (int i = 0; i<idleTimerVector.size(); ++i) {
-			timer->Tick(TimerState::countUp, idleTimerVector[i], deltaTime);
-			double testdouble = idleTimerVector[i]/1000;
-			print.Bar("timer: ", testdouble);
+		std::vector<stopwatch>& stopwatchList =  save->GetStopWatch();
+		for (int i = 0; i<stopwatchList.size(); ++i) {
+			stopwatchList[i].GetTimer().Tick(TimerState::countUp, stopwatchList[i].GetcurrentTime(), deltaTime);
+			print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime());
 		}
-
-		std::cout << ""<< std::endl;
+		
+		std::cout << "> " << keyboardInput->c_str();
+		if((*keyboardInput).c_str() != NULL)
+		{
+			std::thread thread_obj(&sleepfuntion, keyboardInput);
+			thread_obj.detach();
+		}
+		std::cout << "" << std::endl;
 
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
-		if(*keyboardInput != "")
+		if(testtext != "")
 		{
 			//now we have to change the setting of the statemachine. this will change wether the timer goes up or down 
-			if(*keyboardInput == "up")
+			if(testtext == "up")
 			{
 				timer->SetState(TimerState::countUp);
-				*keyboardInput = "";	
 				std::thread thread_obj(&sleepfuntion, keyboardInput);
 				thread_obj.detach();
-			}else if(*keyboardInput == "down")
+				testtext = "";	
+			}else if(testtext == "down")
 			{
 				timer->SetState(TimerState::countDown);
-				*keyboardInput = "";
 				std::thread thread_obj(&sleepfuntion, keyboardInput);
 				thread_obj.detach();
-			}else if(*keyboardInput == "save")
+				testtext = "";	
+			}else if(testtext == "save")
 			{
 				save->Save();
+				testtext = "";	
 			}
 		}
 
@@ -110,15 +144,7 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 			save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000));
 			exp = 0;
 		}
-		
-		if(idleTimerVector[0] >= 10000)
-		{
-			idleTimerVector[0] = 0;
-		}
-		if(idleTimerVector[1] >= 5000)
-		{
-			idleTimerVector[1] = 0;
-		}
+
 	};
 }
 
@@ -166,8 +192,10 @@ void websocketStart()
         std::cout << boost::beast::make_printable(buffer.data()) << std::endl;
 }
 
+
+
 int main (int argc, char *argv[]) {
-	std::srand(std::time(nullptr));
+	
 	instanceID = std::rand();
 
 	double worktimer = 10;
@@ -184,9 +212,6 @@ int main (int argc, char *argv[]) {
 
 	float searchingAreaTimer(0);
 	float dungeonAreaTimer(0);
-
-	idleTimerVector.push_back(searchingAreaTimer);
-	idleTimerVector.push_back(dungeonAreaTimer);
 
 	printer print;
 

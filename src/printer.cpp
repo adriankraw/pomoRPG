@@ -58,8 +58,8 @@ void printer::characterStats(Character* character){
 }
 void printer::Bar(std::string pretext, double &state)
 {
-	std::cout << pretext;
-	for(int i = 0; i < state; ++i){
+	std::cout << pretext << " ";
+	for(int i = 0; i < ((int)(state/1000)%60); ++i){
 		std::cout << "=";
 	}
 	std::cout << std::endl;
