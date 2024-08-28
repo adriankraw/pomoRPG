@@ -129,7 +129,20 @@ void saveGame::Save()
 			saveFile << "\n";
 		}
 		saveFile.close();
+	}	
+	saveFile.clear();
+	saveFile.open("timerList.txt");
+	if(saveFile.is_open())
+	{
+		for(auto iterator = stopwatchList.begin(); iterator != stopwatchList.end(); ++iterator) 
+		{
+			saveFile << iterator->GetName();
+			saveFile << ":::";
+			saveFile << iterator->GetcurrentTime();
+			saveFile << "\n";
+		}
 	}
+	saveFile.close();
 }
 void saveGame::Load() {
 
@@ -171,9 +184,7 @@ void saveGame::Load() {
 			{
 				int l = line.find(":::");
 				const std::string startingWith = line.substr(0, l);
-				std::cout <<"starting with: "<< startingWith << std::endl;
 				std::string endingwith = line.substr(l+3);
-				std::cout <<"ending with:"<< endingwith << std::endl;
 				double time = std::stoi(endingwith);
 				stopwatchList.push_back(stopwatch(startingWith, time));
 			}

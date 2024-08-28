@@ -260,8 +260,6 @@ int main (int argc, char *argv[]) {
 		std::cout << "\033[2J";
 	}
 
-	worktimer *= 60000;
-	braketimer *= 60000;
 	timer->isRunning = true;
 
 	while(running)
