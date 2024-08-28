@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -62,7 +61,7 @@ int getkey(int fd)
 }
 void sleepfuntion(std::shared_ptr<std::string> cinText)
 {
-if(char c = getkey(STDIN_FILENO))
+	if(char c = getkey(STDIN_FILENO))
 	{
 		if(c == '\n')
 		{
