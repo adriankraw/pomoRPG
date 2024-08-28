@@ -22,6 +22,8 @@
 
 #define frames 60
 
+const int returnBtn_Char = 127;
+
 #include "saveGame.cpp"
 #include "Timer.cpp"
 #include "printer.cpp"
@@ -66,7 +68,7 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 		if(c == '\n')
 		{
 			*cinText += c;
-		}else if(c == 127)
+		}else if(c == returnBtn_Char)
 		{
 			cinText->pop_back();
 		}else {
