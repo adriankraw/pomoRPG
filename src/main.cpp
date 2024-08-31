@@ -26,13 +26,12 @@
 #include "Timer.cpp"
 #include "printer.cpp"
 #include "KeyCode.h"
+#include "Commands.cpp"
 
 std::chrono::time_point<std::chrono::system_clock> startFrame;
 std::chrono::time_point<std::chrono::system_clock> endFrame;
 double deltaTime(0);
 int instanceID;
-
-std::vector<std::string> ARGV = {"-countUp","-countDown","-time","-start"};
 
 std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
 
@@ -223,7 +222,7 @@ int main (int argc, char *argv[]) {
 			
 			if(argc > 1 )
 			{
-				if(ARGV[0].compare(argv[i])==0)
+				if(Commands::CommandsMap[Commands::Base::CountUp].compare(argv[i])==0)
 				{
 					//countUp
 					timer->SetState(TimerState::countUp);
@@ -238,12 +237,12 @@ int main (int argc, char *argv[]) {
 						worktimer = 0;
 					}
 				}
-				if(ARGV[1].compare(argv[i])==0)
+				if(Commands::CommandsMap[Commands::Base::CountDown].compare(argv[i])==0)
 				{
 					//countdown
 					timer->SetState(TimerState::countDown);
 				}
-				if(ARGV[3].compare(argv[i])==0)
+				if(Commands::CommandsMap[Commands::Base::CountDown].compare(argv[i])==0)
 				{
 					//countdown
 					timer->SetState(TimerState::countDown);
