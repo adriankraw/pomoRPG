@@ -22,11 +22,10 @@
 
 #define frames 60
 
-const int returnBtn_Char = 127;
-
 #include "saveGame.cpp"
 #include "Timer.cpp"
 #include "printer.cpp"
+#include "KeyCode.h"
 
 std::chrono::time_point<std::chrono::system_clock> startFrame;
 std::chrono::time_point<std::chrono::system_clock> endFrame;
@@ -65,12 +64,15 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 {
 	if(char c = getkey(STDIN_FILENO))
 	{
-		if(c == '\n')
+		if(c == KeyCode::Btn::Enter)
 		{
 			*cinText += c;
-		}else if(c == returnBtn_Char)
+		}else if(c == KeyCode::Btn::Backspace)
 		{
-			cinText->pop_back();
+			if(!cinText->empty())
+			{
+				cinText->pop_back();
+			}
 		}else {
 			*cinText += c;
 		}
