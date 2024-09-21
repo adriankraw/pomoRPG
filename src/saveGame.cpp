@@ -43,6 +43,7 @@ public:
 	void Load();
 
 	std::shared_ptr<stopwatch> GetStopwatchIndex(std::string name);
+	std::shared_ptr<stopwatch> AddStopwatch(std::string name);
 };
 
 saveGame::saveGame() {
@@ -65,7 +66,6 @@ std::string saveGame::GetKeyValue(SaveGameKeys key)
 }
 std::shared_ptr<stopwatch> saveGame::GetStopwatchIndex(std::string nameOfWatch)
 {
-
 	for(auto watch: stopwatchList)
 	{
 		if(watch.GetName() == nameOfWatch)
@@ -75,6 +75,11 @@ std::shared_ptr<stopwatch> saveGame::GetStopwatchIndex(std::string nameOfWatch)
 		}
 	}
 	return NULL;
+}
+std::shared_ptr<stopwatch> saveGame::AddStopwatch(std::string nameOfWatch)
+{
+	stopwatchList.push_back(stopwatch(nameOfWatch, 0));
+	return std::make_shared<stopwatch>(stopwatchList.back());
 }
 
 void saveGame::GenerateSave(){
