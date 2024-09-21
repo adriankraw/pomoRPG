@@ -22,8 +22,8 @@ Commands::_commandsMap Commands::CommandsMap = {
 	{Base::start, "-start"},
 	{Base::pause, "-pause"},
 	{Base::add, "-add"},
-	{Base::CountUp, "-CountUp"},
-	{Base::CountDown, "-CountDown"},
+	{Base::CountUp, "-countup"},
+	{Base::CountDown, "-countdown"},
 };
 
 //std::vector<std::string> ARGV = {"-countUp","-countDown","-time","-start"};

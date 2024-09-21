@@ -34,6 +34,7 @@ double deltaTime(0);
 int instanceID;
 
 std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
+std::thread inputReading;
 
 struct termios tio_save;
 void ttyinit(int fd)
@@ -61,21 +62,25 @@ int getkey(int fd)
 }
 void sleepfuntion(std::shared_ptr<std::string> cinText)
 {
-	if(char c = getkey(STDIN_FILENO))
+	while(true)
 	{
-		if(c == KeyCode::Btn::Enter)
-		{
-			*cinText += c;
-		}else if(c == KeyCode::Btn::Backspace)
-		{
-			if(!cinText->empty())
+		if(char c = getkey(STDIN_FILENO))
 			{
-				cinText->pop_back();
+			if(c == KeyCode::Btn::Enter)
+			{
+				*cinText += c;
+			}else if(c == KeyCode::Btn::Backspace)
+			{
+				if(!cinText->empty())
+				{
+					cinText->pop_back();
+				}
+			}else {
+				*cinText += c;
 			}
-		}else {
-			*cinText += c;
 		}
 	}
+	return;
 }
 void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &print)
 {
@@ -84,9 +89,6 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 	double exp = 0;
 	double animationTimer = 0;
 	//ask for input
-	std::thread thread_obj(&sleepfuntion, keyboardInput);
-	thread_obj.detach();
-	char *buff;
 
 	while(timer->isRunning)
 	{
@@ -104,35 +106,54 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 		}
 		
 		std::cout << "> " << keyboardInput->c_str();
-		if((*keyboardInput).c_str() != NULL)
-		{
-			std::thread thread_obj(&sleepfuntion, keyboardInput);
-			thread_obj.detach();
-		}
 		std::cout << "" << std::endl;
 
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
 		if(keyboardInput->back() == '\n')
 		{
+			std::string additionalInfo = "";
+			if(keyboardInput->find(KeyCode::Space))
+			{
+				additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
+			}
+			//keyboardInput has to checked for spaces to
 			keyboardInput->pop_back();
 			//now we have to change the setting of the statemachine. this will change wether the timer goes up or down 
 			if(*keyboardInput == "up")
 			{
 				timer->SetState(TimerState::countUp);
-				std::thread thread_obj(&sleepfuntion, keyboardInput);
-				thread_obj.detach();
 				keyboardInput->clear();	
 			}else if(*keyboardInput == "down")
 			{
 				timer->SetState(TimerState::countDown);
-				std::thread thread_obj(&sleepfuntion, keyboardInput);
-				thread_obj.detach();
 				keyboardInput->clear();	
 			}else if(*keyboardInput == "save")
 			{
 				save->Save();
 				keyboardInput->clear();	
+			}else if(*keyboardInput == "timer")
+			{
+				//select a Timer
+				if(additionalInfo != "")
+				{
+					
+				}
+			}else if(*keyboardInput == "add")
+			{
+				if(additionalInfo != "")
+				{
+					save->AddStopwatch(additionalInfo);
+				}
+				keyboardInput->clear();
+			}else if(*keyboardInput == "pause" || *keyboardInput == "stop")
+			{
+				timer->isRunning = false;
+				keyboardInput->clear();
+			}else if(*keyboardInput == "start" || *keyboardInput == "resume")
+			{
+				timer->isRunning = true;
+				keyboardInput->clear();
 			}
 		}
 
@@ -229,6 +250,12 @@ int main (int argc, char *argv[]) {
 					if(argc>2)
 					{
 						auto foundwatch = mySave->GetStopwatchIndex(argv[i+1]);
+						
+						if(foundwatch == NULL)
+						{
+							foundwatch = mySave->AddStopwatch(argv[i+1]);
+						}
+						
 						std::cout << foundwatch->GetName() << std::endl;
 						timer->SetTime(foundwatch->GetcurrentTime());
 						worktimer = foundwatch->GetcurrentTime();
@@ -262,6 +289,9 @@ int main (int argc, char *argv[]) {
 	}
 
 	timer->isRunning = true;
+
+	inputReading = std::thread(&sleepfuntion, keyboardInput);
+	inputReading.detach();
 
 	while(running)
 	{
