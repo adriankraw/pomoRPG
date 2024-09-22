@@ -28,11 +28,12 @@ public:
 	Character* Char(){return character;};
 
 	enum SaveGameKeys{
-		lvl, exp, name
+		lvl, exp, expMultiplier, name
 	};
 	std::map<SaveGameKeys, std::string> SaveGameKeywords{
 		{saveGame::SaveGameKeys::lvl, "lvl"},
 		{saveGame::SaveGameKeys::exp, "exp"},
+		{saveGame::SaveGameKeys::expMultiplier, "expMultiplier"},
 		{saveGame::SaveGameKeys::name, "name"},
 	};
 	std::string GetKeyValue(SaveGameKeys);	
@@ -62,6 +63,8 @@ std::string saveGame::GetKeyValue(SaveGameKeys key)
 		case saveGame::SaveGameKeys::name:
 			return this->character->Name();
 		break;
+		case saveGame::SaveGameKeys::expMultiplier:
+			return std::to_string(this->character->Expmultiplier());
 	}
 }
 std::shared_ptr<stopwatch> saveGame::GetStopwatchIndex(std::string nameOfWatch)
@@ -173,6 +176,10 @@ void saveGame::Load() {
 				if(startingWith.compare(SaveGameKeywords[SaveGameKeys::exp]) == 0)
 				{
 					character->SetExp(std::stoi(line.substr(line.find(":::")+3, line.length())));
+				}
+				if(startingWith.compare(SaveGameKeywords[SaveGameKeys::expMultiplier]) == 0)
+				{
+					character->SetExpMultiplier(std::stoi(line.substr(line.find(":::")+3, line.length())));
 				}
 			}
 		}

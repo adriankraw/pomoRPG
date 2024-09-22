@@ -164,7 +164,7 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 		exp += (deltaTime);
 		if(exp >= 1000)
 		{
-			save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000));
+			save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000)*save->Char()->Expmultiplier());
 			exp = 0;
 		}
 
