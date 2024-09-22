@@ -53,6 +53,7 @@ void printer::characterStats(Character* character){
 	std::cout << "Name \t" << character->Name() << std::endl;
 	std::cout << "LVL \t" << character->Lvl() << std::endl;
 	std::cout << "Exp \t" << character->Exp() << "/" << character->GetNextLevelExp() << std::endl;
+	std::cout << "ExpMul \t" << character->Expmultiplier() << std::endl;
 
 	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 }
