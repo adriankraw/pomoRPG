@@ -12,6 +12,7 @@ public:
 	Timer();
 	Timer(TimerState state, float startTime = 0.0f);
 	bool isRunning;
+	bool isPaused;
 	void Tick(const TimerState &state, double &currentTime, double &deltaTime);
 	void Tick(double &currentTime, double &deltaTime);
 	void SetState(TimerState);
@@ -34,6 +35,7 @@ Timer::Timer(TimerState state, float time) {
 	currentState = state;
 	starttime = time;
 	isRunning = false;
+	isPaused = false;
 }
 void loopTimerTicks(const float &currentTimer, const double &deltaTime)
 {
