@@ -92,24 +92,6 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 
 	while(timer->isRunning)
 	{
-		print.flush();	
-		startFrame = std::chrono::system_clock::now();
-		print.header();
-		print.ren->renderTime(currentTimer);
-		print.timer();
-		print.characterStats(save->Char());
-		
-		std::vector<stopwatch>& stopwatchList =  save->GetStopWatchList();
-		for (int i = 0; i<stopwatchList.size(); ++i) {
-			stopwatchList[i].GetTimer().Tick(TimerState::countUp, stopwatchList[i].GetcurrentTime(), deltaTime);
-			print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime());
-		}
-		
-		std::cout << "> " << keyboardInput->c_str();
-		std::cout << "" << std::endl;
-
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
 		if(keyboardInput->back() == '\n')
 		{
 			std::string additionalInfo = "";
@@ -148,14 +130,36 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 				keyboardInput->clear();
 			}else if(*keyboardInput == "pause" || *keyboardInput == "stop")
 			{
-				timer->isRunning = false;
+				timer->isPaused = true;
 				keyboardInput->clear();
 			}else if(*keyboardInput == "start" || *keyboardInput == "resume")
 			{
-				timer->isRunning = true;
+				timer->isPaused = false;
 				keyboardInput->clear();
 			}
 		}
+
+		if(timer->isPaused) {
+			continue;
+		}
+		print.flush();	
+		startFrame = std::chrono::system_clock::now();
+		print.header();
+		print.ren->renderTime(currentTimer);
+		print.timer();
+		print.characterStats(save->Char());
+		
+		std::vector<stopwatch>& stopwatchList =  save->GetStopWatchList();
+		for (int i = 0; i<stopwatchList.size(); ++i) {
+			stopwatchList[i].GetTimer().Tick(TimerState::countUp, stopwatchList[i].GetcurrentTime(), deltaTime);
+			print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime());
+		}
+		
+		std::cout << "> " << keyboardInput->c_str();
+		std::cout << "" << std::endl;
+
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
 
 		endFrame = std::chrono::system_clock::now();
 		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
