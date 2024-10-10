@@ -60,9 +60,10 @@ void printer::characterStats(Character* character){
 void printer::Bar(std::string pretext, int &state)
 {
 	std::cout << pretext << " ";
-	for(int i = 0; i < ((int)((double)state/1000)%60); ++i){
+	for(int i = 0; i < (state%60); ++i){
 		std::cout << "=";
 	}
+	std::cout  << state;
 	std::cout << std::endl;
 }
 void printer::flush(){

@@ -4,7 +4,7 @@
 class stopwatch{
 public:
 	stopwatch(std::string nameOfActivity);
-	stopwatch(std::string nameOfActivity, Time currentTimer);
+	stopwatch(std::string nameOfActivity, Time currentTime);
 	stopwatch(stopwatch &&) = default;
 	stopwatch(const stopwatch &) = default;
 	stopwatch &operator=(stopwatch &&) = default;
@@ -19,21 +19,21 @@ public:
 private:
 	std::string nameOfActivity;
 	Timer timer;
-	Time currentTimer;	
+	Time currentTime;	
 };
 
 stopwatch::stopwatch(std::string _nameOfActivity)
 {
 	stopwatch::nameOfActivity = _nameOfActivity;
-	stopwatch::currentTimer = Time();
-	stopwatch::timer = Timer(TimerState::countUp, currentTimer);
+	stopwatch::currentTime = Time();
+	stopwatch::timer = Timer(TimerState::countUp, currentTime);
 }
 
-stopwatch::stopwatch(std::string _nameOfActivity, Time _currentTimer)
+stopwatch::stopwatch(std::string _nameOfActivity, Time _currentTime)
 {
 	stopwatch::nameOfActivity = _nameOfActivity;
-	stopwatch::currentTimer = _currentTimer;
-	stopwatch::timer = Timer(TimerState::countUp, currentTimer);
+	stopwatch::currentTime = _currentTime;
+	stopwatch::timer = Timer(TimerState::countUp, stopwatch::currentTime);
 }
 
 stopwatch::~stopwatch() {
@@ -41,19 +41,19 @@ stopwatch::~stopwatch() {
 
 Time* stopwatch::GetcurrentTime()
 {
-	return &currentTimer;
+	return &currentTime;
 }
 
 std::string stopwatch::GetcurrentTimeAsString()
 {
 	std::string time;
-	time.append(std::to_string(stopwatch::currentTimer.GetHour()));
+	time.append(std::to_string(stopwatch::currentTime.GetHour()));
 	time.append("h");
-	time.append(std::to_string(stopwatch::currentTimer.GetMinute()));
+	time.append(std::to_string(stopwatch::currentTime.GetMinute()));
 	time.append("m");
-	time.append(std::to_string(stopwatch::currentTimer.GetSeconds()));
+	time.append(std::to_string(stopwatch::currentTime.GetSeconds()));
 	time.append("s");
-	time.append(std::to_string(stopwatch::currentTimer.GetMili()));
+	time.append(std::to_string(stopwatch::currentTime.GetMili()));
 	time.append("mili");
 	return time;
 }
