@@ -1,7 +1,7 @@
 #include <array>
 #include <string>
 #include <list>
-#include <iostream>
+#include "Time.cpp"
 
 #define stringarrayResolution 5
 
@@ -16,14 +16,14 @@ public:
 
 	std::array<std::string, stringarrayResolution>* resultpointer = &result;
 
-	std::array<std::string, stringarrayResolution>* renderTime(const double &currentTime)
+	std::array<std::string, stringarrayResolution>* renderTime(Time &currentTime)
 	{
 		//return a string that got modified into a time 
 		std::list<int> splitTime;
-		int time = (int)currentTime;
-		int mili = (time%1000);
-		int minutes = ((time/1000)/60);
-		int seconds = ((((time/1000.0)/60.0)-minutes)*60);
+		int time = currentTime.GetHour();
+		int mili = currentTime.GetMili();
+		int minutes = currentTime.GetMinute();
+		int seconds = currentTime.GetSeconds();
 		time = mili + (seconds*1000) + (minutes*100000);
 		while (time >0)
 		{

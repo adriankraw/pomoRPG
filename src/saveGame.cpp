@@ -81,7 +81,7 @@ std::shared_ptr<stopwatch> saveGame::GetStopwatchIndex(std::string nameOfWatch)
 }
 std::shared_ptr<stopwatch> saveGame::AddStopwatch(std::string nameOfWatch)
 {
-	stopwatchList.push_back(stopwatch(nameOfWatch, 0));
+	stopwatchList.push_back(stopwatch(nameOfWatch));
 	return std::make_shared<stopwatch>(stopwatchList.back());
 }
 
@@ -139,6 +139,7 @@ void saveGame::Save()
 		saveFile.close();
 	}	
 	saveFile.clear();
+
 	saveFile.open("timerList.txt");
 	if(saveFile.is_open())
 	{
@@ -146,7 +147,7 @@ void saveGame::Save()
 		{
 			saveFile << iterator->GetName();
 			saveFile << ":::";
-			saveFile << iterator->GetcurrentTime();
+			saveFile << iterator->GetcurrentTimeAsString();
 			saveFile << "\n";
 		}
 	}
@@ -197,8 +198,21 @@ void saveGame::Load() {
 				int l = line.find(":::");
 				const std::string startingWith = line.substr(0, l);
 				std::string endingwith = line.substr(l+3);
-				double time = std::stoi(endingwith);
-				stopwatchList.push_back(stopwatch(startingWith, time));
+				int hIndex = endingwith.find("h");
+				int mIndex = endingwith.find("m");
+				int sIndex = endingwith.find("s");
+				int miliIndex = endingwith.find("mili"); 
+				std::cout << endingwith << std::endl;
+				std::cout << endingwith.substr(0,hIndex) << std::endl;
+				std::cout << endingwith.substr(hIndex+1, mIndex-hIndex-1) << std::endl;
+				std::cout << endingwith.substr(mIndex+1, sIndex-mIndex-1) << std::endl;
+				std::cout << endingwith.substr(sIndex+1, endingwith.length()-miliIndex-3) << std::endl;
+
+				int hour = std::stoi(endingwith.substr(0,hIndex));
+				int minute = std::stoi( endingwith.substr(hIndex+1, mIndex-hIndex-1));
+				int seconds = std::stoi(endingwith.substr(mIndex+1, sIndex-mIndex-1));
+				int mili = std::stoi(endingwith.substr(sIndex+1, endingwith.length()-miliIndex-3));
+				stopwatchList.push_back(stopwatch(startingWith, Time(hour,minute,seconds,mili)));
 			}
 		}
 	}
