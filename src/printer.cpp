@@ -59,12 +59,26 @@ void printer::characterStats(Character* character){
 }
 void printer::Bar(std::string pretext, int &state)
 {
-	std::cout << pretext << " ";
-	for(int i = 0; i < (state%60); ++i){
-		std::cout << "=";
+	std::cout << pretext << " |";
+	for(int i = 0; i < 60; ++i)
+	{
+		if(i != 29)
+		{
+			if(i < state)
+			{
+				std::cout << "=";
+			}else {
+				std::cout << ".";
+			}
+		}else {
+			if(i<10)
+			{
+				std::cout << " ";
+			}
+			std::cout << state;
+		}
 	}
-	std::cout  << state;
-	std::cout << std::endl;
+	std::cout << "|" << std::endl;
 }
 void printer::flush(){
 	std::cout << "\033[1J \033[1H" << std::flush;
