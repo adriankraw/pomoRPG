@@ -82,7 +82,7 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 	}
 	return;
 }
-void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &print)
+void countingTimer(Time &currentTime, Timer *timer, saveGame *save, printer &print)
 {
 	ttyinit(STDIN_FILENO);
 
@@ -145,16 +145,16 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 		print.flush();	
 		startFrame = std::chrono::system_clock::now();
 		print.header();
-		print.ren->renderTime(currentTimer);
+		print.ren->renderTime(currentTime);
 		print.timer();
 		print.characterStats(save->Char());
-		
-		std::vector<stopwatch>& stopwatchList =  save->GetStopWatchList();
+
+		std::vector<stopwatch>& stopwatchList = save->GetStopWatchList();
 		for (int i = 0; i<stopwatchList.size(); ++i) {
-			stopwatchList[i].GetTimer().Tick(TimerState::countUp, stopwatchList[i].GetcurrentTime(), deltaTime);
-			print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime());
+			stopwatchList[i].GetTimer().Tick(TimerState::countUp, *stopwatchList[i].GetcurrentTime(), deltaTime);
+			print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime()->GetSeconds());
 		}
-		
+
 		std::cout << "> " << keyboardInput->c_str();
 		std::cout << "" << std::endl;
 
@@ -163,15 +163,13 @@ void countingTimer(double &currentTimer, Timer *timer, saveGame *save, printer &
 
 		endFrame = std::chrono::system_clock::now();
 		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
-		timer->Tick(currentTimer, deltaTime);
-
+		timer->Tick(currentTime, deltaTime); //this is to tick the BIG clock. ITS NOT SAVED AS A WATCH
 		exp += (deltaTime);
 		if(exp >= 1000)
 		{
 			save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000)*save->Char()->Expmultiplier());
 			exp = 0;
 		}
-
 	};
 }
 
@@ -225,7 +223,7 @@ int main (int argc, char *argv[]) {
 	
 	instanceID = std::rand();
 
-	double worktimer = 10;
+	Time worktimer;
 	double braketimer = 2;
 	double countdown = 10000;
 	double running = true;
@@ -260,12 +258,14 @@ int main (int argc, char *argv[]) {
 							foundwatch = mySave->AddStopwatch(argv[i+1]);
 						}
 						
-						std::cout << foundwatch->GetName() << std::endl;
-						timer->SetTime(foundwatch->GetcurrentTime());
-						worktimer = foundwatch->GetcurrentTime();
+						Time *found;
+						found = foundwatch->GetcurrentTime();
+						timer->SetTime(found->GetHour(),found->GetMinute(),found->GetSeconds(),found->GetMili());
+						worktimer = *found;
+			
 					}else {
-						timer->SetTime(0);
-						worktimer = 0;
+						timer->SetTime(0, 0, 0, 0);
+						worktimer = *new Time(0,0,0,0);
 					}
 				}
 				if(Commands::CommandsMap[Commands::Base::CountDown].compare(argv[i])==0)
@@ -281,22 +281,10 @@ int main (int argc, char *argv[]) {
 			}
 
 		}
-	}else {
-		timer->SetState(TimerState::countDown);
-		std::cout << "how long do you want to work ? (minutes)";
-		std::cin >> worktimer;
-
-		std::cout << "how long do you want your brake to be? (minutes)";
-		std::cin >> braketimer;
-
-		std::cout << "\033[2J";
 	}
-
 	timer->isRunning = true;
-
 	inputReading = std::thread(&sleepfuntion, keyboardInput);
 	inputReading.detach();
-
 	while(running)
 	{
 		countingTimer(worktimer, timer, mySave, print);

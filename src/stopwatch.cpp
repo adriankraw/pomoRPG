@@ -3,24 +3,33 @@
 
 class stopwatch{
 public:
-	stopwatch(std::string nameOfActivity, double currentTimer);
+	stopwatch(std::string nameOfActivity);
+	stopwatch(std::string nameOfActivity, Time currentTimer);
 	stopwatch(stopwatch &&) = default;
 	stopwatch(const stopwatch &) = default;
 	stopwatch &operator=(stopwatch &&) = default;
 	stopwatch &operator=(const stopwatch &) = default;
 	~stopwatch();
 
-	double& GetcurrentTime();
+	Time* GetcurrentTime();
+	std::string GetcurrentTimeAsString();
 	Timer& GetTimer() {return stopwatch::timer;}
 	std::string& GetName() {return stopwatch::nameOfActivity;}
 
 private:
 	std::string nameOfActivity;
 	Timer timer;
-	double currentTimer;	
+	Time currentTimer;	
 };
 
-stopwatch::stopwatch(std::string _nameOfActivity, double _currentTimer)
+stopwatch::stopwatch(std::string _nameOfActivity)
+{
+	stopwatch::nameOfActivity = _nameOfActivity;
+	stopwatch::currentTimer = Time();
+	stopwatch::timer = Timer(TimerState::countUp, currentTimer);
+}
+
+stopwatch::stopwatch(std::string _nameOfActivity, Time _currentTimer)
 {
 	stopwatch::nameOfActivity = _nameOfActivity;
 	stopwatch::currentTimer = _currentTimer;
@@ -30,7 +39,21 @@ stopwatch::stopwatch(std::string _nameOfActivity, double _currentTimer)
 stopwatch::~stopwatch() {
 }
 
-double& stopwatch::GetcurrentTime()
+Time* stopwatch::GetcurrentTime()
 {
-	return stopwatch::currentTimer;
+	return &currentTimer;
+}
+
+std::string stopwatch::GetcurrentTimeAsString()
+{
+	std::string time;
+	time.append(std::to_string(stopwatch::currentTimer.GetHour()));
+	time.append("h");
+	time.append(std::to_string(stopwatch::currentTimer.GetMinute()));
+	time.append("m");
+	time.append(std::to_string(stopwatch::currentTimer.GetSeconds()));
+	time.append("s");
+	time.append(std::to_string(stopwatch::currentTimer.GetMili()));
+	time.append("mili");
+	return time;
 }

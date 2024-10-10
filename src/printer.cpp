@@ -19,7 +19,7 @@ public:
 	void timer();
 	void characterStats(Character*);
 	void flush();
-	void Bar(std::string, double&);
+	void Bar(std::string, int&);
 
 private:
 };
@@ -57,10 +57,10 @@ void printer::characterStats(Character* character){
 
 	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 }
-void printer::Bar(std::string pretext, double &state)
+void printer::Bar(std::string pretext, int &state)
 {
 	std::cout << pretext << " ";
-	for(int i = 0; i < ((int)(state/1000)%60); ++i){
+	for(int i = 0; i < ((int)((double)state/1000)%60); ++i){
 		std::cout << "=";
 	}
 	std::cout << std::endl;
