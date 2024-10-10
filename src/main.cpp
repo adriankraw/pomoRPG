@@ -82,7 +82,56 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 	}
 	return;
 }
-void countingTimer(Time &currentTime, Timer *timer, saveGame *save, printer &print)
+void processInput(std::shared_ptr<std::string> keyboardInput, Timer* timer, saveGame* save)
+{
+	if(keyboardInput->back() == '\n')
+	{
+		std::string additionalInfo = "";
+		if(keyboardInput->find(KeyCode::Space))
+		{
+			additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
+		}
+		//keyboardInput has to checked for spaces to
+		keyboardInput->pop_back();
+		//now we have to change the setting of the statemachine. this will change wether the timer goes up or down 
+		if(*keyboardInput == "up")
+		{
+			timer->SetState(TimerState::countUp);
+			keyboardInput->clear();	
+		}else if(*keyboardInput == "down")
+		{
+			timer->SetState(TimerState::countDown);
+			keyboardInput->clear();	
+		}else if(*keyboardInput == "save")
+		{
+			save->Save();
+			keyboardInput->clear();	
+		}else if(*keyboardInput == "timer")
+		{
+			//select a Timer
+			if(additionalInfo != "")
+			{
+				
+			}
+		}else if(*keyboardInput == "add")
+		{
+			if(additionalInfo != "")
+			{
+				save->AddStopwatch(additionalInfo);
+			}
+			keyboardInput->clear();
+		}else if(*keyboardInput == "pause" || *keyboardInput == "stop")
+		{
+			timer->isPaused = true;
+			keyboardInput->clear();
+		}else if(*keyboardInput == "start" || *keyboardInput == "resume")
+		{
+			timer->isPaused = false;
+			keyboardInput->clear();
+		}
+	}
+}
+void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &print)
 {
 	ttyinit(STDIN_FILENO);
 
@@ -92,52 +141,7 @@ void countingTimer(Time &currentTime, Timer *timer, saveGame *save, printer &pri
 
 	while(timer->isRunning)
 	{
-		if(keyboardInput->back() == '\n')
-		{
-			std::string additionalInfo = "";
-			if(keyboardInput->find(KeyCode::Space))
-			{
-				additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
-			}
-			//keyboardInput has to checked for spaces to
-			keyboardInput->pop_back();
-			//now we have to change the setting of the statemachine. this will change wether the timer goes up or down 
-			if(*keyboardInput == "up")
-			{
-				timer->SetState(TimerState::countUp);
-				keyboardInput->clear();	
-			}else if(*keyboardInput == "down")
-			{
-				timer->SetState(TimerState::countDown);
-				keyboardInput->clear();	
-			}else if(*keyboardInput == "save")
-			{
-				save->Save();
-				keyboardInput->clear();	
-			}else if(*keyboardInput == "timer")
-			{
-				//select a Timer
-				if(additionalInfo != "")
-				{
-					
-				}
-			}else if(*keyboardInput == "add")
-			{
-				if(additionalInfo != "")
-				{
-					save->AddStopwatch(additionalInfo);
-				}
-				keyboardInput->clear();
-			}else if(*keyboardInput == "pause" || *keyboardInput == "stop")
-			{
-				timer->isPaused = true;
-				keyboardInput->clear();
-			}else if(*keyboardInput == "start" || *keyboardInput == "resume")
-			{
-				timer->isPaused = false;
-				keyboardInput->clear();
-			}
-		}
+		processInput(keyboardInput, timer, save);
 
 		if(timer->isPaused) {
 			continue;
@@ -287,7 +291,7 @@ int main (int argc, char *argv[]) {
 	inputReading.detach();
 	while(running)
 	{
-		countingTimer(worktimer, timer, mySave, print);
+		ProcessFrame(worktimer, timer, mySave, print);
 		//	notify
 		//	breaketime
 		std::cout << "\033[1J \033[1H" << "Press Enter key to continue...";
@@ -295,7 +299,7 @@ int main (int argc, char *argv[]) {
 		
 		std::cout<<std::flush;
 		/*
-		countingTimer(braketimer);
+		ProcessFrame(braketimer);
 		//	notify
 		//	wait for user imput
 		std::cout << "\033[1J \033[1H" << "Press Enter key to continue...";
@@ -306,3 +310,4 @@ int main (int argc, char *argv[]) {
 
 	return 0;
 }
+
