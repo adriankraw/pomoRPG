@@ -3,6 +3,7 @@
 
 #include "render.cpp"
 #include "Character.cpp"
+#include "Game.cpp"
 
 class printer{
 public:
@@ -20,6 +21,7 @@ public:
 	void characterStats(Character*);
 	void flush();
 	void Bar(std::string, int&);
+	void OpenFightScreen(Character*, Area*, Monster*);
 
 private:
 };

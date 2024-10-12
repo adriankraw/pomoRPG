@@ -17,6 +17,7 @@
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include "Character.cpp"
 #include "boost/beast/websocket/rfc6455.hpp"
 #include "boost/beast/websocket/stream.hpp"
 
@@ -27,6 +28,7 @@
 #include "printer.cpp"
 #include "KeyCode.h"
 #include "Commands.cpp"
+#include "Game.cpp"
 
 std::chrono::time_point<std::chrono::system_clock> startFrame;
 std::chrono::time_point<std::chrono::system_clock> endFrame;
@@ -156,6 +158,37 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		std::vector<stopwatch>& stopwatchList = save->GetStopWatchList();
 		for (int i = 0; i<stopwatchList.size(); ++i) {
 			stopwatchList[i].GetTimer().Tick(TimerState::countUp, *stopwatchList[i].GetcurrentTime(), deltaTime);
+
+			if(stopwatchList[i].GetcurrentTime()->GetSeconds()%60 == 0)
+			{
+				Character::CharEvent charEvent = save->Char()->GetRandomEvent();
+				switch(charEvent) {
+					case Character::CharEvent::Fight :
+					{
+						Area* area = save->Char()->CurrentArea();
+						Monster* monster = area->Getmonster();
+						print.OpenFightScreen(save->Char(), area, monster);
+					}
+					break;
+					case Character::CharEvent::Chest:
+					{
+						Area* area = save->Char()->CurrentArea();
+						Rarity::Level rarity = area->GetRandomRarety();
+						int itemCode(0), itemAmount(0);
+						area->RollItem(&rarity, itemCode, itemAmount);
+						save->Char()->AddUserItem(itemCode, itemAmount);
+					}
+					break;
+					case Character::CharEvent::Encounter:
+					break;
+					case Character::CharEvent::Nothing:
+						//PlaceHolder for Nothing was found, Good luck next Time;
+						;
+					break;
+					default:
+					break;
+				}
+			}
 			print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime()->GetSeconds());
 		}
 
@@ -237,6 +270,7 @@ int main (int argc, char *argv[]) {
 	saveGame *mySave = new saveGame();
 	mySave->Load();
 
+	Game myGame = Game();
 	//websocketStart();
 
 	printer print;

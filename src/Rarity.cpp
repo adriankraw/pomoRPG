@@ -1,0 +1,34 @@
+#pragma once
+
+class Rarity {
+public:
+	Rarity();
+	Rarity(Rarity &&) = default;
+	Rarity(const Rarity &) = default;
+	Rarity &operator=(Rarity &&) = default;
+	Rarity &operator=(const Rarity &) = default;
+	~Rarity();
+
+	enum Level
+	{
+		Common,
+		Rare,
+		Legendary
+	};
+
+	Level& RollRarity(int);
+
+private:
+	
+};
+
+Rarity::Rarity() {
+}
+
+Rarity::~Rarity() {
+}
+
+Rarity::Level RollRarity(int areaId)
+{
+	return Rarity::Level::Common;
+}

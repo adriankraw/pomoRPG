@@ -2,6 +2,8 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include "Game.cpp"
+
 
 class Character{
 public:
@@ -12,6 +14,14 @@ public:
 	Character &operator=(Character &&) = default;
 	Character &operator=(const Character &) = default;
 
+
+	enum CharEvent
+	{
+		Fight,
+		Chest,
+		Encounter,
+		Nothing
+	};
 
 	void SetName(const std::string&);
 	void SetLvl(const int&);
@@ -26,6 +36,9 @@ public:
 	void levelUp();
 	int GetNextLevelExp();
 	void addLevelUpAction(void(*)());
+	CharEvent GetRandomEvent();
+	Area* CurrentArea();
+	void AddUserItem(int, int);
 
 private:
 	std::string name;
@@ -33,6 +46,7 @@ private:
 	int exp;
 	int expMultiplier;
 	std::vector<void (*)()> levelupActions;
+	Area currentArea;
 };
 Character::Character(){};
 
@@ -41,6 +55,7 @@ Character::Character(const std::string _name, const int _lvl, const int _exp, co
 	lvl(_lvl),
 	exp(_exp),
 	expMultiplier(_expMultiplier){
+	currentArea = *new Area();
 }
 
 void Character::SetName(const std::string &_name) {
@@ -75,4 +90,13 @@ void Character::addLevelUpAction(void (*action)())
 }
 int Character::GetNextLevelExp(){
 	return std::pow(std::pow(Character::lvl-1,2)+4,2);
+}
+Character::CharEvent Character::GetRandomEvent()
+{
+	return Character::CharEvent::Nothing;
+}
+
+Area* Character::CurrentArea()
+{
+	return &currentArea;
 }
