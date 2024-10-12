@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Rarity.cpp"
 #include "Area.cpp"
 
 class Game {
@@ -20,7 +19,6 @@ private:
 
 Game::Game() {
 	area = Area();
-	rarity = Rarity();
 }
 
 Game::~Game() {

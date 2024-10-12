@@ -85,3 +85,8 @@ void printer::Bar(std::string pretext, int &state)
 void printer::flush(){
 	std::cout << "\033[1J \033[1H" << std::flush;
 }
+
+void printer::OpenFightScreen(Character* character, Area* area, Monster* monster)
+{
+	;
+}

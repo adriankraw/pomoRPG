@@ -1,5 +1,7 @@
 #pragma once
 #include <cmath>
+#include <iostream>
+#include <ostream>
 #include <string>
 #include <vector>
 #include "Game.cpp"
@@ -46,7 +48,7 @@ private:
 	int exp;
 	int expMultiplier;
 	std::vector<void (*)()> levelupActions;
-	Area currentArea;
+	Area currentArea = Area();
 };
 Character::Character(){};
 
@@ -55,7 +57,6 @@ Character::Character(const std::string _name, const int _lvl, const int _exp, co
 	lvl(_lvl),
 	exp(_exp),
 	expMultiplier(_expMultiplier){
-	currentArea = *new Area();
 }
 
 void Character::SetName(const std::string &_name) {
@@ -98,5 +99,10 @@ Character::CharEvent Character::GetRandomEvent()
 
 Area* Character::CurrentArea()
 {
-	return &currentArea;
+	return &(Character::currentArea);
+}
+
+void Character::AddUserItem(int itemCode, int itemAmount)
+{
+	std::cout << itemCode << " " << itemAmount << std::endl;
 }

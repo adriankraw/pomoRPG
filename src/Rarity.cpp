@@ -16,10 +16,11 @@ public:
 		Legendary
 	};
 
-	Level& RollRarity(int);
+	Level RollRarity(int);
+
 
 private:
-	
+
 };
 
 Rarity::Rarity() {
@@ -28,7 +29,7 @@ Rarity::Rarity() {
 Rarity::~Rarity() {
 }
 
-Rarity::Level RollRarity(int areaId)
+Rarity::Level Rarity::RollRarity(int areaId)
 {
 	return Rarity::Level::Common;
 }
