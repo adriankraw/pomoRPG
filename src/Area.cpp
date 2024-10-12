@@ -27,7 +27,8 @@ private:
 
 Area::Area() {
 	monsterList.push_back(Monster(100));
-	rarity = Rarity();
+	areaLevel = 0;
+	Area::rarity = Rarity();
 }
 
 Area::~Area() {
@@ -40,7 +41,7 @@ Monster* Area::Getmonster()
 
 Rarity::Level Area::GetRandomRarety()
 {
-	return rarity.RollRarity(areaLevel);
+	return (rarity.RollRarity(areaLevel));
 }
 
 void Area::RollItem(Rarity::Level* rarity, int itemCode, int itemAmount )
