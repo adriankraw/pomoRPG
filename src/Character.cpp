@@ -1,8 +1,10 @@
 #pragma once
 #include <cmath>
 #include <iostream>
+#include <map>
 #include <ostream>
 #include <string>
+#include <utility>
 #include <vector>
 #include "Game.cpp"
 
@@ -42,11 +44,16 @@ public:
 	Area* CurrentArea();
 	void AddUserItem(int, int);
 
+	int CheckInventoryFor(int);
+	void AddToInventory(int, int);
+	void RemoveFromInventory(int, int);
+
 private:
 	std::string name;
 	int lvl;
 	int exp;
 	int expMultiplier;
+	std::map<int, int> inventory;
 	std::vector<void (*)()> levelupActions;
 	Area currentArea = Area();
 };
@@ -105,4 +112,30 @@ Area* Character::CurrentArea()
 void Character::AddUserItem(int itemCode, int itemAmount)
 {
 	std::cout << itemCode << " " << itemAmount << std::endl;
+}
+int Character::CheckInventoryFor(int itemCode)
+{
+	return 0;
+}
+void Character::AddToInventory(int itemCode, int itemAmount)
+{
+	if(Character::inventory.find(itemCode) == Character::inventory.end())
+	{
+		Character::inventory.insert(std::pair<int, int>( itemCode, itemAmount));
+	}else {
+		Character::inventory[itemCode] = (Character::inventory[itemCode]+itemAmount);	
+	}
+}
+void Character::RemoveFromInventory(int itemCode, int itemAmount)
+{
+	if(Character::inventory.find(itemCode) != Character::inventory.end())
+	{
+		if(Character::inventory[itemCode] > itemAmount)
+		{
+			Character::inventory[itemCode] -= itemAmount;
+		} else if (Character::inventory[itemCode] == itemAmount) {
+			Character::inventory.erase(Character::inventory.find(itemCode));
+		}
+		
+	}
 }
