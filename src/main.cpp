@@ -1,3 +1,4 @@
+#include <cctype>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -37,6 +38,14 @@ int instanceID;
 
 std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
 std::thread inputReading;
+
+//printer settings
+bool print_bigClock = true;
+bool print_charsettings = false;
+bool print_input = true;
+bool print_stopwatches = false;
+
+
 
 struct termios tio_save;
 void ttyinit(int fd)
@@ -99,15 +108,12 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Timer* timer, save
 		if(*keyboardInput == "up")
 		{
 			timer->SetState(TimerState::countUp);
-			keyboardInput->clear();	
 		}else if(*keyboardInput == "down")
 		{
 			timer->SetState(TimerState::countDown);
-			keyboardInput->clear();	
 		}else if(*keyboardInput == "save")
 		{
 			save->Save();
-			keyboardInput->clear();	
 		}else if(*keyboardInput == "timer")
 		{
 			//select a Timer
@@ -121,16 +127,24 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Timer* timer, save
 			{
 				save->AddStopwatch(additionalInfo);
 			}
-			keyboardInput->clear();
 		}else if(*keyboardInput == "pause" || *keyboardInput == "stop")
 		{
 			timer->isPaused = true;
-			keyboardInput->clear();
 		}else if(*keyboardInput == "start" || *keyboardInput == "resume")
 		{
 			timer->isPaused = false;
-			keyboardInput->clear();
+		}else if(*keyboardInput == "bigclock")
+		{
+			print_bigClock = !print_bigClock;
+		}else if(*keyboardInput == "print_charsettings")
+		{
+			print_charsettings = !print_charsettings;
+		}else if(*keyboardInput == "print_stopwatches")
+		{
+			print_stopwatches = !print_stopwatches;
 		}
+		keyboardInput->clear();
+
 	}
 }
 void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &print)
@@ -152,8 +166,14 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		startFrame = std::chrono::system_clock::now();
 		print.header();
 		print.ren->renderTime(currentTime);
-		print.timer();
-		print.characterStats(save->Char());
+		if(print_bigClock)
+		{
+			print.timer();
+		}
+		if(print_charsettings)
+		{
+			print.characterStats(save->Char());
+		}
 
 		std::vector<stopwatch>& stopwatchList = save->GetStopWatchList();
 		for (int i = 0; i<stopwatchList.size(); ++i) {
@@ -189,10 +209,16 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 					break;
 				}
 			}
-			print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime()->GetSeconds());
+			if(print_stopwatches)
+			{
+				print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime()->GetSeconds());
+			}
 		}
 
-		std::cout << "> " << keyboardInput->c_str();
+		if(print_input)
+		{
+			std::cout << "> " << keyboardInput->c_str();
+		}
 		std::cout << "" << std::endl;
 
 
