@@ -9,6 +9,7 @@ public:
 		add,
 		CountUp,
 		CountDown,
+		PrintAll
 	};
 
 	typedef std::map<Base, std::string> _commandsMap;
@@ -24,6 +25,7 @@ Commands::_commandsMap Commands::CommandsMap = {
 	{Base::add, "-add"},
 	{Base::CountUp, "-countup"},
 	{Base::CountDown, "-countdown"},
+	{Base::PrintAll, "-printall"}
 };
 
 //std::vector<std::string> ARGV = {"-countUp","-countDown","-time","-start"};

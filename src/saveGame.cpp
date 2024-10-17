@@ -114,6 +114,7 @@ void saveGame::Save(const saveGame::SaveGameKeys Keyword, const std::string valu
 			}
 			line.clear();
 		}
+		saveFile.flush();
 		saveFile.clear();
 		saveFile.close();
 	}
@@ -122,6 +123,7 @@ void saveGame::Save(const saveGame::SaveGameKeys Keyword, const std::string valu
 	if(saveFile.is_open())
 	{
 		saveFile << newFile;
+		saveFile.flush();
 		saveFile.close();
 	}
 };
@@ -135,6 +137,7 @@ void saveGame::Save()
 		for (auto key : saveGame::SaveGameKeywords) {
 			saveFile << key.second.c_str() << ":::" << this->GetKeyValue(key.first);
 			saveFile << "\n";
+			saveFile.flush();
 		}
 		saveFile.close();
 	}	
@@ -149,6 +152,7 @@ void saveGame::Save()
 			saveFile << ":::";
 			saveFile << iterator->GetcurrentTimeAsString();
 			saveFile << "\n";
+			saveFile.flush();
 		}
 	}
 	saveFile.close();
