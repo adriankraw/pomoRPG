@@ -99,15 +99,17 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 	if(keyboardInput->back() == '\n')
 	{
 		std::string additionalInfo = "";
+		keyboardInput->pop_back();
 		keyboardLogger.log(*keyboardInput);
 		if((*keyboardInput).find(KeyCode::Space))
 		{
 			additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
 			*keyboardInput = keyboardInput->substr(0,keyboardInput->find(KeyCode::Btn::Space));
+			keyboardLogger.log(*keyboardInput);
+		}else 
+		{
+			keyboardLogger.log("popback:"+*keyboardInput);
 		}
-		//keyboardInput has to checked for spaces to
-		keyboardInput->pop_back();
-		//now we have to change the setting of the statemachine. this will change wether the timer goes up or down 
 		if(*keyboardInput == "up")
 		{
 			timer->SetState(TimerState::countUp);
@@ -119,8 +121,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 			save->Save();
 		}else if(*keyboardInput == "timer")
 		{
-			std::cout << additionalInfo << std::endl;
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000000));
+			keyboardLogger.log("changing timer to: "+ additionalInfo);
 			//select a Timer
 			if(additionalInfo != "")
 			{
