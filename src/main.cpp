@@ -99,9 +99,9 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 	if(keyboardInput->back() == '\n')
 	{
 		std::string additionalInfo = "";
+		keyboardLogger.log(*keyboardInput);
 		if((*keyboardInput).find(KeyCode::Space))
 		{
-			keyboardLogger.log(*keyboardInput);
 			additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
 			*keyboardInput = keyboardInput->substr(0,keyboardInput->find(KeyCode::Btn::Space));
 		}
