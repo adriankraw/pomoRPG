@@ -30,6 +30,7 @@
 #include "KeyCode.h"
 #include "Commands.cpp"
 #include "Game.cpp"
+#include "logger.cpp"
 
 std::chrono::time_point<std::chrono::system_clock> startFrame;
 std::chrono::time_point<std::chrono::system_clock> endFrame;
@@ -45,7 +46,7 @@ bool print_charsettings = false;
 bool print_input = true;
 bool print_stopwatches = false;
 
-
+logger keyboardLogger("keyboardlogger.txt");
 
 struct termios tio_save;
 void ttyinit(int fd)
@@ -93,14 +94,16 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 	}
 	return;
 }
-void processInput(std::shared_ptr<std::string> keyboardInput, Timer* timer, saveGame* save)
+void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime, Timer* timer, saveGame* save)
 {
 	if(keyboardInput->back() == '\n')
 	{
 		std::string additionalInfo = "";
-		if(keyboardInput->find(KeyCode::Space))
+		if((*keyboardInput).find(KeyCode::Space))
 		{
+			keyboardLogger.log(*keyboardInput);
 			additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
+			*keyboardInput = keyboardInput->substr(0,keyboardInput->find(KeyCode::Btn::Space));
 		}
 		//keyboardInput has to checked for spaces to
 		keyboardInput->pop_back();
@@ -116,10 +119,15 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Timer* timer, save
 			save->Save();
 		}else if(*keyboardInput == "timer")
 		{
+			std::cout << additionalInfo << std::endl;
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000000));
 			//select a Timer
 			if(additionalInfo != "")
 			{
-				
+				currentTime.GetHour() = save->GetStopwatchIndex(additionalInfo)->GetcurrentTime()->GetHour();	
+				currentTime.GetMinute() = save->GetStopwatchIndex(additionalInfo)->GetcurrentTime()->GetMinute();	
+				currentTime.GetSeconds() = save->GetStopwatchIndex(additionalInfo)->GetcurrentTime()->GetSeconds();	
+				currentTime.GetMili() = save->GetStopwatchIndex(additionalInfo)->GetcurrentTime()->GetMili();	
 			}
 		}else if(*keyboardInput == "add")
 		{
@@ -136,10 +144,10 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Timer* timer, save
 		}else if(*keyboardInput == "bigclock")
 		{
 			print_bigClock = !print_bigClock;
-		}else if(*keyboardInput == "print_charsettings")
+		}else if(*keyboardInput == "charsettings")
 		{
 			print_charsettings = !print_charsettings;
-		}else if(*keyboardInput == "print_stopwatches")
+		}else if(*keyboardInput == "stopwatches")
 		{
 			print_stopwatches = !print_stopwatches;
 		}
@@ -157,7 +165,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 
 	while(timer->isRunning)
 	{
-		processInput(keyboardInput, timer, save);
+		processInput(keyboardInput, currentTime, timer, save);
 
 		if(timer->isPaused) {
 			continue;
@@ -341,6 +349,13 @@ int main (int argc, char *argv[]) {
 				{
 					//countdown
 					timer->SetState(TimerState::countDown);
+				}
+				if(Commands::CommandsMap[Commands::Base::PrintAll].compare(argv[i])==0)
+				{
+					print_input = true;
+					print_stopwatches = true;
+					print_charsettings = true;
+					print_bigClock = true;
 				}
 			}
 

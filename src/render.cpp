@@ -24,7 +24,7 @@ public:
 		int mili = currentTime.GetMili();
 		int minutes = currentTime.GetMinute();
 		int seconds = currentTime.GetSeconds();
-		time = mili + (seconds*1000) + (minutes*100000);
+		time = mili + (seconds*1000) + (minutes*100000) + (time* 10000000);
 		while (time >0)
 		{
 			splitTime.push_front(time % 10);
@@ -44,7 +44,7 @@ public:
 			{
 				(result[s]).append((*numbers(splitTime.front()))[s]);
 			}
-			if(i == (splitTimesize-6) || i == (splitTimesize-4))
+			if(i == (splitTimesize-8) || i == (splitTimesize-6) || i == (splitTimesize-4))
 			{
 				for(int r = 0; r < result.size(); ++r)
 				{
