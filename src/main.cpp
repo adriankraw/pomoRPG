@@ -46,7 +46,7 @@ bool print_charsettings = false;
 bool print_input = true;
 bool print_stopwatches = false;
 
-logger keyboardLogger("keyboardlogger.txt");
+logger keyboardLogger("keyboardlogger.log");
 
 struct termios tio_save;
 void ttyinit(int fd)
@@ -100,15 +100,11 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 	{
 		std::string additionalInfo = "";
 		keyboardInput->pop_back();
-		keyboardLogger.log(*keyboardInput);
+		keyboardLogger.log(logger::ErrorLevel::Info, *keyboardInput);
 		if((*keyboardInput).find(KeyCode::Space))
 		{
 			additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
 			*keyboardInput = keyboardInput->substr(0,keyboardInput->find(KeyCode::Btn::Space));
-			keyboardLogger.log(*keyboardInput);
-		}else 
-		{
-			keyboardLogger.log("popback:"+*keyboardInput);
 		}
 		if(*keyboardInput == "up")
 		{
@@ -121,7 +117,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 			save->Save();
 		}else if(*keyboardInput == "timer")
 		{
-			keyboardLogger.log("changing timer to: "+ additionalInfo);
+			keyboardLogger.log(logger::ErrorLevel::Warn,"changing timer to: "+ additionalInfo);
 			//select a Timer
 			if(additionalInfo != "")
 			{

@@ -5,18 +5,31 @@
 #include <iomanip>
 #include <ios>
 #include <iostream>
-#include <istream>
 #include <string>
 #include <sys/wait.h>
+#include <map>
 
 class logger {
+public:
+	enum ErrorLevel{
+		Info,
+		Dbg,
+		Warn,
+		Err
+	};
+	std::map<logger::ErrorLevel, std::string> ErrorLebelString{
+		{logger::ErrorLevel::Info, "[INFO]"},
+		{logger::ErrorLevel::Dbg, "[DEBUG]"},
+		{logger::ErrorLevel::Warn, "[WARN]"},
+		{logger::ErrorLevel::Err, "[ERR]"},
+	};
 public:
 	logger(std::string);
 	logger(logger &&) = default;
 	logger &operator=(logger &&) = default;
 	~logger();
 
-	void log(std::string);
+	void log(ErrorLevel, std::string);
 
 private:
 	std::string path;
@@ -39,7 +52,7 @@ logger::logger(std::string path) {
 	loggerFile.close();
 }
 
-void logger::log(std::string text)
+void logger::log(logger::ErrorLevel errLevel, std::string text)
 {
 	if(!loggerFile.is_open())
 	{
@@ -50,9 +63,12 @@ void logger::log(std::string text)
 		std::string line = "";
 		std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		std::string timestamp = std::ctime(&now);
+		timestamp.pop_back(); // removing \n from timestamp
 
 		line.append(timestamp);
 		line.append(": ");
+		line.append(ErrorLebelString[errLevel]);
+		line.append(" -");
 		line.append(text);
 		line.append("\n");
 		loggerFile << line;
