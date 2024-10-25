@@ -32,6 +32,8 @@
 #include "Game.cpp"
 #include "logger.cpp"
 
+bool running = true;
+
 std::chrono::time_point<std::chrono::system_clock> startFrame;
 std::chrono::time_point<std::chrono::system_clock> endFrame;
 double deltaTime(0);
@@ -49,13 +51,20 @@ bool print_stopwatches = false;
 logger keyboardLogger("keyboardlogger.log");
 
 struct termios tio_save;
+void ttyreset()
+{
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &tio_save);
+}
+
 void ttyinit(int fd)
 {
+    tcgetattr(fd,&tio_save);
+    atexit(ttyreset);
     struct termios tio;
     tcgetattr(fd,&tio);
-    tio_save = tio;
 
-    tio.c_lflag &= ~(ECHO | ICANON);
+    tio.c_lflag &= ~(IXON);
+    tio.c_lflag &= ~(ECHO | ICANON | ISIG);
 
     tcsetattr(fd,TCSANOW,&tio);
 }
@@ -87,7 +96,11 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 				{
 					cinText->pop_back();
 				}
-			}else {
+			}else if(c == KeyCode::Btn::CTRL_C)
+			{
+				*cinText += "exit\n";
+			}
+			else {
 				*cinText += c;
 			}
 		}
@@ -147,6 +160,9 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 		}else if(*keyboardInput == "stopwatches")
 		{
 			print_stopwatches = !print_stopwatches;
+		}else if(*keyboardInput == "exit")
+		{
+			running = false;
 		}
 		keyboardInput->clear();
 
@@ -154,13 +170,11 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 }
 void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &print)
 {
-	ttyinit(STDIN_FILENO);
-
 	double exp = 0;
 	double animationTimer = 0;
 	//ask for input
 
-	while(timer->isRunning)
+	while(timer->isRunning && running)
 	{
 		processInput(keyboardInput, currentTime, timer, save);
 
@@ -222,9 +236,9 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 
 		if(print_input)
 		{
-			std::cout << "> " << keyboardInput->c_str();
+			std::cout << "> " << keyboardInput->c_str() <<"\033[48;5;255m \033[0m";
 		}
-		std::cout << "" << std::endl;
+		std::cout << "\033[?25l" << std::endl; //Make Cursor invisible
 
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
@@ -294,7 +308,7 @@ int main (int argc, char *argv[]) {
 	Time worktimer;
 	double braketimer = 2;
 	double countdown = 10000;
-	double running = true;
+	running = true;
 
 	Timer* timer = new Timer(TimerState::countDown);
 
@@ -305,6 +319,8 @@ int main (int argc, char *argv[]) {
 	//websocketStart();
 
 	printer print;
+
+	ttyinit(STDIN_FILENO);
 
 	std::cout << "\033[2J \033[1H" <<"Starting PomoRPG... \n";
 	std::cout << "welcome to your own liddle pomodoro timer \n \n";
@@ -364,22 +380,10 @@ int main (int argc, char *argv[]) {
 	while(running)
 	{
 		ProcessFrame(worktimer, timer, mySave, print);
-		//	notify
-		//	breaketime
-		std::cout << "\033[1J \033[1H" << "Press Enter key to continue...";
-		std::cin.get();
-		
 		std::cout<<std::flush;
-		/*
-		ProcessFrame(braketimer);
-		//	notify
-		//	wait for user imput
-		std::cout << "\033[1J \033[1H" << "Press Enter key to continue...";
-		std::cin.get();
-		*/
 	}
-
-
+	std::cout << "\033[?25h";
+	exit(1);
 	return 0;
 }
 
