@@ -82,7 +82,8 @@ std::shared_ptr<stopwatch> saveGame::GetStopwatchIndex(std::string nameOfWatch)
 std::shared_ptr<stopwatch> saveGame::AddStopwatch(std::string nameOfWatch)
 {
 	stopwatchList.push_back(stopwatch(nameOfWatch));
-	return std::make_shared<stopwatch>(stopwatchList.back());
+	
+	return saveGame::GetStopwatchIndex(nameOfWatch);
 }
 
 void saveGame::GenerateSave(){
