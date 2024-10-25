@@ -18,12 +18,12 @@
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include "Character.cpp"
 #include "boost/beast/websocket/rfc6455.hpp"
 #include "boost/beast/websocket/stream.hpp"
 
 #define frames 60
 
+#include "Character.cpp"
 #include "saveGame.cpp"
 #include "Timer.cpp"
 #include "printer.cpp"
