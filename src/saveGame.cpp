@@ -135,8 +135,12 @@ void saveGame::Save()
 	if(saveFile.is_open())
 	{
 		for (auto key : saveGame::SaveGameKeywords) {
-			saveFile << key.second.c_str() << ":::" << this->GetKeyValue(key.first);
-			saveFile << "\n";
+			std::string text;
+			text.append(key.second.c_str());
+			text.append(":::");
+			text.append(this->GetKeyValue(key.first));
+			text.append("\n");
+			saveFile << text;
 			saveFile.flush();
 		}
 		saveFile.close();
@@ -148,10 +152,12 @@ void saveGame::Save()
 	{
 		for(auto iterator = stopwatchList.begin(); iterator != stopwatchList.end(); ++iterator) 
 		{
-			saveFile << iterator->GetName();
-			saveFile << ":::";
-			saveFile << iterator->GetcurrentTimeAsString();
-			saveFile << "\n";
+			std::string text;
+			text.append(iterator->GetName());
+			text.append(":::");
+			text.append(iterator->GetcurrentTimeAsString());
+			text.append("\n");
+			saveFile << text;
 			saveFile.flush();
 		}
 	}
