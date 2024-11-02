@@ -133,10 +133,10 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 			//select a Timer
 			if(additionalInfo != "")
 			{
-				currentTime.GetHour() = save->GetStopwatchIndex(additionalInfo)->GetcurrentTime()->GetHour();	
-				currentTime.GetMinute() = save->GetStopwatchIndex(additionalInfo)->GetcurrentTime()->GetMinute();	
-				currentTime.GetSeconds() = save->GetStopwatchIndex(additionalInfo)->GetcurrentTime()->GetSeconds();	
-				currentTime.GetMili() = save->GetStopwatchIndex(additionalInfo)->GetcurrentTime()->GetMili();	
+				currentTime.GetHour() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetHour();	
+				currentTime.GetMinute() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetMinute();	
+				currentTime.GetSeconds() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetSeconds();	
+				currentTime.GetMili() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetMili();	
 			}
 		}else if(*keyboardInput == "add")
 		{
@@ -149,10 +149,10 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 			if(additionalInfo != "")
 			{
 				keyboardLogger.log(logger::ErrorLevel::Warn,"stopped: "+ additionalInfo);
-				if(save->GetStopwatchIndex(additionalInfo) != nullptr)
+				if(save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
 				{
 					keyboardLogger.log(logger::ErrorLevel::Info, "found watch!");
-					save->GetStopwatchIndex(additionalInfo)->GetTimer().isPaused = true;
+					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetTimer()->Pause();
 				}
 			}else {
 				timer->isPaused = true;
@@ -161,8 +161,8 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 		{
 			if(additionalInfo != "")
 			{
-				if(save->GetStopwatchIndex(additionalInfo) != nullptr)
-					save->GetStopwatchIndex(additionalInfo)->GetTimer().isPaused = false;
+				if(save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
+					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetTimer()->UnPause();
 			}else {
 				timer->isPaused = false;
 			}
@@ -198,6 +198,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		}
 		print.flush();	
 		startFrame = std::chrono::system_clock::now();
+
 		print.header();
 		print.ren->renderTime(currentTime);
 		if(print_bigClock)
@@ -209,11 +210,11 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 			print.characterStats(save->Char());
 		}
 
-		std::vector<stopwatch>& stopwatchList = save->GetStopWatchList();
-		for (int i = 0; i<stopwatchList.size(); ++i) {
-			if(stopwatchList[i].GetTimer().isPaused == false)
+		std::vector<stopwatch>* stopwatchList = save->GetStopWatchList();
+		for (int i = 0; i<stopwatchList->size(); ++i) {
+			if(save->GetStopWatchByIndex(i)->GetTimer()->isPaused == false)
 			{
-				stopwatchList[i].GetTimer().Tick(TimerState::countUp, *stopwatchList[i].GetcurrentTime(), deltaTime);
+				save->GetStopWatchByIndex(i)->GetTimer()->Tick(TimerState::countUp, *save->GetStopWatchByIndex(i)->GetcurrentTime(), deltaTime);
 			}
 
 			if(eventTimer >= 5000) // every 5 seconds 
@@ -242,6 +243,8 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 					}
 					break;
 					case Character::CharEvent::Encounter:
+						//coud be: you encounter some new place;
+						//This is how you are supposed to find the RaidBoss of this Area;
 					break;
 					case Character::CharEvent::Nothing:
 						//PlaceHolder for Nothing was found, Good luck next Time;
@@ -254,12 +257,20 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 			}
 			if(print_stopwatches)
 			{
-				print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime()->GetSeconds());
+				if(save->GetStopWatchByIndex(i)->GetTimer()->isPaused)
+				{
+					std::cout << "Stopped: ";
+				}else{
+					std::cout << "Going: ";
+				}
+				print.Bar(*save->GetStopWatchByIndex(i)->GetName(), save->GetStopWatchByIndex(i)->GetcurrentTime()->GetSeconds());
 			}
 		}
 
 		std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
 		print.EventsList(events);
+
+
 
 		if(print_input)
 		{
@@ -364,7 +375,7 @@ int main (int argc, char *argv[]) {
 					timer->SetState(TimerState::countUp);
 					if(argc>2)
 					{
-						auto foundwatch = mySave->GetStopwatchIndex(argv[i+1]);
+						stopwatch* foundwatch = mySave->GetStopWatchByIndex(mySave->GetStopwatchIndex(argv[i+1]));
 						
 						if(foundwatch == NULL)
 						{

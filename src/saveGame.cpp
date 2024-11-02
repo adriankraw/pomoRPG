@@ -37,14 +37,15 @@ public:
 		{saveGame::SaveGameKeys::name, "name"},
 	};
 	std::string GetKeyValue(SaveGameKeys);	
-	std::vector<stopwatch>& GetStopWatchList() {return stopwatchList;};
+	std::vector<stopwatch>* GetStopWatchList() {return &stopwatchList;};
+	stopwatch* GetStopWatchByIndex(int i) {return &(stopwatchList[i]);};
 	
 	void Save(const saveGame::SaveGameKeys, const std::string);
 	void Save();
 	void Load();
 
-	std::shared_ptr<stopwatch> GetStopwatchIndex(std::string name);
-	std::shared_ptr<stopwatch> AddStopwatch(std::string name);
+	int GetStopwatchIndex(std::string name);
+	stopwatch* AddStopwatch(std::string name);
 };
 
 saveGame::saveGame() {
@@ -67,23 +68,25 @@ std::string saveGame::GetKeyValue(SaveGameKeys key)
 			return std::to_string(this->character->Expmultiplier());
 	}
 }
-std::shared_ptr<stopwatch> saveGame::GetStopwatchIndex(std::string nameOfWatch)
+int saveGame::GetStopwatchIndex(std::string nameOfWatch)
 {
+	int index = 0;
 	for(auto watch: stopwatchList)
 	{
-		if(watch.GetName() == nameOfWatch)
+		if(*watch.GetName() == nameOfWatch)
 		{
 			
-			return std::make_shared<stopwatch>(watch);
+			break;
 		}
+		++index;
 	}
-	return NULL;
+	return index;
 }
-std::shared_ptr<stopwatch> saveGame::AddStopwatch(std::string nameOfWatch)
+stopwatch* saveGame::AddStopwatch(std::string nameOfWatch)
 {
 	stopwatchList.push_back(stopwatch(nameOfWatch));
 	
-	return saveGame::GetStopwatchIndex(nameOfWatch);
+	return saveGame::GetStopWatchByIndex(GetStopwatchIndex(nameOfWatch));
 }
 
 void saveGame::GenerateSave(){
@@ -154,7 +157,7 @@ void saveGame::Save()
 		for(auto iterator = stopwatchList.begin(); iterator != stopwatchList.end(); ++iterator) 
 		{
 			std::string text;
-			text.append(iterator->GetName());
+			text.append(*iterator->GetName());
 			text.append(":::");
 			text.append(iterator->GetcurrentTimeAsString());
 			text.append("\n");

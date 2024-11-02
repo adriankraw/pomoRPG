@@ -111,7 +111,7 @@ void printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* e
 		}
 	}else
 	{
-		std::cout << "No Events found" << std::endl;
+		std::cout << "No Events found";
 	}
 	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 }

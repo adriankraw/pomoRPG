@@ -14,6 +14,8 @@ public:
 	Timer(TimerState state, Time startTime = Time(0,0,0,0));
 	bool isRunning;
 	bool isPaused;
+	void Pause();
+	void UnPause();
 	void Tick(const TimerState &state, Time &currentTime, double &deltaTime);
 	void Tick(Time &currentTime, double &deltaTime);
 	void SetState(TimerState);
@@ -25,12 +27,13 @@ private:
 	Time starttime;
 	Time time;
 	TimerState currentState;
-	void loopTimerTicks(float*);
 };
 
 
 Timer::Timer(){
 	currentState = TimerState::countDown;
+	isRunning = false;
+	isPaused = false;
 }
 Timer::Timer(TimerState state, Time time) {
 	currentState = state;
@@ -38,9 +41,13 @@ Timer::Timer(TimerState state, Time time) {
 	isRunning = false;
 	isPaused = false;
 }
-void loopTimerTicks(const float &currentTimer, const double &deltaTime)
+void Timer::Pause()
 {
-
+	Timer::isPaused = true;
+}
+void Timer::UnPause()
+{
+	Timer::isPaused = false;
 }
 void Timer::Tick(Time &currentTime, double &deltaTime){
 	Timer::Tick(currentState, currentTime, deltaTime);

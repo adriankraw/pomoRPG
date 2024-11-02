@@ -12,6 +12,8 @@ public:
 	enum Level
 	{
 		Common,
+		Uncommon,
+		Magic,
 		Rare,
 		Legendary
 	};
