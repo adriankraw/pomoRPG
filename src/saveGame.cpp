@@ -213,11 +213,6 @@ void saveGame::Load() {
 				int mIndex = endingwith.find("m");
 				int sIndex = endingwith.find("s");
 				int miliIndex = endingwith.find("mili"); 
-				std::cout << endingwith << std::endl;
-				std::cout << endingwith.substr(0,hIndex) << std::endl;
-				std::cout << endingwith.substr(hIndex+1, mIndex-hIndex-1) << std::endl;
-				std::cout << endingwith.substr(mIndex+1, sIndex-mIndex-1) << std::endl;
-				std::cout << endingwith.substr(sIndex+1, endingwith.length()-miliIndex-3) << std::endl;
 
 				int hour = std::stoi(endingwith.substr(0,hIndex));
 				int minute = std::stoi( endingwith.substr(hIndex+1, mIndex-hIndex-1));
