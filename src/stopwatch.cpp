@@ -13,8 +13,8 @@ public:
 
 	Time* GetcurrentTime();
 	std::string GetcurrentTimeAsString();
-	Timer& GetTimer() {return stopwatch::timer;}
-	std::string& GetName() {return stopwatch::nameOfActivity;}
+	Timer* GetTimer();
+	std::string* GetName();
 
 private:
 	std::string nameOfActivity;
@@ -56,4 +56,12 @@ std::string stopwatch::GetcurrentTimeAsString()
 	time.append(std::to_string(stopwatch::currentTime.GetMili()));
 	time.append("mili");
 	return time;
+}
+Timer* stopwatch::GetTimer()
+{
+	return &timer;
+}
+std::string* stopwatch::GetName() 
+{
+	return &(stopwatch::nameOfActivity);
 }
