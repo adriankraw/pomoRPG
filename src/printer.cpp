@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <iostream>
+#include <vector>
 
 #include "render.cpp"
 #include "Character.cpp"
@@ -22,6 +23,7 @@ public:
 	void flush();
 	void Bar(std::string, int&);
 	void OpenFightScreen(Character*, Area*, Monster*);
+	void EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events);
 
 private:
 };
@@ -89,4 +91,27 @@ void printer::flush(){
 void printer::OpenFightScreen(Character* character, Area* area, Monster* monster)
 {
 	;
+}
+void printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events)
+{
+	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+	std::cout << "MonsterList: " << std::endl;
+	if(events->size()>=0)
+	{
+		for(int i = 0; i < events->size(); ++i)
+		{
+			if(std::get<0>(events->at(i)) == Character::CharEvent::Fight)
+			{
+				Monster* monster = (Monster*)(std::get<1>(events->at(i)));
+				std::cout << "[LVL:" <<*monster->GetLevel()<< "] ";
+				std::cout << *monster->GetName();
+				std::cout << " Life:"<< *monster->GetLife() <<"/"<<*monster->GetMaxLife();
+				std::cout << std::endl;
+			}
+		}
+	}else
+	{
+		std::cout << "No Events found" << std::endl;
+	}
+	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 }

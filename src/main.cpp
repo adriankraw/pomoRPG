@@ -259,18 +259,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		}
 
 		std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
-		if(events->size() > 0)
-		{
-			std::cout << "---------------------" << std::endl;
-			for(int i = 0; i < events->size(); ++i)
-			{
-				if(std::get<0>(events->at(i)) == Character::CharEvent::Fight)
-				{
-					std::cout << *((Monster*)(std::get<1>(events->at(i))))->GetName() << std::endl;
-				}
-			}
-			std::cout << "---------------------" << std::endl;
-		}
+		print.EventsList(events);
 
 		if(print_input)
 		{
