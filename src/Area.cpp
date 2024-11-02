@@ -14,12 +14,14 @@ public:
 	Area &operator=(const Area &) = default;
 	~Area();
 
+	std::string* GetName();
 	Monster* Getmonster();
 	Rarity::Level GetRandomRarety();
 
 	void RollItem(Rarity::Level*, int, int);
 
 private:
+	std::string name;
 	int areaLevel = 0;
 	Rarity rarity;
 	std::vector<Monster> monsterList;
@@ -32,6 +34,11 @@ Area::Area() {
 }
 
 Area::~Area() {
+}
+
+std::string* Area::GetName()
+{
+	return &name;
 }
 
 Monster* Area::Getmonster()

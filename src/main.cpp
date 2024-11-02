@@ -113,8 +113,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 	{
 		std::string additionalInfo = "";
 		keyboardInput->pop_back();
-		keyboardLogger.log(logger::ErrorLevel::Info, *keyboardInput);
-		if((*keyboardInput).find(KeyCode::Space))
+		if((*keyboardInput).find(KeyCode::Btn::Space) != std::string::npos)
 		{
 			additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
 			*keyboardInput = keyboardInput->substr(0,keyboardInput->find(KeyCode::Btn::Space));
@@ -147,10 +146,26 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 			}
 		}else if(*keyboardInput == "pause" || *keyboardInput == "stop")
 		{
-			timer->isPaused = true;
+			if(additionalInfo != "")
+			{
+				keyboardLogger.log(logger::ErrorLevel::Warn,"stopped: "+ additionalInfo);
+				if(save->GetStopwatchIndex(additionalInfo) != nullptr)
+				{
+					keyboardLogger.log(logger::ErrorLevel::Info, "found watch!");
+					save->GetStopwatchIndex(additionalInfo)->GetTimer().isPaused = true;
+				}
+			}else {
+				timer->isPaused = true;
+			}
 		}else if(*keyboardInput == "start" || *keyboardInput == "resume")
 		{
-			timer->isPaused = false;
+			if(additionalInfo != "")
+			{
+				if(save->GetStopwatchIndex(additionalInfo) != nullptr)
+					save->GetStopwatchIndex(additionalInfo)->GetTimer().isPaused = false;
+			}else {
+				timer->isPaused = false;
+			}
 		}else if(*keyboardInput == "bigclock")
 		{
 			print_bigClock = !print_bigClock;
@@ -171,7 +186,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &print)
 {
 	double exp = 0;
-	double animationTimer = 0;
+	double eventTimer = 0;
 	//ask for input
 
 	while(timer->isRunning && running)
@@ -196,17 +211,25 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 
 		std::vector<stopwatch>& stopwatchList = save->GetStopWatchList();
 		for (int i = 0; i<stopwatchList.size(); ++i) {
-			stopwatchList[i].GetTimer().Tick(TimerState::countUp, *stopwatchList[i].GetcurrentTime(), deltaTime);
-
-			if(stopwatchList[i].GetcurrentTime()->GetSeconds()%60 == 0)
+			if(stopwatchList[i].GetTimer().isPaused == false)
 			{
+				stopwatchList[i].GetTimer().Tick(TimerState::countUp, *stopwatchList[i].GetcurrentTime(), deltaTime);
+			}
+
+			if(eventTimer >= 5000) // every 5 seconds 
+			{
+				keyboardLogger.log(logger::ErrorLevel::Dbg, "EventTriggered");
 				Character::CharEvent charEvent = save->Char()->GetRandomEvent();
 				switch(charEvent) {
-					case Character::CharEvent::Fight :
+					case Character::CharEvent::Fight:
 					{
 						Area* area = save->Char()->CurrentArea();
 						Monster* monster = area->Getmonster();
-						print.OpenFightScreen(save->Char(), area, monster);
+						//Adding all the monsters into a queue
+						keyboardLogger.log(logger::ErrorLevel::Dbg, "found: Fight Event"+*monster->GetName());
+
+						save->Char()->AddMonsterToEventMap(Character::CharEvent::Fight, monster);
+						//print.OpenFightScreen(save->Char(), area, monster); This doesnt make sense right now
 					}
 					break;
 					case Character::CharEvent::Chest:
@@ -227,11 +250,26 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 					default:
 					break;
 				}
+				eventTimer = 0;
 			}
 			if(print_stopwatches)
 			{
 				print.Bar(stopwatchList[i].GetName(), stopwatchList[i].GetcurrentTime()->GetSeconds());
 			}
+		}
+
+		std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
+		if(events->size() > 0)
+		{
+			std::cout << "---------------------" << std::endl;
+			for(int i = 0; i < events->size(); ++i)
+			{
+				if(std::get<0>(events->at(i)) == Character::CharEvent::Fight)
+				{
+					std::cout << *((Monster*)(std::get<1>(events->at(i))))->GetName() << std::endl;
+				}
+			}
+			std::cout << "---------------------" << std::endl;
 		}
 
 		if(print_input)
@@ -247,6 +285,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
 		timer->Tick(currentTime, deltaTime); //this is to tick the BIG clock. ITS NOT SAVED AS A WATCH
 		exp += (deltaTime);
+		eventTimer += deltaTime;
 		if(exp >= 1000)
 		{
 			save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000)*save->Char()->Expmultiplier());

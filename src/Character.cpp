@@ -2,11 +2,14 @@
 #include <cmath>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <ostream>
+#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
 #include "Game.cpp"
+#include "Monster.cpp"
 
 
 class Character{
@@ -48,6 +51,9 @@ public:
 	void AddToInventory(int, int);
 	void RemoveFromInventory(int, int);
 
+	void AddMonsterToEventMap(Character::CharEvent, Monster*);
+	std::vector<std::tuple<Character::CharEvent, void*>>* GetEvents();
+
 private:
 	std::string name;
 	int lvl;
@@ -56,6 +62,9 @@ private:
 	std::map<int, int> inventory;
 	std::vector<void (*)()> levelupActions;
 	Area currentArea = Area();
+
+	std::vector<std::tuple<Character::CharEvent, void*>> EventVector;
+
 };
 Character::Character(){};
 
@@ -101,7 +110,7 @@ int Character::GetNextLevelExp(){
 }
 Character::CharEvent Character::GetRandomEvent()
 {
-	return Character::CharEvent::Nothing;
+	return Character::CharEvent::Fight;
 }
 
 Area* Character::CurrentArea()
@@ -138,4 +147,13 @@ void Character::RemoveFromInventory(int itemCode, int itemAmount)
 		}
 		
 	}
+}
+void Character::AddMonsterToEventMap(Character::CharEvent event, Monster* monster)
+{
+	Character::EventVector.push_back(std::tuple<Character::CharEvent, void*>(event, monster));
+}
+
+std::vector<std::tuple<Character::CharEvent, void*>> * Character::GetEvents()
+{
+	return &(Character::EventVector);
 }
