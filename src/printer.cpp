@@ -96,22 +96,30 @@ void printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* e
 {
 	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 	std::cout << "MonsterList: " << std::endl;
-	if(events->size()>=0)
+	if(events->size()>0)
 	{
 		for(int i = 0; i < events->size(); ++i)
 		{
-			if(std::get<0>(events->at(i)) == Character::CharEvent::Fight)
+			if(i<10)
 			{
-				Monster* monster = (Monster*)(std::get<1>(events->at(i)));
-				std::cout << "[LVL:" <<*monster->GetLevel()<< "] ";
-				std::cout << *monster->GetName();
-				std::cout << " Life:"<< *monster->GetLife() <<"/"<<*monster->GetMaxLife();
+				if(std::get<0>(events->at(i)) == Character::CharEvent::Fight)
+				{
+					Monster* monster = (Monster*)(std::get<1>(events->at(i)));
+					std::cout << "[LVL:" <<*monster->GetLevel()<< "] ";
+					std::cout << *monster->GetName();
+					std::cout << " Life:"<< *monster->GetLife() <<"/"<<*monster->GetMaxLife();
+					std::cout << std::endl;
+				}
+			}else {
+				std::cout << "Additional Events: ";
+				std::cout << events->size() - 10;
 				std::cout << std::endl;
+				break;
 			}
 		}
 	}else
 	{
-		std::cout << "No Events found";
+		std::cout << "No Events found" << std::endl;
 	}
 	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 }
