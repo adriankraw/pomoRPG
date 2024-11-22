@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "Character.cpp"
+#include "boost/date_time/time_defs.hpp"
 #include "stopwatch.cpp"
 
 
@@ -210,18 +211,32 @@ void saveGame::Load() {
 			if(line.find(":::") != 0)
 			{
 				int l = line.find(":::");
+				std::cout << l << std::endl;
 				const std::string startingWith = line.substr(0, l);
-				std::string endingwith = line.substr(l+3);
-				int hIndex = endingwith.find("h");
-				int mIndex = endingwith.find("m");
-				int sIndex = endingwith.find("s");
-				int miliIndex = endingwith.find("mili"); 
+				std::cout << startingWith << std::endl;
+				int ll = line.find(":::",l+3);
+				std::cout << ll << std::endl;
 
-				int hour = std::stoi(endingwith.substr(0,hIndex));
-				int minute = std::stoi( endingwith.substr(hIndex+1, mIndex-hIndex-1));
-				int seconds = std::stoi(endingwith.substr(mIndex+1, sIndex-mIndex-1));
-				int mili = std::stoi(endingwith.substr(sIndex+1, endingwith.length()-miliIndex-3));
-				stopwatchList.push_back(stopwatch(startingWith, Time(hour,minute,seconds,mili)));
+				std::string timeStamp = line.substr(l+3,ll-l-3);
+				std::cout << timeStamp << std::endl;
+				int hIndex = timeStamp.find("h");
+				int mIndex = timeStamp.find("m");
+				int sIndex = timeStamp.find("s");
+				int miliIndex = timeStamp.find("mili"); 
+
+				int hour = std::stoi(timeStamp.substr(0,hIndex));
+				int minute = std::stoi( timeStamp.substr(hIndex+1, mIndex-hIndex-1));
+				int seconds = std::stoi(timeStamp.substr(mIndex+1, sIndex-mIndex-1));
+				//int mili = std::stoi(timeStamp.substr(sIndex+1, timeStamp.length()-miliIndex-3));
+				int mili = 0;
+
+				std::string startState = line.substr(ll+3);
+				stopwatch nextWatch(startingWith, Time(hour,minute,seconds,mili));
+				if(startState == "stopped")
+				{
+					nextWatch.GetTimer()->Pause();
+				}
+				stopwatchList.push_back(nextWatch);
 			}
 		}
 	}
