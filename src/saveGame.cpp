@@ -227,8 +227,7 @@ void saveGame::Load() {
 				int hour = std::stoi(timeStamp.substr(0,hIndex));
 				int minute = std::stoi( timeStamp.substr(hIndex+1, mIndex-hIndex-1));
 				int seconds = std::stoi(timeStamp.substr(mIndex+1, sIndex-mIndex-1));
-				//int mili = std::stoi(timeStamp.substr(sIndex+1, timeStamp.length()-miliIndex-3));
-				int mili = 0;
+				int mili = std::stoi(timeStamp.substr(sIndex+1, timeStamp.length()-miliIndex-3));
 
 				std::string startState = line.substr(ll+3);
 				stopwatch nextWatch(startingWith, Time(hour,minute,seconds,mili));
