@@ -6,8 +6,11 @@
 #include <ios>
 #include <iostream>
 #include <string>
-#include <sys/wait.h>
 #include <map>
+
+#if defined(NETWORK)
+	#include <sys/wait.h>
+#endif
 
 class logger {
 public:
