@@ -1,0 +1,3 @@
+D:/HDD-Dokumente/pomoRPG/build/CMakeFiles/pomoRPG.dir
+D:/HDD-Dokumente/pomoRPG/build/CMakeFiles/ALL_BUILD.dir
+D:/HDD-Dokumente/pomoRPG/build/CMakeFiles/ZERO_CHECK.dir
