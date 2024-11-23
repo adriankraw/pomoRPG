@@ -1,5 +1,4 @@
 #pragma once
-#include <_ctype.h>
 #include <cstddef>
 #include <cstring>
 #include <fstream>
@@ -12,7 +11,6 @@
 #include <vector>
 
 #include "Character.cpp"
-#include "boost/date_time/time_defs.hpp"
 #include "stopwatch.cpp"
 
 

@@ -7,19 +7,26 @@
 #include <ostream>
 #include <ratio>
 #include <string>
-#include <sys/termios.h>
 #include <thread>
 #include <stdio.h>
-#include <unistd.h>
 #include <vector>
-#include <termios.h>
 
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include "boost/beast/websocket/rfc6455.hpp"
-#include "boost/beast/websocket/stream.hpp"
+#if defined(Darwin)
+	#include <sys/termios.h>
+	#include <termios.h>
+	#include <unistd.h>
+#elif defined(Windows)
+	#include <windows.h>
+#endif
+
+#if defined(NETWORK)
+	#include <boost/beast/core.hpp>
+	#include <boost/beast/websocket.hpp>
+	#include <boost/asio/connect.hpp>
+	#include <boost/asio/ip/tcp.hpp>
+	#include "boost/beast/websocket/rfc6455.hpp"
+	#include "boost/beast/websocket/stream.hpp"
+#endif
 
 #define frames 60
 
@@ -56,25 +63,25 @@ void ttyreset()
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &tio_save);
 }
 
-void ttyinit(int fd)
+void ttyinit()
 {
-    tcgetattr(fd,&tio_save);
+    tcgetattr(STDIN_FILENO,&tio_save);
     atexit(ttyreset);
     struct termios tio;
-    tcgetattr(fd,&tio);
+    tcgetattr(STDIN_FILENO,&tio);
 
     tio.c_lflag &= ~(IXON);
     tio.c_lflag &= ~(ECHO | ICANON | ISIG);
 
-    tcsetattr(fd,TCSANOW,&tio);
+    tcsetattr(STDIN_FILENO,TCSANOW,&tio);
 }
 
-int getkey(int fd)
+int getkey()
 {
     unsigned char buf[1];
     int len;
 
-    len = read(fd,buf,1);
+    len = read(STDIN_FILENO,buf,1);
 
     if (len > 0)
         len = buf[0];
@@ -85,7 +92,7 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 {
 	while(true)
 	{
-		if(char c = getkey(STDIN_FILENO))
+		if(char c = getkey())
 			{
 			if(c == KeyCode::Btn::Enter)
 			{
@@ -294,6 +301,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 	};
 }
 
+#if defined(NETWORK)
 void websocketStart()
 {
 	std::string host("127.0.0.1");
@@ -337,7 +345,7 @@ void websocketStart()
         // The make_printable() function helps print a ConstBufferSequence
         std::cout << boost::beast::make_printable(buffer.data()) << std::endl;
 }
-
+#endif
 
 
 int main (int argc, char *argv[]) {
@@ -359,7 +367,7 @@ int main (int argc, char *argv[]) {
 
 	printer print;
 
-	ttyinit(STDIN_FILENO);
+	ttyinit();
 
 	std::cout << "\033[2J \033[1H" <<"Starting PomoRPG... \n";
 	std::cout << "welcome to your own liddle pomodoro timer \n \n";
