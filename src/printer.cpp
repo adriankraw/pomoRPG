@@ -55,6 +55,8 @@ void printer::characterStats(Character* character){
 	std::cout << "RPG:" << std::endl << std::endl;
 
 	std::cout << "Name \t" << character->Name() << std::endl;
+	//std::cout << "ATK \t" << character->Atk() << std::endl;
+	//std::cout << "Def \t" << character->Def() << std::endl;
 	std::cout << "LVL \t" << character->Lvl() << std::endl;
 	std::cout << "Exp \t" << character->Exp() << "/" << character->GetNextLevelExp() << std::endl;
 	std::cout << "ExpMul \t" << character->Expmultiplier() << std::endl;
