@@ -14,6 +14,8 @@ public:
 	int* GetLife();
 	int* GetMaxLife();
 	int* GetLevel();
+	
+	void GetAttacked(int);
 private:
 	std::string name;
 	int life;
@@ -46,4 +48,14 @@ int* Monster::GetMaxLife()
 int* Monster::GetLevel()
 {
 	return &level;
+}
+void Monster::GetAttacked(int dmg)
+{
+	if(life-dmg > 0)
+	{
+		life -= dmg;
+	}else {
+		life = 0;
+		//kill monster
+	}
 }

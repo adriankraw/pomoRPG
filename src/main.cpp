@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <vector>
 
-#if defined(Darwin)
+#if defined(Darwin) || true
 	#include <sys/termios.h>
 	#include <termios.h>
 	#include <unistd.h>
@@ -194,7 +194,6 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 {
 	double exp = 0;
 	double eventTimer = 0;
-	//ask for input
 
 	while(timer->isRunning && running)
 	{
@@ -277,8 +276,32 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
 		print.EventsList(events);
 
+		/* Handle Events */
+		if(events->size() > 0)
+		{
+			Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
+			currentMonster->GetAttacked(save->Char()->Atk());
+			if(*currentMonster->GetLife() <= 0)
+			{
+				delete currentMonster;
+				events->erase(events->begin());
+				//The player should get something for slaying an enemy
+				save->Char()->SetExp(save->Char()->Exp() + 100);
+			}
 
+			std::cout << "--------------------------Player---------------------------" << std::endl;
+			std::cout << "Name: " << save->Char()->Name() << std::endl;
+			std::cout << "LVL: " << save->Char()->Lvl() << std::endl;
+			std::cout << "Life: " << save->Char()->Life()<< std::endl;
+			std::cout << "Atk: " << save->Char()->Atk() << std::endl;
 
+			std::cout << "--------------------------Monster--------------------------" << std::endl;
+			std::cout << "Name: " << *currentMonster->GetName() << std::endl;
+			std::cout << "LVL: " << *currentMonster->GetLevel() << std::endl;
+			std::cout << "Life: " << *currentMonster->GetLife() << std::endl;
+			std::cout << "-----------------------------------------------------------" << std::endl;
+		}
+		/* this has to be handled on a different Thread */
 		if(print_input)
 		{
 			std::cout << "> " << keyboardInput->c_str() <<"\033[48;5;255m \033[0m";

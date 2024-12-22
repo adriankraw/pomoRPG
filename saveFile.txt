@@ -1,1 +1,4 @@
-LVL:::42
+name:::Adrian
+lvl:::27
+exp:::1
+expMultiplier:::1
