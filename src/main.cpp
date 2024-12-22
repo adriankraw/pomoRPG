@@ -290,15 +290,15 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 			}
 
 			std::cout << "--------------------------Player---------------------------" << std::endl;
-			std::cout << "Name: " << save->Char()->Name() << std::endl;
-			std::cout << "LVL: " << save->Char()->Lvl() << std::endl;
-			std::cout << "Life: " << save->Char()->Life()<< std::endl;
-			std::cout << "Atk: " << save->Char()->Atk() << std::endl;
+			std::cout << "Name: " << save->Char()->Name() << "\n";
+			std::cout << "LVL: " << save->Char()->Lvl()   << "\n";
+			std::cout << "Life: " << save->Char()->Life() << "\n";
+			std::cout << "Atk: " << save->Char()->Atk()   << "\n";
 
 			std::cout << "--------------------------Monster--------------------------" << std::endl;
-			std::cout << "Name: " << *currentMonster->GetName() << std::endl;
-			std::cout << "LVL: " << *currentMonster->GetLevel() << std::endl;
-			std::cout << "Life: " << *currentMonster->GetLife() << std::endl;
+			std::cout << "Name: " << *currentMonster->GetName() << "\n";
+			std::cout << "LVL: " << *currentMonster->GetLevel() << "\n";
+			std::cout << "Life: " << *currentMonster->GetLife() << "\n";
 			std::cout << "-----------------------------------------------------------" << std::endl;
 		}
 		/* this has to be handled on a different Thread */
