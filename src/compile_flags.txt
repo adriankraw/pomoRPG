@@ -1,3 +1,4 @@
 -xc++
 -I
 ./../extern
+-D Darwin
