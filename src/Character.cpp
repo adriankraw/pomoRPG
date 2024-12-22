@@ -38,6 +38,8 @@ public:
 	const std::string Name(){return Character::name;}
 	const int Lvl(){return Character::lvl;}
 	const int Exp(){return Character::exp;}
+	const int Life(){return Character::lvl * 10;}
+	const int Atk(){return 2;}
 	const int Expmultiplier(){ return Character::expMultiplier;}
 
 	void levelUp();

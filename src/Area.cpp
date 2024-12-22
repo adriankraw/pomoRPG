@@ -28,7 +28,7 @@ private:
 };
 
 Area::Area() {
-	monsterList.push_back(Monster(100));
+	monsterList.push_back(Monster(1000));
 	areaLevel = 0;
 	Area::rarity = Rarity();
 }
@@ -43,7 +43,7 @@ std::string* Area::GetName()
 
 Monster* Area::Getmonster()
 {
-	return  &monsterList[0];
+	return new Monster(monsterList[0]);
 }
 
 Rarity::Level Area::GetRandomRarety()
