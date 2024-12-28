@@ -10,6 +10,7 @@
 #include <thread>
 #include <stdio.h>
 #include <vector>
+#include <numbers>
 
 #if defined(Darwin) || true
 	#include <sys/termios.h>
@@ -54,6 +55,7 @@ bool print_bigClock = true;
 bool print_charsettings = false;
 bool print_input = true;
 bool print_stopwatches = false;
+bool print_eventList = false;
 
 logger keyboardLogger("keyboardlogger.log");
 
@@ -192,6 +194,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 }
 void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &print)
 {
+	double frame = 0;
 	double exp = 0;
 	double eventTimer = 0;
 
@@ -274,10 +277,13 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		}
 
 		std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
-		print.EventsList(events);
+		if(print_eventList)
+		{
+			print.EventsList(events);
+		}
 
 		/* Handle Events */
-		if(events->size() > 0)
+		if(events->size() > 0 && std::get<0>(events->at(0)) == Character::CharEvent::Fight)
 		{
 			Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
 			currentMonster->GetAttacked(save->Char()->Atk());
@@ -289,6 +295,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 				save->Char()->SetExp(save->Char()->Exp() + 100);
 			}
 
+			std::cout << "-----------------------------------------------------------" << std::endl;
 			std::cout << "--------------------------Player---------------------------" << std::endl;
 			std::cout << "Name: " << save->Char()->Name() << "\n";
 			std::cout << "LVL: " << save->Char()->Lvl()   << "\n";
@@ -299,8 +306,33 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 			std::cout << "Name: " << *currentMonster->GetName() << "\n";
 			std::cout << "LVL: " << *currentMonster->GetLevel() << "\n";
 			std::cout << "Life: " << *currentMonster->GetLife() << "\n";
-			std::cout << "-----------------------------------------------------------" << std::endl;
+			std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 		}
+		if(events->size() > 0 && std::get<0>(events->at(0)) == Character::CharEvent::Fight)
+		{
+			std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+			int y_val = frame;
+			y_val = std::round((std::sin(y_val/3.141592f)+1)*2.5);
+
+			for (float y = 0; y <= 5; ++y)
+			{
+				int i  = frame;
+				float x = std::round((std::cos(i/3.141592f)+1)*5);
+				if (x >= 0)
+				{
+					for (float j = 0; j < x; ++j)
+					{
+						std::cout << " ";
+					}
+					if(y == y_val)
+						std::cout << "X";
+					std::cout << std::endl;
+
+				}
+			}
+			std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+		}
+
 		/* this has to be handled on a different Thread */
 		if(print_input)
 		{
@@ -314,6 +346,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		endFrame = std::chrono::system_clock::now();
 		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
 		timer->Tick(currentTime, deltaTime); //this is to tick the BIG clock. ITS NOT SAVED AS A WATCH
+		frame += 0.5f;
 		exp += (deltaTime);
 		eventTimer += deltaTime;
 		if(exp >= 1000)
