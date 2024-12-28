@@ -7,6 +7,7 @@
 #include <ostream>
 #include <ratio>
 #include <string>
+#include <sys/resource.h>
 #include <thread>
 #include <stdio.h>
 #include <vector>
@@ -56,6 +57,8 @@ bool print_charsettings = false;
 bool print_input = true;
 bool print_stopwatches = false;
 bool print_eventList = false;
+bool print_fight = false;
+bool print_circle = true;
 
 logger keyboardLogger("keyboardlogger.log");
 
@@ -283,7 +286,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		}
 
 		/* Handle Events */
-		if(events->size() > 0 && std::get<0>(events->at(0)) == Character::CharEvent::Fight)
+		if(print_fight && events->size() > 0 && std::get<0>(events->at(0)) == Character::CharEvent::Fight)
 		{
 			Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
 			currentMonster->GetAttacked(save->Char()->Atk());
@@ -308,7 +311,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 			std::cout << "Life: " << *currentMonster->GetLife() << "\n";
 			std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 		}
-		if(events->size() > 0 && std::get<0>(events->at(0)) == Character::CharEvent::Fight)
+		if(print_circle)
 		{
 			std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 			int y_val = frame;
