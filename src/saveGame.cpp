@@ -5,7 +5,6 @@
 #include <ios>
 #include <iostream>
 #include <map>
-#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -159,8 +158,17 @@ void saveGame::Save()
 			text.append(*iterator->GetName());
 			text.append(":::");
 			text.append(iterator->GetcurrentTimeAsString());
+			text.append(":::");
+			if(iterator->GetTimer()->isPaused)
+			{
+				text.append("stopped");
+			}else
+			{
+				text.append("started");
+			}
 			text.append("\n");
 			saveFile << text;
+			text = "";
 			saveFile.flush();
 		}
 	}
@@ -175,6 +183,8 @@ void saveGame::Load() {
 	{
 		while (std::getline(saveFile, line))
 		{
+			if(line == "") continue;
+
 			if(line.find(":::") != 0)
 			{
 				const std::string startingWith = line.substr(0, line.find(":::"));
@@ -206,6 +216,8 @@ void saveGame::Load() {
 	{
 		while (std::getline(saveFile, line)) 
 		{
+			if(line == "") continue;
+
 			if(line.find(":::") != 0)
 			{
 				int l = line.find(":::");

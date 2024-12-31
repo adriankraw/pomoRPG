@@ -24,6 +24,7 @@ public:
 	void Bar(std::string, int&);
 	void OpenFightScreen(Character*, Area*, Monster*);
 	void EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events);
+	void Circle(int);
 
 private:
 };
@@ -122,6 +123,30 @@ void printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* e
 	}else
 	{
 		std::cout << "No Events found" << std::endl;
+	}
+	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+}
+void printer::Circle(int frame)
+{
+
+	int y_val = frame;
+	y_val = std::round((std::sin(y_val/3.141592f)+1)*2.5);
+
+	for (float y = 0; y <= 5; ++y)
+	{
+		int i  = frame;
+		float x = std::round((std::cos(i/3.141592f)+1)*5);
+		if (x >= 0)
+		{
+			for (float j = 0; j < x; ++j)
+			{
+				std::cout << " ";
+			}
+			if(y == y_val)
+				std::cout << "X";
+			std::cout << std::endl;
+
+		}
 	}
 	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 }
