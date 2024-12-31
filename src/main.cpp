@@ -58,7 +58,7 @@ bool print_input = true;
 bool print_stopwatches = false;
 bool print_eventList = false;
 bool print_fight = false;
-bool print_circle = true;
+bool print_circle = false;
 
 logger keyboardLogger("keyboardlogger.log");
 
@@ -187,7 +187,17 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 		}else if(*keyboardInput == "stopwatches")
 		{
 			print_stopwatches = !print_stopwatches;
-		}else if(*keyboardInput == "exit")
+		}else if(*keyboardInput == "fight")
+		{
+			print_fight = !print_fight;
+		}else if(*keyboardInput == "eventlist")
+		{
+			print_eventList = !print_eventList;
+		}else if(*keyboardInput == "circle")
+		{
+			print_circle = !print_circle;
+		}
+		else if(*keyboardInput == "exit")
 		{
 			running = false;
 		}
@@ -298,7 +308,6 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 				save->Char()->SetExp(save->Char()->Exp() + 100);
 			}
 
-			std::cout << "-----------------------------------------------------------" << std::endl;
 			std::cout << "--------------------------Player---------------------------" << std::endl;
 			std::cout << "Name: " << save->Char()->Name() << "\n";
 			std::cout << "LVL: " << save->Char()->Lvl()   << "\n";
@@ -313,27 +322,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		}
 		if(print_circle)
 		{
-			std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
-			int y_val = frame;
-			y_val = std::round((std::sin(y_val/3.141592f)+1)*2.5);
-
-			for (float y = 0; y <= 5; ++y)
-			{
-				int i  = frame;
-				float x = std::round((std::cos(i/3.141592f)+1)*5);
-				if (x >= 0)
-				{
-					for (float j = 0; j < x; ++j)
-					{
-						std::cout << " ";
-					}
-					if(y == y_val)
-						std::cout << "X";
-					std::cout << std::endl;
-
-				}
-			}
-			std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+			print.Circle(frame);
 		}
 
 		/* this has to be handled on a different Thread */
