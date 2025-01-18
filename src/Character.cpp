@@ -38,10 +38,11 @@ public:
 	const std::string Name(){return Character::name;}
 	const int Lvl(){return Character::lvl;}
 	const int Exp(){return Character::exp;}
-	const int Life(){return Character::lvl * 10;}
+	const int Life(){return Character::life;}
 	const int Atk(){return 2;}
 	const int Expmultiplier(){ return Character::expMultiplier;}
 
+	void AddLife(int);
 	void levelUp();
 	int GetNextLevelExp();
 	void addLevelUpAction(void(*)());
@@ -61,6 +62,7 @@ private:
 	int lvl;
 	int exp;
 	int expMultiplier;
+	int life;
 	std::map<int, int> inventory;
 	std::vector<void (*)()> levelupActions;
 	Area currentArea = Area();
@@ -74,7 +76,8 @@ Character::Character(const std::string _name, const int _lvl, const int _exp, co
 	name(_name), 
 	lvl(_lvl),
 	exp(_exp),
-	expMultiplier(_expMultiplier){
+	expMultiplier(_expMultiplier),
+	life(lvl*10){
 }
 
 void Character::SetName(const std::string &_name) {
@@ -95,7 +98,10 @@ void Character::SetExpMultiplier(const int &_expMulti)
 {
 	Character::expMultiplier = _expMulti;
 }
-
+void Character::AddLife(int value)
+{
+	Character::life += value;
+}
 void Character::levelUp(){
 	++lvl;
 	for (auto func: Character::levelupActions) {

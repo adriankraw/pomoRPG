@@ -13,11 +13,11 @@
 #include <vector>
 #include <numbers>
 
-#if defined(Darwin) || true
+#if defined(__APPLE__)
 	#include <sys/termios.h>
 	#include <termios.h>
 	#include <unistd.h>
-#elif defined(Windows)
+#elif defined(_WIN32)
 	#include <windows.h>
 #endif
 
