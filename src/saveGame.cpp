@@ -11,14 +11,16 @@
 
 #include "Character.cpp"
 #include "stopwatch.cpp"
+#include "Skills.cpp"
 
 
 class saveGame{
 private:
 	Character *character;	
+	std::vector<stopwatch> stopwatchList;
+	std::vector<Skills> skillList;
 
 	void GenerateSave();
-	std::vector<stopwatch> stopwatchList;
 public:
 	saveGame();
 	~saveGame();
@@ -41,6 +43,9 @@ public:
 	void Save(const saveGame::SaveGameKeys, const std::string);
 	void Save();
 	void Load();
+	void LoadSaveGame(Character*);
+	void LoadTimers(std::vector<stopwatch>*);
+	void LoadSkills(std::vector<Skills>*);
 
 	int GetStopwatchIndex(std::string name);
 	stopwatch* AddStopwatch(std::string name);
@@ -175,7 +180,12 @@ void saveGame::Save()
 	saveFile.close();
 }
 void saveGame::Load() {
-
+	LoadSaveGame(character);
+	LoadTimers(&stopwatchList);
+	LoadSkills(&skillList);
+}
+void saveGame::LoadSaveGame(Character* character)
+{
 	std::ifstream saveFile;
 	saveFile.open("saveFile.txt");
 	std::string line("");
@@ -210,8 +220,12 @@ void saveGame::Load() {
 		saveFile.close();
 	}
 	saveFile.clear();
+}
+void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
+{
+	std::ifstream saveFile;
 	saveFile.open("timerList.txt");
-	line = "";
+	std::string line("");
 	if(saveFile.is_open())
 	{
 		while (std::getline(saveFile, line)) 
@@ -245,7 +259,33 @@ void saveGame::Load() {
 				{
 					nextWatch.GetTimer()->Pause();
 				}
-				stopwatchList.push_back(nextWatch);
+				stopwatchList->push_back(nextWatch);
+			}
+		}
+	}
+	saveFile.clear();
+}
+void saveGame::LoadSkills(std::vector<Skills>* skillList)
+{
+	std::ifstream saveFile;
+	saveFile.open("saveFile.txt");
+	std::string line("");
+	saveFile.open("skilltree.txt");
+	line = "";
+	if(saveFile.is_open())
+	{
+		while(std::getline(saveFile, line))
+		{
+			if(line == "") continue;
+
+			if(line.find(":::") != 0)
+			{
+				int l = line.find(":::");
+				const std::string startingWith = line.substr(0, l);
+				skillList->push_back(Skills(startingWith));
+				
+				//map Skill + timer to array in Char
+				
 			}
 		}
 	}

@@ -1,14 +1,14 @@
 #pragma once
+
 #include <cmath>
 #include <iostream>
 #include <map>
-#include <memory>
 #include <ostream>
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
-#include "Game.cpp"
+
+#include "Area.cpp"
 #include "Monster.cpp"
 
 
@@ -20,7 +20,6 @@ public:
 	Character(const Character &) = default;
 	Character &operator=(Character &&) = default;
 	Character &operator=(const Character &) = default;
-
 
 	enum CharEvent
 	{

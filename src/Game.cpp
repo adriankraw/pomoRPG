@@ -1,6 +1,12 @@
 #pragma once
 
+#include <vector>
+
+#include "saveGame.cpp"
 #include "Area.cpp"
+#include "Character.cpp"
+#include "Skills.cpp"
+#include "Skilltree.cpp"
 
 class Game {
 public:
@@ -10,11 +16,17 @@ public:
 	Game &operator=(Game &&) = default;
 	Game &operator=(const Game &) = default;
 	~Game();
+	
+	saveGame save;
+	Character player;
+	Skilltree skilltree;
+	std::vector<Skills> playerSkills;
+
+	void setSkilltree();
 
 private:
 	Area area;
 	Rarity rarity;
-	
 };
 
 Game::Game() {
@@ -22,4 +34,9 @@ Game::Game() {
 }
 
 Game::~Game() {
+}
+
+void Game::setSkilltree()
+{
+
 }

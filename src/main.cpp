@@ -11,7 +11,6 @@
 #include <thread>
 #include <stdio.h>
 #include <vector>
-#include <numbers>
 
 #if defined(__APPLE__)
 	#include <sys/termios.h>

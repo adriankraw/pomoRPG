@@ -1,8 +1,15 @@
+#pragma once 
+
 #include "Character.cpp"
 #include "Monster.cpp"
 
 class Skills {
 public:
+	Skills(std::string);
+
+	std::string name;
+	void* activate;
+
 	void Heal(Character);
 	void Slice(Character, Monster);
 	void Fireball(Character, Monster);
@@ -17,6 +24,10 @@ private:
 	void DmGroup();
 	void HealGroup();
 };
+Skills::Skills(std::string _name)
+{
+	name = _name;
+}
 
 void Skills::DmgEnemy(Monster m, int value)
 {
