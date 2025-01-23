@@ -181,8 +181,8 @@ void saveGame::Save()
 }
 void saveGame::Load() {
 	LoadSaveGame(character);
-	LoadTimers(&stopwatchList);
 	LoadSkills(&skillList);
+	LoadTimers(&stopwatchList);
 }
 void saveGame::LoadSaveGame(Character* character)
 {
@@ -235,14 +235,11 @@ void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 			if(line.find(":::") != 0)
 			{
 				int l = line.find(":::");
-				std::cout << l << std::endl;
 				const std::string startingWith = line.substr(0, l);
-				std::cout << startingWith << std::endl;
 				int ll = line.find(":::",l+3);
-				std::cout << ll << std::endl;
+				int lll = line.find(":::",ll+3);
 
 				std::string timeStamp = line.substr(l+3,ll-l-3);
-				std::cout << timeStamp << std::endl;
 				int hIndex = timeStamp.find("h");
 				int mIndex = timeStamp.find("m");
 				int sIndex = timeStamp.find("s");
@@ -253,8 +250,10 @@ void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 				int seconds = std::stoi(timeStamp.substr(mIndex+1, sIndex-mIndex-1));
 				int mili = std::stoi(timeStamp.substr(sIndex+1, timeStamp.length()-miliIndex-3));
 
-				std::string startState = line.substr(ll+3);
-				stopwatch nextWatch(startingWith, Time(hour,minute,seconds,mili));
+				std::string startState = line.substr(ll+3, lll);
+
+				std::string skillBind = line.substr(lll+3);
+				stopwatch nextWatch(startingWith, Time(hour,minute,seconds,mili), skillBind);
 				if(startState == "stopped")
 				{
 					nextWatch.GetTimer()->Pause();
@@ -268,7 +267,6 @@ void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 void saveGame::LoadSkills(std::vector<Skills>* skillList)
 {
 	std::ifstream saveFile;
-	saveFile.open("saveFile.txt");
 	std::string line("");
 	saveFile.open("skilltree.txt");
 	line = "";
@@ -283,12 +281,12 @@ void saveGame::LoadSkills(std::vector<Skills>* skillList)
 				int l = line.find(":::");
 				const std::string startingWith = line.substr(0, l);
 				skillList->push_back(Skills(startingWith));
-				
 				//map Skill + timer to array in Char
 				
 			}
 		}
 	}
+	saveFile.clear();
 }
 
 saveGame::~saveGame() {

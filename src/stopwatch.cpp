@@ -3,8 +3,8 @@
 
 class stopwatch{
 public:
-	stopwatch(std::string nameOfActivity);
-	stopwatch(std::string nameOfActivity, Time currentTime);
+	stopwatch(std::string nameOfActivity, std::string nameOfSkill);
+	stopwatch(std::string nameOfActivity, Time currentTime, std::string nameOfSkill);
 	stopwatch(stopwatch &&) = default;
 	stopwatch(const stopwatch &) = default;
 	stopwatch &operator=(stopwatch &&) = default;
@@ -18,18 +18,19 @@ public:
 
 private:
 	std::string nameOfActivity;
+	std::string nameOfSkill;
 	Timer timer;
 	Time currentTime;	
 };
 
-stopwatch::stopwatch(std::string _nameOfActivity)
+stopwatch::stopwatch(std::string _nameOfActivity, std::string _nameOfSkill = "")
 {
 	stopwatch::nameOfActivity = _nameOfActivity;
 	stopwatch::currentTime = Time();
 	stopwatch::timer = Timer(TimerState::countUp, currentTime);
 }
 
-stopwatch::stopwatch(std::string _nameOfActivity, Time _currentTime)
+stopwatch::stopwatch(std::string _nameOfActivity, Time _currentTime, std::string _nameOfSkill = "")
 {
 	stopwatch::nameOfActivity = _nameOfActivity;
 	stopwatch::currentTime = _currentTime;
