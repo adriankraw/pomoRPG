@@ -12,7 +12,9 @@
 #include "Character.cpp"
 #include "stopwatch.cpp"
 #include "Skills.cpp"
+#include "logger.cpp"
 
+logger saveGameLogger("saveGame");
 
 class saveGame{
 private:
@@ -48,6 +50,7 @@ public:
 	void LoadSkills(std::vector<Skills>*);
 
 	int GetStopwatchIndex(std::string name);
+	int GetMaxFromStopwatchName(std::string s);
 	stopwatch* AddStopwatch(std::string name);
 };
 
@@ -85,6 +88,19 @@ int saveGame::GetStopwatchIndex(std::string nameOfWatch)
 	}
 	return index;
 }
+int saveGame::GetMaxFromStopwatchName(std::string s)
+{
+	int max = 60;
+	for (auto sw: skillList)
+	{
+		if (sw.name == s)
+		{
+			max = sw.expToLevel;
+		}
+	}
+	return max;
+}
+
 stopwatch* saveGame::AddStopwatch(std::string nameOfWatch)
 {
 	stopwatchList.push_back(stopwatch(nameOfWatch));
@@ -236,10 +252,12 @@ void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 			{
 				int l = line.find(":::");
 				const std::string startingWith = line.substr(0, l);
+				saveGameLogger.log(logger::ErrorLevel::Info, startingWith);
 				int ll = line.find(":::",l+3);
 				int lll = line.find(":::",ll+3);
 
 				std::string timeStamp = line.substr(l+3,ll-l-3);
+				saveGameLogger.log(logger::ErrorLevel::Info, timeStamp);
 				int hIndex = timeStamp.find("h");
 				int mIndex = timeStamp.find("m");
 				int sIndex = timeStamp.find("s");
@@ -250,9 +268,12 @@ void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 				int seconds = std::stoi(timeStamp.substr(mIndex+1, sIndex-mIndex-1));
 				int mili = std::stoi(timeStamp.substr(sIndex+1, timeStamp.length()-miliIndex-3));
 
-				std::string startState = line.substr(ll+3, lll);
+				const std::string startState = line.substr(ll+3, lll-ll-3);
+				saveGameLogger.log(logger::ErrorLevel::Info, startState);
 
-				std::string skillBind = line.substr(lll+3);
+				const std::string skillBind = line.substr(lll+3);
+				saveGameLogger.log(logger::ErrorLevel::Info, skillBind);
+				
 				stopwatch nextWatch(startingWith, Time(hour,minute,seconds,mili), skillBind);
 				if(startState == "stopped")
 				{
@@ -280,7 +301,8 @@ void saveGame::LoadSkills(std::vector<Skills>* skillList)
 			{
 				int l = line.find(":::");
 				const std::string startingWith = line.substr(0, l);
-				skillList->push_back(Skills(startingWith));
+				const int skillExp = std::stoi(line.substr(l+3, line.length()-l));
+				skillList->push_back(Skills(startingWith, skillExp));
 				//map Skill + timer to array in Char
 				
 			}

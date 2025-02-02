@@ -5,9 +5,10 @@
 
 class Skills {
 public:
-	Skills(std::string);
+	Skills(std::string, int = 60);
 
 	std::string name;
+	int expToLevel;
 	void* activate;
 
 	void Heal(Character);
@@ -24,7 +25,7 @@ private:
 	void DmGroup();
 	void HealGroup();
 };
-Skills::Skills(std::string _name)
+Skills::Skills(std::string _name, int )
 {
 	name = _name;
 }

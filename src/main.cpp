@@ -284,7 +284,8 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 				}else{
 					std::cout << "Going: ";
 				}
-				print.Bar(*save->GetStopWatchByIndex(i)->GetName(), save->GetStopWatchByIndex(i)->GetcurrentTime()->GetSeconds());
+				int maxCount = save->GetMaxFromStopwatchName(*save->GetStopWatchByIndex(i)->GetNameOfCorrespondingSkill());
+				print.Bar(*save->GetStopWatchByIndex(i)->GetName(), save->GetStopWatchByIndex(i)->GetcurrentTime()->GetSeconds(), maxCount);
 			}
 		}
 

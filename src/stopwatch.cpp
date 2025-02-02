@@ -15,6 +15,7 @@ public:
 	std::string GetcurrentTimeAsString();
 	Timer* GetTimer();
 	std::string* GetName();
+	std::string* GetNameOfCorrespondingSkill();
 
 private:
 	std::string nameOfActivity;
@@ -65,4 +66,8 @@ Timer* stopwatch::GetTimer()
 std::string* stopwatch::GetName() 
 {
 	return &(stopwatch::nameOfActivity);
+}
+std::string* stopwatch::GetNameOfCorrespondingSkill() 
+{
+	return &(stopwatch::nameOfSkill);
 }

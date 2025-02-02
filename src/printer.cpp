@@ -21,7 +21,7 @@ public:
 	void timer();
 	void characterStats(Character*);
 	void flush();
-	void Bar(std::string, int&);
+	void Bar(std::string, int&, int&);
 	void OpenFightScreen(Character*, Area*, Monster*);
 	void EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events);
 	void Circle(int);
@@ -64,10 +64,10 @@ void printer::characterStats(Character* character){
 
 	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
 }
-void printer::Bar(std::string pretext, int &state)
+void printer::Bar(std::string pretext, int &state, int &max)
 {
 	std::cout << pretext << " |";
-	for(int i = 0; i < 60; ++i)
+	for(int i = 0; i < max; ++i)
 	{
 		if(i != 29)
 		{
@@ -85,7 +85,7 @@ void printer::Bar(std::string pretext, int &state)
 			std::cout << state;
 		}
 	}
-	std::cout << "|" << std::endl;
+	std::cout << "|" << "from: " << max << std::endl;
 }
 void printer::flush(){
 	std::cout << "\033[1J \033[1H" << std::flush;
