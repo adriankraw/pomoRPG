@@ -14,7 +14,7 @@
 #include "Skills.cpp"
 #include "logger.cpp"
 
-logger saveGameLogger("saveGame");
+logger saveGameLogger("saveGame.log");
 
 class saveGame{
 private:
@@ -252,12 +252,10 @@ void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 			{
 				int l = line.find(":::");
 				const std::string startingWith = line.substr(0, l);
-				saveGameLogger.log(logger::ErrorLevel::Info, startingWith);
 				int ll = line.find(":::",l+3);
 				int lll = line.find(":::",ll+3);
 
 				std::string timeStamp = line.substr(l+3,ll-l-3);
-				saveGameLogger.log(logger::ErrorLevel::Info, timeStamp);
 				int hIndex = timeStamp.find("h");
 				int mIndex = timeStamp.find("m");
 				int sIndex = timeStamp.find("s");
@@ -269,10 +267,8 @@ void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 				int mili = std::stoi(timeStamp.substr(sIndex+1, timeStamp.length()-miliIndex-3));
 
 				const std::string startState = line.substr(ll+3, lll-ll-3);
-				saveGameLogger.log(logger::ErrorLevel::Info, startState);
 
 				const std::string skillBind = line.substr(lll+3);
-				saveGameLogger.log(logger::ErrorLevel::Info, skillBind);
 				
 				stopwatch nextWatch(startingWith, Time(hour,minute,seconds,mili), skillBind);
 				if(startState == "stopped")
@@ -302,6 +298,7 @@ void saveGame::LoadSkills(std::vector<Skills>* skillList)
 				int l = line.find(":::");
 				const std::string startingWith = line.substr(0, l);
 				const int skillExp = std::stoi(line.substr(l+3, line.length()-l));
+				//saveGameLogger.log(logger::ErrorLevel::Info, startingWith + " " + std::to_string(skillExp));
 				skillList->push_back(Skills(startingWith, skillExp));
 				//map Skill + timer to array in Char
 				

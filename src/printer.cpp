@@ -69,7 +69,7 @@ void printer::Bar(std::string pretext, int &state, int &max)
 	std::cout << pretext << " |";
 	for(int i = 0; i < max; ++i)
 	{
-		if(i != 29)
+		if(i != max/2)
 		{
 			if(i < state)
 			{

@@ -25,9 +25,10 @@ private:
 	void DmGroup();
 	void HealGroup();
 };
-Skills::Skills(std::string _name, int )
+Skills::Skills(std::string _name, int _value)
 {
 	name = _name;
+	expToLevel = _value;
 }
 
 void Skills::DmgEnemy(Monster m, int value)

@@ -15,7 +15,7 @@ public:
 	std::string GetcurrentTimeAsString();
 	Timer* GetTimer();
 	std::string* GetName();
-	std::string* GetNameOfCorrespondingSkill();
+	std::string& GetNameOfCorrespondingSkill();
 
 private:
 	std::string nameOfActivity;
@@ -29,6 +29,7 @@ stopwatch::stopwatch(std::string _nameOfActivity, std::string _nameOfSkill = "")
 	stopwatch::nameOfActivity = _nameOfActivity;
 	stopwatch::currentTime = Time();
 	stopwatch::timer = Timer(TimerState::countUp, currentTime);
+	stopwatch::nameOfSkill = _nameOfSkill;
 }
 
 stopwatch::stopwatch(std::string _nameOfActivity, Time _currentTime, std::string _nameOfSkill = "")
@@ -36,6 +37,7 @@ stopwatch::stopwatch(std::string _nameOfActivity, Time _currentTime, std::string
 	stopwatch::nameOfActivity = _nameOfActivity;
 	stopwatch::currentTime = _currentTime;
 	stopwatch::timer = Timer(TimerState::countUp, stopwatch::currentTime);
+	stopwatch::nameOfSkill = _nameOfSkill;
 }
 
 stopwatch::~stopwatch() {
@@ -65,9 +67,9 @@ Timer* stopwatch::GetTimer()
 }
 std::string* stopwatch::GetName() 
 {
-	return &(stopwatch::nameOfActivity);
+	return &(nameOfActivity);
 }
-std::string* stopwatch::GetNameOfCorrespondingSkill() 
+std::string& stopwatch::GetNameOfCorrespondingSkill() 
 {
-	return &(stopwatch::nameOfSkill);
+	return nameOfSkill;
 }
