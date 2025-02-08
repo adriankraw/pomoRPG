@@ -1,4 +1,16 @@
 #pragma once
+<<<<<<< HEAD
+#include <cmath>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <ostream>
+#include <queue>
+#include <string>
+#include <utility>
+#include <vector>
+#include "Game.cpp"
+=======
 
 #include <cmath>
 #include <iostream>
@@ -9,6 +21,7 @@
 #include <vector>
 
 #include "Area.cpp"
+>>>>>>> skills
 #include "Monster.cpp"
 
 
@@ -21,7 +34,10 @@ public:
 	Character &operator=(Character &&) = default;
 	Character &operator=(const Character &) = default;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> skills
 	enum CharEvent
 	{
 		Fight,

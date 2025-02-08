@@ -1,4 +1,4 @@
-#Plan
+# Plan
 * Create a Promodoro timer
 * Override Pomodoro with an Game
 
@@ -39,7 +39,7 @@ UI-Commands:
 Example:
     * level up you char when working (timer goes up)
     * char needs to sleep/eat/fight/search/brew ...
-        * this will only happen when the user is taking a break (timer goes down)
+        * this will only happen when the user is taking a break
 
 TODO:
 * [ ] ~~create a todo list~~
