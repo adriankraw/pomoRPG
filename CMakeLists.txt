@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 project(pomoRPG)
 set(CMAKE_CXX_STANDARD 17)
-<<<<<<< HEAD
-set(Darwin true)
-=======
->>>>>>> skills
 set(NETWORK false)
 
 message(CMAKE_CURRENT_LIST_DIR="${CMAKE_CURRENT_LIST_DIR}")
@@ -24,8 +20,5 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/start.pomo
 	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/timerList.txt
 	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-<<<<<<< HEAD
-=======
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/skilltree.txt
 	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
->>>>>>> skills

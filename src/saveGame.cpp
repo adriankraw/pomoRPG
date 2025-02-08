@@ -11,28 +11,18 @@
 
 #include "Character.cpp"
 #include "stopwatch.cpp"
-<<<<<<< HEAD
-
-=======
 #include "Skills.cpp"
 #include "logger.cpp"
 
 logger saveGameLogger("saveGame.log");
->>>>>>> skills
 
 class saveGame{
 private:
 	Character *character;	
-<<<<<<< HEAD
-
-	void GenerateSave();
-	std::vector<stopwatch> stopwatchList;
-=======
 	std::vector<stopwatch> stopwatchList;
 	std::vector<Skills> skillList;
 
 	void GenerateSave();
->>>>>>> skills
 public:
 	saveGame();
 	~saveGame();
@@ -55,17 +45,12 @@ public:
 	void Save(const saveGame::SaveGameKeys, const std::string);
 	void Save();
 	void Load();
-<<<<<<< HEAD
-
-	int GetStopwatchIndex(std::string name);
-=======
 	void LoadSaveGame(Character*);
 	void LoadTimers(std::vector<stopwatch>*);
 	void LoadSkills(std::vector<Skills>*);
 
 	int GetStopwatchIndex(std::string name);
 	int GetMaxFromStopwatchName(std::string s);
->>>>>>> skills
 	stopwatch* AddStopwatch(std::string name);
 };
 
@@ -103,8 +88,6 @@ int saveGame::GetStopwatchIndex(std::string nameOfWatch)
 	}
 	return index;
 }
-<<<<<<< HEAD
-=======
 int saveGame::GetMaxFromStopwatchName(std::string s)
 {
 	int max = 60;
@@ -118,7 +101,6 @@ int saveGame::GetMaxFromStopwatchName(std::string s)
 	return max;
 }
 
->>>>>>> skills
 stopwatch* saveGame::AddStopwatch(std::string nameOfWatch)
 {
 	stopwatchList.push_back(stopwatch(nameOfWatch));
@@ -214,16 +196,12 @@ void saveGame::Save()
 	saveFile.close();
 }
 void saveGame::Load() {
-<<<<<<< HEAD
-
-=======
 	LoadSaveGame(character);
 	LoadSkills(&skillList);
 	LoadTimers(&stopwatchList);
 }
 void saveGame::LoadSaveGame(Character* character)
 {
->>>>>>> skills
 	std::ifstream saveFile;
 	saveFile.open("saveFile.txt");
 	std::string line("");
@@ -258,17 +236,12 @@ void saveGame::LoadSaveGame(Character* character)
 		saveFile.close();
 	}
 	saveFile.clear();
-<<<<<<< HEAD
-	saveFile.open("timerList.txt");
-	line = "";
-=======
 }
 void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 {
 	std::ifstream saveFile;
 	saveFile.open("timerList.txt");
 	std::string line("");
->>>>>>> skills
 	if(saveFile.is_open())
 	{
 		while (std::getline(saveFile, line)) 
@@ -278,22 +251,11 @@ void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 			if(line.find(":::") != 0)
 			{
 				int l = line.find(":::");
-<<<<<<< HEAD
-				std::cout << l << std::endl;
-				const std::string startingWith = line.substr(0, l);
-				std::cout << startingWith << std::endl;
-				int ll = line.find(":::",l+3);
-				std::cout << ll << std::endl;
-
-				std::string timeStamp = line.substr(l+3,ll-l-3);
-				std::cout << timeStamp << std::endl;
-=======
 				const std::string startingWith = line.substr(0, l);
 				int ll = line.find(":::",l+3);
 				int lll = line.find(":::",ll+3);
 
 				std::string timeStamp = line.substr(l+3,ll-l-3);
->>>>>>> skills
 				int hIndex = timeStamp.find("h");
 				int mIndex = timeStamp.find("m");
 				int sIndex = timeStamp.find("s");
@@ -304,26 +266,15 @@ void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 				int seconds = std::stoi(timeStamp.substr(mIndex+1, sIndex-mIndex-1));
 				int mili = std::stoi(timeStamp.substr(sIndex+1, timeStamp.length()-miliIndex-3));
 
-<<<<<<< HEAD
-				std::string startState = line.substr(ll+3);
-				stopwatch nextWatch(startingWith, Time(hour,minute,seconds,mili));
-=======
 				const std::string startState = line.substr(ll+3, lll-ll-3);
 
 				const std::string skillBind = line.substr(lll+3);
 				
 				stopwatch nextWatch(startingWith, Time(hour,minute,seconds,mili), skillBind);
->>>>>>> skills
 				if(startState == "stopped")
 				{
 					nextWatch.GetTimer()->Pause();
 				}
-<<<<<<< HEAD
-				stopwatchList.push_back(nextWatch);
-			}
-		}
-	}
-=======
 				stopwatchList->push_back(nextWatch);
 			}
 		}
@@ -355,7 +306,6 @@ void saveGame::LoadSkills(std::vector<Skills>* skillList)
 		}
 	}
 	saveFile.clear();
->>>>>>> skills
 }
 
 saveGame::~saveGame() {

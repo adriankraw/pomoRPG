@@ -1,22 +1,16 @@
-<<<<<<< HEAD
-=======
 #pragma once 
 
->>>>>>> skills
 #include "Character.cpp"
 #include "Monster.cpp"
 
 class Skills {
 public:
-<<<<<<< HEAD
-=======
 	Skills(std::string, int = 60);
 
 	std::string name;
 	int expToLevel;
 	void* activate;
 
->>>>>>> skills
 	void Heal(Character);
 	void Slice(Character, Monster);
 	void Fireball(Character, Monster);
@@ -31,14 +25,11 @@ private:
 	void DmGroup();
 	void HealGroup();
 };
-<<<<<<< HEAD
-=======
 Skills::Skills(std::string _name, int _value)
 {
 	name = _name;
 	expToLevel = _value;
 }
->>>>>>> skills
 
 void Skills::DmgEnemy(Monster m, int value)
 {

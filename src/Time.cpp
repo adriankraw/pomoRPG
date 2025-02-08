@@ -15,11 +15,8 @@ public:
 	int& GetSeconds() {return second;}
 	int& GetMili() {return mili;}
 
-<<<<<<< HEAD
-=======
 	int ConvertToSecondsForModulo(int);
 
->>>>>>> skills
 	void addTime(Time&, const double);
 	void subtractTime(Time&, const double);
 	void resetTime();
@@ -48,8 +45,6 @@ Time::Time(int _hour, int _minute, int _second, int _mili)
 Time::~Time() {
 }
 
-<<<<<<< HEAD
-=======
 int Time::ConvertToSecondsForModulo(int maxCount)
 {
 	int sec = second;
@@ -68,7 +63,6 @@ int Time::ConvertToSecondsForModulo(int maxCount)
 	return sec; 
 }
 
->>>>>>> skills
 void Time::addTime(Time& time, const double timeToAdd)
 {
 	time.GetMili() += timeToAdd;

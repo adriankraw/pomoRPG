@@ -11,10 +11,6 @@
 #include <thread>
 #include <stdio.h>
 #include <vector>
-<<<<<<< HEAD
-#include <numbers>
-=======
->>>>>>> skills
 
 #if defined(__APPLE__)
 	#include <sys/termios.h>
@@ -288,9 +284,6 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 				}else{
 					std::cout << "Going: ";
 				}
-<<<<<<< HEAD
-				print.Bar(*save->GetStopWatchByIndex(i)->GetName(), save->GetStopWatchByIndex(i)->GetcurrentTime()->GetSeconds());
-=======
 				keyboardLogger.log(logger::ErrorLevel::Info, "------------------");
 				std::string t = save->GetStopWatchByIndex(i)->GetNameOfCorrespondingSkill();
 				keyboardLogger.log(logger::ErrorLevel::Info, "NameOfurrentSkill="+t);
@@ -299,7 +292,6 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 				int seconds = save->GetStopWatchByIndex(i)->GetcurrentTime()->ConvertToSecondsForModulo(maxCount);			
 				keyboardLogger.log(logger::ErrorLevel::Info, std::to_string(seconds));
 				print.Bar(*save->GetStopWatchByIndex(i)->GetName(), seconds, maxCount);
->>>>>>> skills
 			}
 		}
 
