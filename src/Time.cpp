@@ -15,6 +15,8 @@ public:
 	int& GetSeconds() {return second;}
 	int& GetMili() {return mili;}
 
+	int ConvertToSecondsForModulo(int);
+
 	void addTime(Time&, const double);
 	void subtractTime(Time&, const double);
 	void resetTime();
@@ -41,6 +43,24 @@ Time::Time(int _hour, int _minute, int _second, int _mili)
 }
 
 Time::~Time() {
+}
+
+int Time::ConvertToSecondsForModulo(int maxCount)
+{
+	int sec = second;
+	if(maxCount < sec)
+	{
+		sec = sec%maxCount;
+	}else{
+		if(minute > 0)
+		{
+			sec = (sec+60*minute)%maxCount;
+		}else if (hour > 0)
+		{
+			sec = (sec+60*60)%maxCount;
+		}
+	}
+	return sec; 
 }
 
 void Time::addTime(Time& time, const double timeToAdd)

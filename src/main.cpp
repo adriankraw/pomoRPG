@@ -284,9 +284,14 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 				}else{
 					std::cout << "Going: ";
 				}
+				keyboardLogger.log(logger::ErrorLevel::Info, "------------------");
 				std::string t = save->GetStopWatchByIndex(i)->GetNameOfCorrespondingSkill();
+				keyboardLogger.log(logger::ErrorLevel::Info, "NameOfurrentSkill="+t);
 				int maxCount = save->GetMaxFromStopwatchName(t);
-				print.Bar(*save->GetStopWatchByIndex(i)->GetName(), save->GetStopWatchByIndex(i)->GetcurrentTime()->GetSeconds(), maxCount);
+				keyboardLogger.log(logger::ErrorLevel::Info, std::to_string(maxCount));
+				int seconds = save->GetStopWatchByIndex(i)->GetcurrentTime()->ConvertToSecondsForModulo(maxCount);			
+				keyboardLogger.log(logger::ErrorLevel::Info, std::to_string(seconds));
+				print.Bar(*save->GetStopWatchByIndex(i)->GetName(), seconds, maxCount);
 			}
 		}
 
