@@ -412,6 +412,7 @@ int main (int argc, char *argv[]) {
 	running = true;
 
 	Timer* timer = new Timer(TimerState::countDown);
+	timer->SetState(TimerState::paused);
 
 	saveGame *mySave = new saveGame();
 	mySave->Load();
