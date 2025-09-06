@@ -29,7 +29,7 @@
 	#include "boost/beast/websocket/stream.hpp"
 #endif
 
-#define frames 60
+#define frames 15
 
 #include "Character.cpp"
 #include "saveGame.cpp"
@@ -214,9 +214,6 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 	{
 		processInput(keyboardInput, currentTime, timer, save);
 
-		if(timer->isPaused) {
-			continue;
-		}
 		print.flush();	
 		startFrame = std::chrono::system_clock::now();
 
@@ -230,127 +227,129 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		{
 			print.characterStats(save->Char());
 		}
-
-		std::vector<stopwatch>* stopwatchList = save->GetStopWatchList();
-		for (int i = 0; i<stopwatchList->size(); ++i) {
-			if(save->GetStopWatchByIndex(i)->GetTimer()->isPaused == false)
-			{
-				save->GetStopWatchByIndex(i)->GetTimer()->Tick(TimerState::countUp, *save->GetStopWatchByIndex(i)->GetcurrentTime(), deltaTime);
-			}
-
-			if(eventTimer >= 5000) // every 5 seconds 
-			{
-				keyboardLogger.log(logger::ErrorLevel::Dbg, "EventTriggered");
-				Character::CharEvent charEvent = save->Char()->GetRandomEvent();
-				switch(charEvent) {
-					case Character::CharEvent::Fight:
-					{
-						Area* area = save->Char()->CurrentArea();
-						Monster* monster = area->Getmonster();
-						//Adding all the monsters into a queue
-						keyboardLogger.log(logger::ErrorLevel::Dbg, "found: Fight Event"+*monster->GetName());
-
-						save->Char()->AddMonsterToEventMap(Character::CharEvent::Fight, monster);
-						//print.OpenFightScreen(save->Char(), area, monster); This doesnt make sense right now
-					}
-					break;
-					case Character::CharEvent::Chest:
-					{
-						Area* area = save->Char()->CurrentArea();
-						Rarity::Level rarity = area->GetRandomRarety();
-						int itemCode(0), itemAmount(0);
-						area->RollItem(&rarity, itemCode, itemAmount);
-						save->Char()->AddUserItem(itemCode, itemAmount);
-					}
-					break;
-					case Character::CharEvent::Encounter:
-						//coud be: you encounter some new place;
-						//This is how you are supposed to find the RaidBoss of this Area;
-					break;
-					case Character::CharEvent::Nothing:
-						//PlaceHolder for Nothing was found, Good luck next Time;
-						;
-					break;
-					default:
-					break;
-				}
-				eventTimer = 0;
-			}
-			if(print_stopwatches)
-			{
+		if(print_stopwatches)
+		{
+			for (int i = 0; i<save->GetStopWatchList()->size(); ++i) {
 				if(save->GetStopWatchByIndex(i)->GetTimer()->isPaused)
 				{
-					std::cout << "Stopped: ";
+					//std::cout << "Stopped: "; // TODO: move to screenbuffer
 				}else{
-					std::cout << "Going: ";
+					//std::cout << "Going: ";
 				}
-				keyboardLogger.log(logger::ErrorLevel::Info, "------------------");
 				std::string t = save->GetStopWatchByIndex(i)->GetNameOfCorrespondingSkill();
-				keyboardLogger.log(logger::ErrorLevel::Info, "NameOfurrentSkill="+t);
 				int maxCount = save->GetMaxFromStopwatchName(t);
-				keyboardLogger.log(logger::ErrorLevel::Info, std::to_string(maxCount));
 				int seconds = save->GetStopWatchByIndex(i)->GetcurrentTime()->ConvertToSecondsForModulo(maxCount);			
-				keyboardLogger.log(logger::ErrorLevel::Info, std::to_string(seconds));
 				print.Bar(*save->GetStopWatchByIndex(i)->GetName(), seconds, maxCount);
 			}
 		}
-
-		std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
 		if(print_eventList)
 		{
-			print.EventsList(events);
-		}
-
-		/* Handle Events */
-		if(print_fight && events->size() > 0 && std::get<0>(events->at(0)) == Character::CharEvent::Fight)
-		{
-			Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
-			currentMonster->GetAttacked(save->Char()->Atk());
-			if(*currentMonster->GetLife() <= 0)
-			{
-				delete currentMonster;
-				events->erase(events->begin());
-				//The player should get something for slaying an enemy
-				save->Char()->SetExp(save->Char()->Exp() + 100);
-			}
-
-			std::cout << "--------------------------Player---------------------------" << std::endl;
-			std::cout << "Name: " << save->Char()->Name() << "\n";
-			std::cout << "LVL: " << save->Char()->Lvl()   << "\n";
-			std::cout << "Life: " << save->Char()->Life() << "\n";
-			std::cout << "Atk: " << save->Char()->Atk()   << "\n";
-
-			std::cout << "--------------------------Monster--------------------------" << std::endl;
-			std::cout << "Name: " << *currentMonster->GetName() << "\n";
-			std::cout << "LVL: " << *currentMonster->GetLevel() << "\n";
-			std::cout << "Life: " << *currentMonster->GetLife() << "\n";
-			std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+			print.EventsList(save->Char()->GetEvents());
 		}
 		if(print_circle)
 		{
 			print.Circle(frame);
 		}
-
+		print.printScreen();
 		/* this has to be handled on a different Thread */
 		if(print_input)
 		{
 			std::cout << "> " << keyboardInput->c_str() <<"\033[48;5;255m \033[0m";
 		}
-		std::cout << "\033[?25l" << std::endl; //Make Cursor invisible
+		std::cout << "\033[?25l" << "\n"; //Make Cursor invisible
 
+		//logic
+		if(!timer->isPaused) {
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
+			std::vector<stopwatch>* stopwatchList = save->GetStopWatchList();
+			for (int i = 0; i<stopwatchList->size(); ++i) {
+				if(save->GetStopWatchByIndex(i)->GetTimer()->isPaused == false)
+				{
+					save->GetStopWatchByIndex(i)->GetTimer()->Tick(TimerState::countUp, *save->GetStopWatchByIndex(i)->GetcurrentTime(), deltaTime);
+				}
 
-		endFrame = std::chrono::system_clock::now();
-		deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
-		timer->Tick(currentTime, deltaTime); //this is to tick the BIG clock. ITS NOT SAVED AS A WATCH
-		frame += 0.5f;
-		exp += (deltaTime);
-		eventTimer += deltaTime;
-		if(exp >= 1000)
-		{
-			save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000)*save->Char()->Expmultiplier());
-			exp = 0;
+				if(eventTimer >= 5000) // every 5 seconds 
+				{
+					keyboardLogger.log(logger::ErrorLevel::Dbg, "EventTriggered");
+					Character::CharEvent charEvent = save->Char()->GetRandomEvent();
+					switch(charEvent) {
+						case Character::CharEvent::Fight:
+						{
+							Area* area = save->Char()->CurrentArea();
+							Monster* monster = area->Getmonster();
+							//Adding all the monsters into a queue
+							keyboardLogger.log(logger::ErrorLevel::Dbg, "found: Fight Event"+*monster->GetName());
+
+							save->Char()->AddMonsterToEventMap(Character::CharEvent::Fight, monster);
+							//print.OpenFightScreen(save->Char(), area, monster); This doesnt make sense right now
+						}
+						break;
+						case Character::CharEvent::Chest:
+						{
+							Area* area = save->Char()->CurrentArea();
+							Rarity::Level rarity = area->GetRandomRarety();
+							int itemCode(0), itemAmount(0);
+							area->RollItem(&rarity, itemCode, itemAmount);
+							save->Char()->AddUserItem(itemCode, itemAmount);
+						}
+						break;
+						case Character::CharEvent::Encounter:
+							//coud be: you encounter some new place;
+							//This is how you are supposed to find the RaidBoss of this Area;
+						break;
+						case Character::CharEvent::Nothing:
+							//PlaceHolder for Nothing was found, Good luck next Time;
+							;
+						break;
+						default:
+						break;
+					}
+					eventTimer = 0;
+				}
+
+			}
+
+			/* Handle Events */
+			std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
+			if(print_fight && events->size() > 0 && std::get<0>(events->at(0)) == Character::CharEvent::Fight)
+			{
+				Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
+				currentMonster->GetAttacked(save->Char()->Atk());
+				if(*currentMonster->GetLife() <= 0)
+				{
+					delete currentMonster;
+					events->erase(events->begin());
+					//The player should get something for slaying an enemy
+					save->Char()->SetExp(save->Char()->Exp() + 100);
+				}
+
+				std::cout << "--------------------------Player---------------------------\n";
+				std::cout << "Name: " << save->Char()->Name() << "\n";
+				std::cout << "LVL: " << save->Char()->Lvl()   << "\n";
+				std::cout << "Life: " << save->Char()->Life() << "\n";
+				std::cout << "Atk: " << save->Char()->Atk()   << "\n";
+
+				std::cout << "--------------------------Monster--------------------------\n";
+				std::cout << "Name: " << *currentMonster->GetName() << "\n";
+				std::cout << "LVL: " << *currentMonster->GetLevel() << "\n";
+				std::cout << "Life: " << *currentMonster->GetLife() << "\n";
+				std::cout << std::setw(80) << std::setfill('_') << '_' << "\n" << "\n";
+			}
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
+			endFrame = std::chrono::system_clock::now();
+			deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
+			timer->Tick(currentTime, deltaTime); //this is to tick the BIG clock. ITS NOT SAVED AS A WATCH
+			frame += 0.5f;
+			exp += (deltaTime);
+			eventTimer += deltaTime;
+			if(exp >= 1000)
+			{
+				save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000)*save->Char()->Expmultiplier());
+				exp = 0;
+			}
+		}else{
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
 		}
 	};
 }

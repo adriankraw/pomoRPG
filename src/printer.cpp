@@ -1,5 +1,7 @@
+#include <cstddef>
 #include <iomanip>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include "render.cpp"
@@ -25,12 +27,20 @@ public:
 	void OpenFightScreen(Character*, Area*, Monster*);
 	void EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events);
 	void Circle(int);
+	void printScreen();
 
 private:
+	std::vector<std::string> screenbuffer;
+	std::string linebreak = "";
 };
 
 printer::printer() {
 	ren = new render();
+	for(size_t i = 0; i < 80; ++i)
+	{
+		linebreak.append("_");
+	}
+	linebreak.append("\n");
 }
 
 printer::~printer() {
@@ -39,56 +49,59 @@ printer::~printer() {
 
 void printer::header() {
 
-	std::cout << std::left << "PomoRPG: "<< std::endl;
-	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+	screenbuffer.push_back("PomoRPG:");
+	screenbuffer.push_back(linebreak);
 }
 void printer::timer(){
-	std::cout << "\033[1m";
+	screenbuffer.push_back("\033[1m");
 	for(int i(0); i < (ren->resultpointer)->size(); ++i)
 	{
-		std::cout << (*ren->resultpointer)[i] << std::endl;
+		screenbuffer.push_back((*ren->resultpointer)[i]);
 	}
-	std::cout << "\033[0m";
-
-	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+	screenbuffer.push_back("\033[0m");
+	screenbuffer.push_back(linebreak);
 }
 void printer::characterStats(Character* character){
-	std::cout << "RPG:" << std::endl << std::endl;
+	screenbuffer.push_back("RPG:\n");
 
-	std::cout << "Name \t" << character->Name() << std::endl;
-	//std::cout << "ATK \t" << character->Atk() << std::endl;
-	//std::cout << "Def \t" << character->Def() << std::endl;
-	std::cout << "LVL \t" << character->Lvl() << std::endl;
-	std::cout << "Exp \t" << character->Exp() << "/" << character->GetNextLevelExp() << std::endl;
-	std::cout << "ExpMul \t" << character->Expmultiplier() << std::endl;
+	screenbuffer.push_back("Name \t"+character->Name());
+	//std::cout << "ATK \t" << character->Atk() << "\n";
+	//std::cout << "Def \t" << character->Def() << "\n";
+	screenbuffer.push_back("LVL \t"+std::to_string(character->Lvl()));
+	screenbuffer.push_back("Exp \t"+std::to_string(character->Exp())+"/"+std::to_string(character->GetNextLevelExp()));
+	screenbuffer.push_back("ExpMul \t"+std::to_string(character->Expmultiplier()));
 
-	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+	screenbuffer.push_back(linebreak);
 }
 void printer::Bar(std::string pretext, int state, int max)
 {
-	std::cout << pretext << " |";
+	std::string bar = pretext+" |";
 	for(int i = 0; i < max; ++i)
 	{
 		if(i != max/2)
 		{
 			if(i < state)
 			{
-				std::cout << "=";
+				bar.append("=");
 			}else {
-				std::cout << ".";
+				bar.append(".");
 			}
 		}else {
 			if(i<10)
 			{
-				std::cout << " ";
+				bar.append(" ");
 			}
-			std::cout << state;
+			bar.append(std::to_string(state));
 		}
 	}
-	std::cout << "|" << "from: " << max << std::endl;
+	bar.append("|");
+	bar.append("from: ");
+	bar.append(std::to_string(max));
+	screenbuffer.push_back(bar);
 }
 void printer::flush(){
 	std::cout << "\033[1J \033[1H" << std::flush;
+	screenbuffer.clear();
 }
 
 void printer::OpenFightScreen(Character* character, Area* area, Monster* monster)
@@ -97,8 +110,8 @@ void printer::OpenFightScreen(Character* character, Area* area, Monster* monster
 }
 void printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events)
 {
-	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
-	std::cout << "MonsterList: " << std::endl;
+	screenbuffer.push_back(linebreak);
+	screenbuffer.push_back("MonsterList: ");
 	if(events->size()>0)
 	{
 		for(int i = 0; i < events->size(); ++i)
@@ -108,23 +121,21 @@ void printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* e
 				if(std::get<0>(events->at(i)) == Character::CharEvent::Fight)
 				{
 					Monster* monster = (Monster*)(std::get<1>(events->at(i)));
-					std::cout << "[LVL:" <<*monster->GetLevel()<< "] ";
-					std::cout << *monster->GetName();
-					std::cout << " Life:"<< *monster->GetLife() <<"/"<<*monster->GetMaxLife();
-					std::cout << std::endl;
+					screenbuffer.push_back("[LVL:"+std::to_string(*monster->GetLevel())+"] ");
+					screenbuffer.push_back(*monster->GetName());
+					screenbuffer.push_back(" Life:"+std::to_string(*monster->GetLife())+"/"+std::to_string(*monster->GetMaxLife()));
+					screenbuffer.push_back("");
 				}
 			}else {
-				std::cout << "Additional Events: ";
-				std::cout << events->size() - 10;
-				std::cout << std::endl;
+				screenbuffer.push_back("Additional Events: "+std::to_string(events->size()-10));
 				break;
 			}
 		}
 	}else
 	{
-		std::cout << "No Events found" << std::endl;
+		screenbuffer.push_back("No Events found");
 	}
-	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+	screenbuffer.push_back(linebreak);
 }
 void printer::Circle(int frame)
 {
@@ -144,9 +155,17 @@ void printer::Circle(int frame)
 			}
 			if(y == y_val)
 				std::cout << "X";
-			std::cout << std::endl;
+			std::cout << "\n";
 
 		}
 	}
-	std::cout << std::setw(80) << std::setfill('_') << '_' << std::endl << std::endl;
+	std::cout << std::setw(80) << std::setfill('_') << '_' << "\n" << "\n";
+}
+void printer::printScreen()
+{
+	for(size_t i = 0; i < screenbuffer.size(); ++i)
+        {
+		std::cout << screenbuffer.at(i) << "\n";
+        }
+	screenbuffer.clear();
 }
