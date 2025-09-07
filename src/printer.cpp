@@ -6,7 +6,6 @@
 
 #include "render.cpp"
 #include "Character.cpp"
-#include "Game.cpp"
 
 class printer{
 public:
@@ -24,7 +23,7 @@ public:
 	void characterStats(Character*);
 	void flush();
 	void Bar(std::string, int, int);
-	void OpenFightScreen(Character*, Area*, Monster*);
+	void OpenFightScreen(Character*, Monster*);
 	void EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events);
 	void Circle(int);
 	void printScreen();
@@ -104,9 +103,19 @@ void printer::flush(){
 	screenbuffer.clear();
 }
 
-void printer::OpenFightScreen(Character* character, Area* area, Monster* monster)
+void printer::OpenFightScreen(Character* character, Monster* monster)
 {
-	;
+	screenbuffer.push_back("--------------------------Player---------------------------\n");
+	screenbuffer.push_back("Name: "+character->Name() );
+	screenbuffer.push_back("LVL: "+std::to_string(character->Lvl()));
+	screenbuffer.push_back("Life: "+std::to_string(character->Life()));
+	screenbuffer.push_back("Atk: "+std::to_string(character->Atk()));
+
+	screenbuffer.push_back("--------------------------Monster--------------------------\n");
+	screenbuffer.push_back("Name: "+ *monster->GetName() );
+	screenbuffer.push_back("LVL: "+std::to_string(*monster->GetLevel()) );
+	screenbuffer.push_back("Life: "+std::to_string(*monster->GetLife()) );
+	screenbuffer.push_back(linebreak);
 }
 void printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events)
 {
@@ -120,11 +129,12 @@ void printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* e
 			{
 				if(std::get<0>(events->at(i)) == Character::CharEvent::Fight)
 				{
+					std::string eventDesc = "";
 					Monster* monster = (Monster*)(std::get<1>(events->at(i)));
-					screenbuffer.push_back("[LVL:"+std::to_string(*monster->GetLevel())+"] ");
-					screenbuffer.push_back(*monster->GetName());
-					screenbuffer.push_back(" Life:"+std::to_string(*monster->GetLife())+"/"+std::to_string(*monster->GetMaxLife()));
-					screenbuffer.push_back("");
+					eventDesc.append("[LVL:"+std::to_string(*monster->GetLevel())+"] ");
+					eventDesc.append(*monster->GetName());
+					eventDesc.append(" Life:"+std::to_string(*monster->GetLife())+"/"+std::to_string(*monster->GetMaxLife()));
+					screenbuffer.push_back(eventDesc);
 				}
 			}else {
 				screenbuffer.push_back("Additional Events: "+std::to_string(events->size()-10));

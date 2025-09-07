@@ -250,6 +250,16 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 		{
 			print.Circle(frame);
 		}
+		if(print_fight)
+		{
+
+			std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
+			if(events->size() > 0)
+			{
+				Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
+				print.OpenFightScreen(save->Char(),currentMonster);
+			}
+		}
 		print.printScreen();
 		/* this has to be handled on a different Thread */
 		if(print_input)
@@ -322,18 +332,6 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 					//The player should get something for slaying an enemy
 					save->Char()->SetExp(save->Char()->Exp() + 100);
 				}
-
-				std::cout << "--------------------------Player---------------------------\n";
-				std::cout << "Name: " << save->Char()->Name() << "\n";
-				std::cout << "LVL: " << save->Char()->Lvl()   << "\n";
-				std::cout << "Life: " << save->Char()->Life() << "\n";
-				std::cout << "Atk: " << save->Char()->Atk()   << "\n";
-
-				std::cout << "--------------------------Monster--------------------------\n";
-				std::cout << "Name: " << *currentMonster->GetName() << "\n";
-				std::cout << "LVL: " << *currentMonster->GetLevel() << "\n";
-				std::cout << "Life: " << *currentMonster->GetLife() << "\n";
-				std::cout << std::setw(80) << std::setfill('_') << '_' << "\n" << "\n";
 			}
 
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
