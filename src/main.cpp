@@ -1,5 +1,6 @@
 #include <cctype>
 #include <chrono>
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -8,6 +9,8 @@
 #include <ratio>
 #include <string>
 #include <sys/resource.h>
+#include <sys/signal.h>
+#include <sys/ttycom.h>
 #include <thread>
 #include <stdio.h>
 #include <vector>
@@ -15,6 +18,7 @@
 #if defined(__APPLE__)
 	#include <sys/termios.h>
 	#include <termios.h>
+	#include <sys/ioctl.h>
 	#include <unistd.h>
 #elif defined(_WIN32)
 	#include <windows.h>
@@ -62,9 +66,19 @@ bool print_circle = false;
 logger keyboardLogger("keyboardlogger.log");
 
 struct termios tio_save;
+struct winsize size;
 void ttyreset()
 {
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &tio_save);
+}
+
+void signalHandler(int i)
+{
+    if(i == SIGWINCH)
+    {
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+	fflush(stdout);
+    }
 }
 
 void ttyinit()
@@ -78,6 +92,13 @@ void ttyinit()
     tio.c_lflag &= ~(ECHO | ICANON | ISIG);
 
     tcsetattr(STDIN_FILENO,TCSANOW,&tio);
+    winsize _size;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &_size)>= 0 )
+    {
+	size = _size;
+    }
+    fflush(stdout);
+    signal(SIGWINCH, signalHandler);
 }
 
 int getkey()
@@ -118,7 +139,7 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 	}
 	return;
 }
-void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime, Timer* timer, saveGame* save)
+void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, Timer* timer, saveGame* save)
 {
 	if(keyboardInput->back() == '\n')
 	{
@@ -144,10 +165,10 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 			//select a Timer
 			if(additionalInfo != "")
 			{
-				currentTime.GetHour() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetHour();	
-				currentTime.GetMinute() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetMinute();	
-				currentTime.GetSeconds() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetSeconds();	
-				currentTime.GetMili() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetMili();	
+				globalTime.GetHour() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetHour();	
+				globalTime.GetMinute() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetMinute();	
+				globalTime.GetSeconds() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetSeconds();	
+				globalTime.GetMili() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetMili();	
 			}
 		}else if(*keyboardInput == "add")
 		{
@@ -204,7 +225,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& currentTime,
 
 	}
 }
-void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &print)
+void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &print)
 {
 	double frame = 0;
 	double exp = 0;
@@ -212,13 +233,13 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 
 	while(timer->isRunning && running)
 	{
-		processInput(keyboardInput, currentTime, timer, save);
+		processInput(keyboardInput, globalTimer, timer, save);
 
 		print.flush();	
 		startFrame = std::chrono::system_clock::now();
-
+		print.setSize(size.ws_col, size.ws_row);
 		print.header();
-		print.ren->renderTime(currentTime);
+		print.ren->renderTime(globalTimer);
 		if(print_bigClock)
 		{
 			print.timer();
@@ -337,7 +358,7 @@ void ProcessFrame(Time &currentTime, Timer *timer, saveGame *save, printer &prin
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
 			endFrame = std::chrono::system_clock::now();
 			deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
-			timer->Tick(currentTime, deltaTime); //this is to tick the BIG clock. ITS NOT SAVED AS A WATCH
+			timer->Tick(globalTimer, deltaTime); //this is to tick the BIG clock. ITS NOT SAVED AS A WATCH
 			frame += 0.5f;
 			exp += (deltaTime);
 			eventTimer += deltaTime;

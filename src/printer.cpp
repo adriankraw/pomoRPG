@@ -27,19 +27,24 @@ public:
 	void EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events);
 	void Circle(int);
 	void printScreen();
+	void setSize(int w, int h){
+		screenWidth = w;
+		screenHeight = h;
+	}
 
 private:
 	std::vector<std::string> screenbuffer;
 	std::string linebreak = "";
+	int screenWidth = 0;
+	int screenHeight = 0;
 };
 
 printer::printer() {
 	ren = new render();
-	for(size_t i = 0; i < 80; ++i)
+	for(size_t i = 0; i < 60; ++i)
 	{
 		linebreak.append("_");
 	}
-	linebreak.append("\n");
 }
 
 printer::~printer() {
@@ -48,12 +53,12 @@ printer::~printer() {
 
 void printer::header() {
 
-	screenbuffer.push_back("PomoRPG:");
+	screenbuffer.push_back("PomoRPG:"+std::to_string(screenWidth)+":"+std::to_string(screenHeight));
 	screenbuffer.push_back(linebreak);
 }
 void printer::timer(){
 	screenbuffer.push_back("\033[1m");
-	for(int i(0); i < (ren->resultpointer)->size(); ++i)
+	for(int i = 0; i < (ren->resultpointer)->size(); ++i)
 	{
 		screenbuffer.push_back((*ren->resultpointer)[i]);
 	}
@@ -61,7 +66,7 @@ void printer::timer(){
 	screenbuffer.push_back(linebreak);
 }
 void printer::characterStats(Character* character){
-	screenbuffer.push_back("RPG:\n");
+	screenbuffer.push_back("RPG:");
 
 	screenbuffer.push_back("Name \t"+character->Name());
 	//std::cout << "ATK \t" << character->Atk() << "\n";
@@ -105,13 +110,13 @@ void printer::flush(){
 
 void printer::OpenFightScreen(Character* character, Monster* monster)
 {
-	screenbuffer.push_back("--------------------------Player---------------------------\n");
+	screenbuffer.push_back("--------------------------Player---------------------------");
 	screenbuffer.push_back("Name: "+character->Name() );
 	screenbuffer.push_back("LVL: "+std::to_string(character->Lvl()));
 	screenbuffer.push_back("Life: "+std::to_string(character->Life()));
 	screenbuffer.push_back("Atk: "+std::to_string(character->Atk()));
 
-	screenbuffer.push_back("--------------------------Monster--------------------------\n");
+	screenbuffer.push_back("--------------------------Monster--------------------------");
 	screenbuffer.push_back("Name: "+ *monster->GetName() );
 	screenbuffer.push_back("LVL: "+std::to_string(*monster->GetLevel()) );
 	screenbuffer.push_back("Life: "+std::to_string(*monster->GetLife()) );
@@ -169,13 +174,28 @@ void printer::Circle(int frame)
 
 		}
 	}
-	std::cout << std::setw(80) << std::setfill('_') << '_' << "\n" << "\n";
 }
 void printer::printScreen()
 {
+	if(screenbuffer.size() == 0) return;
+
 	for(size_t i = 0; i < screenbuffer.size(); ++i)
         {
-		std::cout << screenbuffer.at(i) << "\n";
+		if(i > screenHeight-3)
+		{
+			break;
+		}
+		if(screenbuffer.at(i).size() > screenWidth)
+		{
+			std::cout << screenbuffer.at(i).substr(0,screenWidth) << "\n";
+		}else{
+			std::cout << screenbuffer.at(i) << "\n";
+		}
+
         }
+	for(int i = screenHeight - screenbuffer.size();i>3;--i)
+	{
+		std::cout << "\n";
+	}
 	screenbuffer.clear();
 }
