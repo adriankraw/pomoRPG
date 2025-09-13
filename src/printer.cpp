@@ -104,7 +104,7 @@ void printer::Bar(std::string pretext, int state, int max)
 	screenbuffer.push_back(bar);
 }
 void printer::flush(){
-	std::cout << "\033[1J \033[1H" << std::flush;
+	std::cout << "\033[H" << std::flush;
 	screenbuffer.clear();
 }
 
@@ -178,24 +178,30 @@ void printer::Circle(int frame)
 void printer::printScreen()
 {
 	if(screenbuffer.size() == 0) return;
+	std::string text = "";
 
 	for(size_t i = 0; i < screenbuffer.size(); ++i)
         {
-		if(i > screenHeight-3)
+		if(i > screenHeight-1)
 		{
 			break;
 		}
 		if(screenbuffer.at(i).size() > screenWidth)
 		{
-			std::cout << screenbuffer.at(i).substr(0,screenWidth) << "\n";
+			text.append(screenbuffer.at(i).substr(0,screenWidth) + "\n");
 		}else{
-			std::cout << screenbuffer.at(i) << "\n";
+			for(int y = screenbuffer.at(i).size(); y < screenWidth; ++y)
+			{
+				text.append("\033[0K");
+			}
+			text.append(screenbuffer.at(i) + "\n");
 		}
 
         }
-	for(int i = screenHeight - screenbuffer.size();i>3;--i)
+	for(int i = screenHeight - screenbuffer.size();i>1;--i)
 	{
-		std::cout << "\n";
+		text.append("\033[0K\n");
 	}
+	std::cout << text;
 	screenbuffer.clear();
 }

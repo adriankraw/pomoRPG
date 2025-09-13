@@ -285,9 +285,9 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 		/* this has to be handled on a different Thread */
 		if(print_input)
 		{
-			std::cout << "> " << keyboardInput->c_str() <<"\033[48;5;255m \033[0m";
+			std::cout << "> " << keyboardInput->c_str() <<"\033[48;5;255m \033[0m \033[0K";
 		}
-		std::cout << "\033[?25l" << "\n"; //Make Cursor invisible
+		std::cout << "\033[?25l"; //Make Cursor invisible
 
 		//logic
 		if(!timer->isPaused) {
