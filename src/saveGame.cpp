@@ -11,7 +11,7 @@
 
 #include "Character.cpp"
 #include "stopwatch.cpp"
-#include "Skills.cpp"
+#include "Skills/Skills.cpp"
 #include "logger.cpp"
 
 logger saveGameLogger("saveGame.log");
@@ -197,7 +197,7 @@ void saveGame::Save()
 }
 void saveGame::Load() {
 	LoadSaveGame(character);
-	LoadSkills(&skillList);
+	LoadSkills(&character->skillList);
 	LoadTimers(&stopwatchList);
 }
 void saveGame::LoadSaveGame(Character* character)

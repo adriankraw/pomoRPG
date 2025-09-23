@@ -8,10 +8,6 @@
 #include <string>
 #include <map>
 
-#if defined(NETWORK)
-	#include <sys/wait.h>
-#endif
-
 class logger {
 public:
 	enum ErrorLevel{

@@ -10,9 +10,10 @@
 
 #include "Area.cpp"
 #include "Monster.cpp"
+#include "./Skills/Skills.cpp"
 
 
-class Character{
+class Character: public Unit{
 public:
 	Character();
 	Character(std::string, int, int, int);
@@ -20,7 +21,7 @@ public:
 	Character(const Character &) = default;
 	Character &operator=(Character &&) = default;
 	Character &operator=(const Character &) = default;
-
+	~Character() {};	
 
 	enum CharEvent
 	{
@@ -40,8 +41,11 @@ public:
 	const int Exp(){return Character::exp;}
 	const int Life(){return Character::life;}
 	const int Atk(){return 2;}
+	const int Def(){return 2;}
 	const int Expmultiplier(){ return Character::expMultiplier;}
 
+	void GetAttacked(int value) override {};
+	void GetLife(int value) override {};
 	void AddLife(int);
 	void levelUp();
 	int GetNextLevelExp();
@@ -56,6 +60,7 @@ public:
 
 	void AddMonsterToEventMap(Character::CharEvent, Monster*);
 	std::vector<std::tuple<Character::CharEvent, void*>>* GetEvents();
+	std::vector<Skills> skillList{};
 
 private:
 	std::string name;

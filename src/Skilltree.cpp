@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "Skills.cpp"
+#include "./Skills/Skills.cpp"
 
 class Skilltree {
 public:

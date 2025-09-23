@@ -69,11 +69,16 @@ void printer::characterStats(Character* character){
 	screenbuffer.push_back("RPG:");
 
 	screenbuffer.push_back("Name \t"+character->Name());
-	//std::cout << "ATK \t" << character->Atk() << "\n";
-	//std::cout << "Def \t" << character->Def() << "\n";
+	screenbuffer.push_back("ATK \t"+std::to_string(character->Atk()));
+	screenbuffer.push_back("Def \t"+std::to_string(character->Def()));
 	screenbuffer.push_back("LVL \t"+std::to_string(character->Lvl()));
 	screenbuffer.push_back("Exp \t"+std::to_string(character->Exp())+"/"+std::to_string(character->GetNextLevelExp()));
 	screenbuffer.push_back("ExpMul \t"+std::to_string(character->Expmultiplier()));
+
+	for(auto& s: character->skillList)
+	{
+		screenbuffer.push_back("Skill: "+ s.name+ std::to_string(s.expToLevel));
+	}
 
 	screenbuffer.push_back(linebreak);
 }

@@ -5,7 +5,6 @@
 #include "saveGame.cpp"
 #include "Area.cpp"
 #include "Character.cpp"
-#include "Skills.cpp"
 #include "Skilltree.cpp"
 
 class Game {
@@ -20,7 +19,6 @@ public:
 	saveGame save;
 	Character player;
 	Skilltree skilltree;
-	std::vector<Skills> playerSkills;
 
 	void setSkilltree();
 

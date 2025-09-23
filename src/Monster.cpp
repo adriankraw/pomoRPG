@@ -1,7 +1,8 @@
 #pragma once
 
 #include <string>
-class Monster {
+#include "Character/Unit.h"
+class Monster : public Unit{
 public:
 	Monster(int);
 	Monster(Monster &&) = default;
@@ -14,8 +15,9 @@ public:
 	int* GetLife();
 	int* GetMaxLife();
 	int* GetLevel();
+	void GetAttacked(int value) override;
+	void GetLife(int value) override{};
 	
-	void GetAttacked(int);
 private:
 	std::string name;
 	int life;
