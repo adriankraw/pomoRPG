@@ -1,6 +1,8 @@
 #pragma once
 
+#include <_stdlib.h>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <map>
 #include <ostream>
@@ -11,6 +13,7 @@
 #include "Area.cpp"
 #include "Monster.cpp"
 #include "./Skills/Skills.cpp"
+#include "./Eventable/ItemDrop.cpp"
 
 
 class Character: public Unit{
@@ -58,7 +61,8 @@ public:
 	void AddToInventory(int, int);
 	void RemoveFromInventory(int, int);
 
-	void AddMonsterToEventMap(Character::CharEvent, Monster*);
+	void AddMonsterToEventMap(Character::CharEvent event, Monster* monster);
+	void AddUserItemToEventMap(Character::CharEvent event, ItemDrop* itemDrop);
 	std::vector<std::tuple<Character::CharEvent, void*>>* GetEvents();
 	std::vector<Skills> skillList{};
 
@@ -123,7 +127,15 @@ int Character::GetNextLevelExp(){
 }
 Character::CharEvent Character::GetRandomEvent()
 {
-	return Character::CharEvent::Fight;
+	float fightChance = 70;
+	float chestChance = 20;
+	float encounterChance = 5;
+
+	int r = rand() % 100;	
+	if(r <= 5) return Character::CharEvent::Encounter;
+	if(r <= 20) return Character::CharEvent::Chest;
+	if(r <= 70) return Character::CharEvent::Fight;
+	return Character::CharEvent::Nothing;
 }
 
 Area* Character::CurrentArea()
@@ -165,6 +177,11 @@ void Character::AddMonsterToEventMap(Character::CharEvent event, Monster* monste
 {
 	Character::EventVector.push_back(std::tuple<Character::CharEvent, void*>(event, monster));
 }
+void Character::AddUserItemToEventMap(Character::CharEvent event, ItemDrop* itemDrop)
+{
+	Character::EventVector.push_back(std::tuple<Character::CharEvent, void*>(event, itemDrop));
+}
+
 
 std::vector<std::tuple<Character::CharEvent, void*>> * Character::GetEvents()
 {

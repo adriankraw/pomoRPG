@@ -321,7 +321,7 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 							Rarity::Level rarity = area->GetRandomRarety();
 							int itemCode(0), itemAmount(0);
 							area->RollItem(&rarity, itemCode, itemAmount);
-							save->Char()->AddUserItem(itemCode, itemAmount);
+							save->Char()->AddUserItemToEventMap(Character::CharEvent::Chest, new ItemDrop(itemCode, itemAmount));
 						}
 						break;
 						case Character::CharEvent::Encounter:
@@ -342,17 +342,41 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 
 			/* Handle Events */
 			std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
-			if(print_fight && events->size() > 0 && std::get<0>(events->at(0)) == Character::CharEvent::Fight)
+			if(print_fight && events->size() > 0)
 			{
-				Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
-				currentMonster->GetAttacked(save->Char()->Atk());
-				if(*currentMonster->GetLife() <= 0)
+				switch(std::get<0>(events->at(0)))
 				{
-					delete currentMonster;
-					events->erase(events->begin());
-					//The player should get something for slaying an enemy
-					save->Char()->SetExp(save->Char()->Exp() + 100);
+					case Character::CharEvent::Fight:
+					{
+						Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
+						currentMonster->GetAttacked(save->Char()->Atk());
+						if(*currentMonster->GetLife() <= 0)
+						{
+							delete currentMonster;
+							events->erase(events->begin());
+							//The player should get something for slaying an enemy
+							save->Char()->SetExp(save->Char()->Exp() + 100);
+						}
+					}
+					break;
+					case Character::CharEvent::Chest:
+					{
+						ItemDrop* itemDrop = (ItemDrop*)(std::get<1>(events->at(0)));
+						save->Char()->AddToInventory(itemDrop->itemCode, itemDrop->itemAmount);
+						delete itemDrop;
+						events->erase(events->begin());
+					}
+					break;
+					case Character::CharEvent::Encounter:
+					{
+					}
+					break;
+					case Character::CharEvent::Nothing:
+					{
+					}
+					break;
 				}
+
 			}
 
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));

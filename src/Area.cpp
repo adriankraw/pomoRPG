@@ -18,7 +18,7 @@ public:
 	Monster* Getmonster();
 	Rarity::Level GetRandomRarety();
 
-	void RollItem(Rarity::Level*, int, int);
+	void RollItem(Rarity::Level*, int&, int&);
 
 private:
 	std::string name;
@@ -51,7 +51,7 @@ Rarity::Level Area::GetRandomRarety()
 	return (rarity.RollRarity(areaLevel));
 }
 
-void Area::RollItem(Rarity::Level* rarity, int itemCode, int itemAmount )
+void Area::RollItem(Rarity::Level* rarity, int &itemCode, int &itemAmount )
 {
 	itemCode = 0;
 	itemAmount = 1;

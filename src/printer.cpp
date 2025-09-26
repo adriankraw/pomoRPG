@@ -6,6 +6,7 @@
 
 #include "render.cpp"
 #include "Character.cpp"
+#include "Eventable/ItemDrop.cpp"
 
 class printer{
 public:
@@ -137,14 +138,38 @@ void printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* e
 		{
 			if(i<10)
 			{
+				switch(std::get<0>(events->at(i)))
+				{
+					case Character::CharEvent::Fight:
+					{
+						std::string eventDesc = "";
+						Monster* monster = (Monster*)(std::get<1>(events->at(i)));
+						eventDesc.append("[LVL:"+std::to_string(*monster->GetLevel())+"] ");
+						eventDesc.append(*monster->GetName());
+						eventDesc.append(" Life:"+std::to_string(*monster->GetLife())+"/"+std::to_string(*monster->GetMaxLife()));
+						screenbuffer.push_back(eventDesc);
+					}
+					break;
+					case Character::CharEvent::Chest:
+					{
+						std::string eventDesc = "";
+						eventDesc.append("[DROP:] ");
+						ItemDrop* itemdrop = (ItemDrop*)(std::get<1>(events->at(i))); 
+						eventDesc.append(" Itemcode:"+std::to_string(itemdrop->itemCode)+" amount:"+ std::to_string(itemdrop->itemAmount));
+						screenbuffer.push_back(eventDesc);
+					}
+					break;
+					case Character::CharEvent::Encounter:
+					{
+					}
+					break;
+					case Character::CharEvent::Nothing:
+					{
+					}
+					break;
+				}
 				if(std::get<0>(events->at(i)) == Character::CharEvent::Fight)
 				{
-					std::string eventDesc = "";
-					Monster* monster = (Monster*)(std::get<1>(events->at(i)));
-					eventDesc.append("[LVL:"+std::to_string(*monster->GetLevel())+"] ");
-					eventDesc.append(*monster->GetName());
-					eventDesc.append(" Life:"+std::to_string(*monster->GetLife())+"/"+std::to_string(*monster->GetMaxLife()));
-					screenbuffer.push_back(eventDesc);
 				}
 			}else {
 				screenbuffer.push_back("Additional Events: "+std::to_string(events->size()-10));
