@@ -15,7 +15,6 @@
 #include "./Skills/Skills.cpp"
 #include "./Eventable/ItemDrop.cpp"
 
-
 class Character: public Unit{
 public:
 	Character();
@@ -39,16 +38,16 @@ public:
 	void SetExp(const int&);
 	void SetExpMultiplier(const int&);
 
-	const std::string Name(){return Character::name;}
-	const int Lvl(){return Character::lvl;}
-	const int Exp(){return Character::exp;}
-	const int Life(){return Character::life;}
-	const int Atk(){return 2;}
-	const int Def(){return 2;}
-	const int Expmultiplier(){ return Character::expMultiplier;}
+	std::string Name() const { return Character::name;}
+	int Lvl() const { return Character::lvl;}
+	int Exp() const { return Character::exp;}
+	int Life() const { return Character::life;}
+	int Atk() const { return 2;}
+	int Def() const { return 2;}
+	int Expmultiplier() const { return Character::expMultiplier;}
 
-	void GetAttacked(int value) override {};
-	void GetLife(int value) override {};
+	void GetAttacked(int value) override;
+	void GetLife(int value) override;
 	void AddLife(int);
 	void levelUp();
 	int GetNextLevelExp();
@@ -56,6 +55,7 @@ public:
 	CharEvent GetRandomEvent();
 	Area* CurrentArea();
 	void AddUserItem(int, int);
+	Skills* GetSkill();
 
 	int CheckInventoryFor(int);
 	void AddToInventory(int, int);
@@ -64,6 +64,7 @@ public:
 	void AddMonsterToEventMap(Character::CharEvent event, Monster* monster);
 	void AddUserItemToEventMap(Character::CharEvent event, ItemDrop* itemDrop);
 	std::vector<std::tuple<Character::CharEvent, void*>>* GetEvents();
+	int currentSkill = 0;
 	std::vector<Skills> skillList{};
 
 private:
@@ -107,6 +108,16 @@ void Character::SetExpMultiplier(const int &_expMulti)
 {
 	Character::expMultiplier = _expMulti;
 }
+void Character::GetAttacked(int value)
+{
+	if(value >= 0)
+		life -= value;
+}
+void Character::GetLife(int value)
+{
+	if(value >= 0)
+		life += value;
+}
 void Character::AddLife(int value)
 {
 	Character::life += value;
@@ -132,9 +143,9 @@ Character::CharEvent Character::GetRandomEvent()
 	float encounterChance = 5;
 
 	int r = rand() % 100;	
-	if(r <= 5) return Character::CharEvent::Encounter;
-	if(r <= 20) return Character::CharEvent::Chest;
-	if(r <= 70) return Character::CharEvent::Fight;
+	if(r <= encounterChance) return Character::CharEvent::Encounter;
+	if(r <= chestChance) return Character::CharEvent::Chest;
+	if(r <= fightChance) return Character::CharEvent::Fight;
 	return Character::CharEvent::Nothing;
 }
 
@@ -149,7 +160,12 @@ void Character::AddUserItem(int itemCode, int itemAmount)
 }
 int Character::CheckInventoryFor(int itemCode)
 {
-	return 0;
+	if(itemCode >= 0)
+	{
+		return 0;
+	}else{
+		return -1;
+	}
 }
 void Character::AddToInventory(int itemCode, int itemAmount)
 {
@@ -182,8 +198,17 @@ void Character::AddUserItemToEventMap(Character::CharEvent event, ItemDrop* item
 	Character::EventVector.push_back(std::tuple<Character::CharEvent, void*>(event, itemDrop));
 }
 
-
 std::vector<std::tuple<Character::CharEvent, void*>> * Character::GetEvents()
 {
 	return &(Character::EventVector);
+}
+
+Skills* Character::GetSkill()
+{
+	// skills should have something like a coldown based on moves. 
+	// heal costs you 1 extra move
+	// Firebal costs you 2 extra moves
+	Skills* skill = &skillList.at(currentSkill);
+	currentSkill = (currentSkill + 1)%skillList.size();
+	return skill;
 }

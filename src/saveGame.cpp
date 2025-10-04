@@ -13,6 +13,7 @@
 #include "stopwatch.cpp"
 #include "Skills/Skills.cpp"
 #include "logger.cpp"
+#include "Skilltree.cpp"
 
 logger saveGameLogger("saveGame.log");
 
@@ -21,6 +22,7 @@ private:
 	Character *character;	
 	std::vector<stopwatch> stopwatchList;
 	std::vector<Skills> skillList;
+	Skilltree skillTree{};
 
 	void GenerateSave();
 public:
@@ -298,8 +300,9 @@ void saveGame::LoadSkills(std::vector<Skills>* skillList)
 				int l = line.find(":::");
 				const std::string startingWith = line.substr(0, l);
 				const int skillExp = std::stoi(line.substr(l+3, line.length()-l));
-				//saveGameLogger.log(logger::ErrorLevel::Info, startingWith + " " + std::to_string(skillExp));
-				skillList->push_back(Skills(startingWith, skillExp));
+				saveGameLogger.log(logger::ErrorLevel::Info, startingWith + " " + std::to_string(skillExp));
+				auto& t = skillTree.skillvector.at(startingWith);
+				skillList->push_back(*t.contructor());
 				//map Skill + timer to array in Char
 				
 			}

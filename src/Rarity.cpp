@@ -33,5 +33,10 @@ Rarity::~Rarity() {
 
 Rarity::Level Rarity::RollRarity(int areaId)
 {
-	return Rarity::Level::Common;
+	if(areaId >= 0)
+	{
+		return Rarity::Level::Common;
+	}else{
+		return Rarity::Level::Uncommon;
+	}
 }

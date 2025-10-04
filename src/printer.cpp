@@ -1,5 +1,4 @@
 #include <cstddef>
-#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -59,7 +58,8 @@ void printer::header() {
 }
 void printer::timer(){
 	screenbuffer.push_back("\033[1m");
-	for(int i = 0; i < (ren->resultpointer)->size(); ++i)
+	size_t resultSize = (ren->resultpointer)->size();
+	for(size_t i = 0; i < resultSize; ++i)
 	{
 		screenbuffer.push_back((*ren->resultpointer)[i]);
 	}
@@ -134,7 +134,8 @@ void printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* e
 	screenbuffer.push_back("MonsterList: ");
 	if(events->size()>0)
 	{
-		for(int i = 0; i < events->size(); ++i)
+		size_t eventsSize = events->size();
+		for(size_t i = 0; i < eventsSize; ++i)
 		{
 			if(i<10)
 			{
@@ -212,11 +213,11 @@ void printer::printScreen()
 
 	for(size_t i = 0; i < screenbuffer.size(); ++i)
         {
-		if(i > screenHeight-1)
+		if((int)i > screenHeight-1)
 		{
 			break;
 		}
-		if(screenbuffer.at(i).size() > screenWidth)
+		if(screenbuffer.at(i).size() > (size_t)screenWidth)
 		{
 			text.append(screenbuffer.at(i).substr(0,screenWidth) + "\n");
 		}else{

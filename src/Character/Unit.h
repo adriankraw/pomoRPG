@@ -1,7 +1,14 @@
 #pragma once
 class Unit {
 public:
-	virtual void GetAttacked(int value) {};
-	virtual void GetLife(int value) {};
-
+	int life{0};
+	virtual void GetAttacked(int value) 
+	{
+		life -= value;
+	}
+	virtual void GetLife(int value) 
+	{
+		life += value;
+	}
+	virtual ~Unit(){};
 };

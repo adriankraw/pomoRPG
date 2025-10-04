@@ -181,7 +181,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 			if(additionalInfo != "")
 			{
 				keyboardLogger.log(logger::ErrorLevel::Warn,"stopped: "+ additionalInfo);
-				if(save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
+				if((size_t)save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
 				{
 					keyboardLogger.log(logger::ErrorLevel::Info, "found watch!");
 					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetTimer()->Pause();
@@ -193,7 +193,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 		{
 			if(additionalInfo != "")
 			{
-				if(save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
+				if((size_t)save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
 					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetTimer()->UnPause();
 			}else {
 				timer->isPaused = false;
@@ -201,7 +201,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 		}else if(*keyboardInput == "bigclock")
 		{
 			print_bigClock = !print_bigClock;
-		}else if(*keyboardInput == "charsettings")
+		}else if(*keyboardInput == "charsettings" || *keyboardInput == "charstats")
 		{
 			print_charsettings = !print_charsettings;
 		}else if(*keyboardInput == "stopwatches")
@@ -250,7 +250,8 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 		}
 		if(print_stopwatches)
 		{
-			for (int i = 0; i<save->GetStopWatchList()->size(); ++i) {
+			size_t stopWatchListSize = save->GetStopWatchList()->size();
+			for (size_t i = 0; i<stopWatchListSize; ++i) {
 				if(save->GetStopWatchByIndex(i)->GetTimer()->isPaused)
 				{
 					//std::cout << "Stopped: "; // TODO: move to screenbuffer
@@ -293,7 +294,8 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 		if(!timer->isPaused) {
 
 			std::vector<stopwatch>* stopwatchList = save->GetStopWatchList();
-			for (int i = 0; i<stopwatchList->size(); ++i) {
+			size_t stopwatchListSize = stopwatchList->size();
+			for (size_t i = 0; i<stopwatchListSize; ++i) {
 				if(save->GetStopWatchByIndex(i)->GetTimer()->isPaused == false)
 				{
 					save->GetStopWatchByIndex(i)->GetTimer()->Tick(TimerState::countUp, *save->GetStopWatchByIndex(i)->GetcurrentTime(), deltaTime);
@@ -349,7 +351,13 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 					case Character::CharEvent::Fight:
 					{
 						Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
-						currentMonster->GetAttacked(save->Char()->Atk());
+						Skills* skill = save->Char()->GetSkill();
+						if(skill != nullptr)
+						{
+							skill->activate(save->Char(), currentMonster);
+						}else{
+							currentMonster->GetAttacked(save->Char()->Atk());
+						}
 						if(*currentMonster->GetLife() <= 0)
 						{
 							delete currentMonster;
@@ -449,8 +457,6 @@ int main (int argc, char *argv[]) {
 	instanceID = std::rand();
 
 	Time worktimer;
-	double braketimer = 2;
-	double countdown = 10000;
 	running = true;
 
 	Timer* timer = new Timer(TimerState::countDown);

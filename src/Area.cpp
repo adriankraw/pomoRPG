@@ -53,6 +53,12 @@ Rarity::Level Area::GetRandomRarety()
 
 void Area::RollItem(Rarity::Level* rarity, int &itemCode, int &itemAmount )
 {
-	itemCode = 0;
-	itemAmount = 1;
+	if(rarity != nullptr)
+	{
+		itemCode = 0;
+		itemAmount = 1;
+	}else{
+		itemCode = 0;
+		itemAmount = 0;
+	}
 }

@@ -30,28 +30,31 @@ public:
 			splitTime.push_front(time % 10);
 			time = (time /10);
 		}
-		for(int i = 0; i < result.size(); ++i)
+		size_t resultSize = result.size();
+		for(size_t i = 0; i < resultSize; ++i)
 		{
 			result[i] = "";
 		}
-		int splitTimesize = splitTime.size();
-		for (size_t i = 0; splitTime.size()>0; ++i) {
-			for(int r = 0; r < result.size(); ++r)
+		size_t splitTimeSize = splitTime.size();
+		size_t i = 0;
+		while(splitTimeSize>0) {
+			for(size_t r = 0; r < resultSize; ++r)
 			{
 				(result[r]).append(" ");
 			}
-			for(int s = 0; s < result.size(); ++s)
+			for(size_t s = 0; s < resultSize; ++s)
 			{
 				(result[s]).append((*numbers(splitTime.front()))[s]);
 			}
-			if(i == (splitTimesize-8) || i == (splitTimesize-6) || i == (splitTimesize-4))
+			if(i == (splitTimeSize-8) || i == (splitTimeSize-6) || i == (splitTimeSize-4))
 			{
-				for(int r = 0; r < result.size(); ++r)
+				for(size_t r = 0; r < resultSize; ++r)
 				{
 					(result[r]).append(number_space[r]);
 				}
 			}
 			splitTime.pop_front();
+			++i;
 		}
 		return resultpointer;
 	}

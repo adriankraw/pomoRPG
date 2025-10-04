@@ -9,14 +9,14 @@ public:
 	Monster(const Monster &) = default;
 	Monster &operator=(Monster &&) = default;
 	Monster &operator=(const Monster &) = default;
-	~Monster();
+	~Monster() override;
 
 	std::string* GetName();
 	int* GetLife();
 	int* GetMaxLife();
 	int* GetLevel();
 	void GetAttacked(int value) override;
-	void GetLife(int value) override{};
+	void GetLife(int value) override;
 	
 private:
 	std::string name;
@@ -59,5 +59,12 @@ void Monster::GetAttacked(int dmg)
 	}else {
 		life = 0;
 		//kill monster
+	}
+}
+void Monster::GetLife(int value)
+{
+	if(value > 0)
+	{
+		life += value;
 	}
 }
