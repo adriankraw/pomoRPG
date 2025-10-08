@@ -6,7 +6,4 @@ public:
 		Backspace = 127,
 		CTRL_C = 3
 	};
-
-private:
-	
 };

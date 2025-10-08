@@ -142,42 +142,42 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 {
 	if(keyboardInput->back() == '\n')
 	{
-		std::string additionalInfo = "";
+		std::string additionalInfo;
 		keyboardInput->pop_back();
 		if((*keyboardInput).find(KeyCode::Btn::Space) != std::string::npos)
 		{
 			additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
 			*keyboardInput = keyboardInput->substr(0,keyboardInput->find(KeyCode::Btn::Space));
 		}
-		if(*keyboardInput == "up")
+		if(*keyboardInput == Commands::commandsMap[Commands::up])
 		{
 			timer->SetState(TimerState::countUp);
-		}else if(*keyboardInput == "down")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::down])
 		{
 			timer->SetState(TimerState::countDown);
-		}else if(*keyboardInput == "save")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::save])
 		{
 			save->Save();
-		}else if(*keyboardInput == "timer")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::timer])
 		{
 			keyboardLogger.log(logger::ErrorLevel::Warn,"changing timer to: "+ additionalInfo);
 			//select a Timer
-			if(additionalInfo != "")
+			if(!additionalInfo.empty())
 			{
 				globalTime.GetHour() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetHour();	
 				globalTime.GetMinute() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetMinute();	
 				globalTime.GetSeconds() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetSeconds();	
 				globalTime.GetMili() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetMili();	
 			}
-		}else if(*keyboardInput == "add")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::add])
 		{
-			if(additionalInfo != "")
+			if(!additionalInfo.empty())
 			{
 				save->AddStopwatch(additionalInfo);
 			}
-		}else if(*keyboardInput == "pause" || *keyboardInput == "stop")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::pause] || *keyboardInput == Commands::commandsMap[Commands::stop])
 		{
-			if(additionalInfo != "")
+			if(!additionalInfo.empty())
 			{
 				keyboardLogger.log(logger::ErrorLevel::Warn,"stopped: "+ additionalInfo);
 				if((size_t)save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
@@ -188,35 +188,37 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 			}else {
 				timer->isPaused = true;
 			}
-		}else if(*keyboardInput == "start" || *keyboardInput == "resume")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::start] || *keyboardInput == Commands::commandsMap[Commands::resume])
 		{
-			if(additionalInfo != "")
+			if(!additionalInfo.empty())
 			{
 				if((size_t)save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
+				{
 					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetTimer()->UnPause();
+				}
 			}else {
 				timer->isPaused = false;
 			}
-		}else if(*keyboardInput == "bigclock")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::bigclock])
 		{
 			print_bigClock = !print_bigClock;
-		}else if(*keyboardInput == "charsettings" || *keyboardInput == "charstats")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::charsettings] || *keyboardInput == Commands::commandsMap[Commands::charstats])
 		{
 			print_charsettings = !print_charsettings;
-		}else if(*keyboardInput == "stopwatches")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::stopwatches])
 		{
 			print_stopwatches = !print_stopwatches;
-		}else if(*keyboardInput == "fight")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::fight])
 		{
 			print_fight = !print_fight;
-		}else if(*keyboardInput == "eventlist")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::eventlist])
 		{
 			print_eventList = !print_eventList;
-		}else if(*keyboardInput == "circle")
+		}else if(*keyboardInput == Commands::commandsMap[Commands::circle])
 		{
 			print_circle = !print_circle;
 		}
-		else if(*keyboardInput == "exit")
+		else if(*keyboardInput == Commands::commandsMap[Commands::exit])
 		{
 			running = false;
 		}
@@ -454,7 +456,7 @@ int main (int argc, char *argv[]) {
 	
 	instanceID = std::rand();
 
-	Time worktimer;
+	Time worktimer{0,0,0,0};
 	running = true;
 
 	Timer* timer = new Timer(TimerState::countDown);
@@ -477,7 +479,12 @@ int main (int argc, char *argv[]) {
 			
 			if(argc > 1 )
 			{
-				if(Commands::CommandsMap[Commands::Base::CountUp].compare(argv[i])==0)
+				std::string argument = argv[i];
+				if( argument.front() == '-')
+				{
+					argument = argument.substr(1, argument.length()-1);
+				}
+				if(argument == Commands::commandsMap[Commands::Base::CountUp])
 				{
 					//countUp
 					timer->SetState(TimerState::countUp);
@@ -497,20 +504,20 @@ int main (int argc, char *argv[]) {
 			
 					}else {
 						timer->SetTime(0, 0, 0, 0);
-						worktimer = *new Time(0,0,0,0);
+						worktimer.resetTime();
 					}
 				}
-				if(Commands::CommandsMap[Commands::Base::CountDown].compare(argv[i])==0)
+				if(argument == Commands::commandsMap[Commands::Base::CountDown])
 				{
 					//countdown
 					timer->SetState(TimerState::countDown);
 				}
-				if(Commands::CommandsMap[Commands::Base::CountDown].compare(argv[i])==0)
+				if(argument == Commands::commandsMap[Commands::Base::CountDown])
 				{
 					//countdown
 					timer->SetState(TimerState::countDown);
 				}
-				if(Commands::CommandsMap[Commands::Base::PrintAll].compare(argv[i])==0)
+				if(argument == Commands::commandsMap[Commands::Base::PrintAll])
 				{
 					print_input = true;
 					print_stopwatches = true;
