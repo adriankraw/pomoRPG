@@ -54,6 +54,7 @@ std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
 std::thread inputReading;
 
 //printer settings
+bool print_help = false;
 bool print_bigClock = true;
 bool print_charsettings = false;
 bool print_input = true;
@@ -148,8 +149,10 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 		{
 			additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
 			*keyboardInput = keyboardInput->substr(0,keyboardInput->find(KeyCode::Btn::Space));
-		}
-		if(*keyboardInput == Commands::commandsMap[Commands::up])
+		}if(*keyboardInput == Commands::commandsMap[Commands::help])
+		{
+			print_help = !print_help;
+		}else if(*keyboardInput == Commands::commandsMap[Commands::up])
 		{
 			timer->SetState(TimerState::countUp);
 		}else if(*keyboardInput == Commands::commandsMap[Commands::down])
@@ -217,8 +220,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 		}else if(*keyboardInput == Commands::commandsMap[Commands::circle])
 		{
 			print_circle = !print_circle;
-		}
-		else if(*keyboardInput == Commands::commandsMap[Commands::exit])
+		}else if(*keyboardInput == Commands::commandsMap[Commands::exit])
 		{
 			running = false;
 		}
@@ -281,6 +283,10 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 				Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
 				print.OpenFightScreen(save->Char(),currentMonster);
 			}
+		}
+		if(print_help)
+		{
+			print.help();
 		}
 		print.printScreen();
 		/* this has to be handled on a different Thread */

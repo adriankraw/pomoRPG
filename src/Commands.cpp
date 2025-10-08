@@ -1,6 +1,9 @@
+#pragma once
+
 #include <cstdint>
 #include <map>
 #include <string>
+
 class Commands {
 public:
 	enum Base:std::uint8_t{
@@ -24,7 +27,8 @@ public:
 		fight,
 		eventlist,
 		circle,
-		exit
+		exit,
+		help
 	};
 
 	using _commandsMap = std::map<Base, std::string>;
@@ -57,7 +61,8 @@ Commands::_commandsMap Commands::commandsMap = {
 	{Base::fight, "fight"},
 	{Base::eventlist, "eventlist"},
 	{Base::circle, "circle"},
-	{Base::exit, "exit"}
+	{Base::exit, "exit"},
+	{Base::help, "help"},
 };
 
 //std::vector<std::string> ARGV = {"-countUp","-countDown","-time","-start"};

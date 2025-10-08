@@ -6,6 +6,7 @@
 #include "render.cpp"
 #include "Character.cpp"
 #include "Eventable/ItemDrop.cpp"
+#include "Commands.cpp"
 
 class printer{
 public:
@@ -25,6 +26,7 @@ public:
 	void OpenFightScreen(Character*, Monster*);
 	void EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events);
 	void Circle(int);
+	void help();
 	void printScreen();
 	void setSize(int w, int h){
 		screenWidth = w;
@@ -204,6 +206,24 @@ void printer::Circle(int frame)
 
 		}
 	}
+}
+void printer::help()
+{
+	std::string text = "";
+	for(auto commendsIter = Commands::commandsMap.begin();commendsIter != Commands::commandsMap.end(); ++commendsIter)
+	{
+		if((int)(text.length()+commendsIter->second.length()) >= screenWidth)
+		{
+			screenbuffer.push_back(text);
+			text.clear();
+		}
+		text.append(commendsIter->second); 
+		if(std::next(commendsIter,1) != Commands::commandsMap.end())
+		{
+			text.append("|");
+		}
+	}
+	screenbuffer.push_back(text);
 }
 void printer::printScreen()
 {
