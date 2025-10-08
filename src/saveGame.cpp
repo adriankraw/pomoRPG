@@ -291,6 +291,7 @@ void saveGame::LoadSkills(std::vector<Skills>* skillList)
 	line = "";
 	if(saveFile.is_open())
 	{
+		saveGameLogger.log(logger::ErrorLevel::Info, "reading skilltree");
 		while(std::getline(saveFile, line))
 		{
 			if(line == "") continue;

@@ -16,10 +16,9 @@ public:
 	printer &operator=(const printer &) = default;
 	~printer();
 
-	render *ren;
 
 	void header();
-	void timer();
+	void timer(Time &currentTime);
 	void characterStats(Character*);
 	void flush();
 	void Bar(std::string, int, int);
@@ -33,6 +32,7 @@ public:
 	}
 
 private:
+	render ren{};
 	std::vector<std::string> screenbuffer;
 	std::string linebreak = "";
 	int screenWidth = 0;
@@ -40,7 +40,6 @@ private:
 };
 
 printer::printer() {
-	ren = new render();
 	for(size_t i = 0; i < 60; ++i)
 	{
 		linebreak.append("_");
@@ -48,7 +47,6 @@ printer::printer() {
 }
 
 printer::~printer() {
-	delete ren;
 }
 
 void printer::header() {
@@ -56,12 +54,13 @@ void printer::header() {
 	screenbuffer.push_back("PomoRPG:"+std::to_string(screenWidth)+":"+std::to_string(screenHeight));
 	screenbuffer.push_back(linebreak);
 }
-void printer::timer(){
+void printer::timer(Time &currentTime){
+	ren.renderTime(currentTime);
 	screenbuffer.push_back("\033[1m");
-	size_t resultSize = (ren->resultpointer)->size();
+	size_t resultSize = ren.result.size();
 	for(size_t i = 0; i < resultSize; ++i)
 	{
-		screenbuffer.push_back((*ren->resultpointer)[i]);
+		screenbuffer.push_back(ren.result[i]);
 	}
 	screenbuffer.push_back("\033[0m");
 	screenbuffer.push_back(linebreak);

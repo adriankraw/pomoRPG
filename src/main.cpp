@@ -12,7 +12,6 @@
 #include <sys/signal.h>
 #include <sys/ttycom.h>
 #include <thread>
-#include <stdio.h>
 #include <vector>
 
 #if defined(__APPLE__)
@@ -33,7 +32,7 @@
 	#include "boost/beast/websocket/stream.hpp"
 #endif
 
-#define frames 15
+#define frames 30
 
 #include "Character.cpp"
 #include "saveGame.cpp"
@@ -239,10 +238,9 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 		startFrame = std::chrono::system_clock::now();
 		print.setSize(size.ws_col, size.ws_row);
 		print.header();
-		print.ren->renderTime(globalTimer);
 		if(print_bigClock)
 		{
-			print.timer();
+			print.timer(globalTimer);
 		}
 		if(print_charsettings)
 		{
@@ -354,7 +352,7 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 						Skills* skill = save->Char()->GetSkill();
 						if(skill != nullptr)
 						{
-							skill->activate(save->Char(), currentMonster);
+							skill->Activate(save->Char(), currentMonster);
 						}else{
 							currentMonster->GetAttacked(save->Char()->Atk());
 						}
@@ -461,7 +459,6 @@ int main (int argc, char *argv[]) {
 
 	Timer* timer = new Timer(TimerState::countDown);
 	timer->SetState(TimerState::paused);
-
 	saveGame *mySave = new saveGame();
 	mySave->Load();
 

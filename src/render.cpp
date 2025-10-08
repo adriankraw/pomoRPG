@@ -14,9 +14,9 @@ public:
 	render &operator=(const render &) = default;
 	~render();
 
-	std::array<std::string, stringarrayResolution>* resultpointer = &result;
+	std::array<std::string, stringarrayResolution> result{};
 
-	std::array<std::string, stringarrayResolution>* renderTime(Time &currentTime)
+	std::array<std::string, stringarrayResolution> renderTime(Time &currentTime)
 	{
 		//return a string that got modified into a time 
 		std::list<int> splitTime;
@@ -35,34 +35,31 @@ public:
 		{
 			result[i] = "";
 		}
-		size_t splitTimeSize = splitTime.size();
-		size_t i = 0;
-		while(splitTimeSize>0) {
-			for(size_t r = 0; r < resultSize; ++r)
+		while(splitTime.size()>0) {
+			for(size_t r = 0; r < result.size(); ++r)
 			{
 				(result[r]).append(" ");
 			}
-			for(size_t s = 0; s < resultSize; ++s)
+			for(size_t s = 0; s < result.size(); ++s)
 			{
-				(result[s]).append((*numbers(splitTime.front()))[s]);
+				auto front = splitTime.front();
+				auto number = numbers(front);
+				(result[s]).append(number[s]);
 			}
-			if(i == (splitTimeSize-8) || i == (splitTimeSize-6) || i == (splitTimeSize-4))
+			if(splitTime.size() == 8 || splitTime.size() == 6 || splitTime.size() == 4) 
 			{
-				for(size_t r = 0; r < resultSize; ++r)
+				for(size_t r = 0; r < result.size(); ++r)
 				{
 					(result[r]).append(number_space[r]);
 				}
 			}
 			splitTime.pop_front();
-			++i;
 		}
-		return resultpointer;
+		return result;
 	}
 
 private:
 
-	std::array<std::string, stringarrayResolution> result;
-	
 	std::array<std::string, stringarrayResolution> number_zero = {
 		"xxxx",
 		"x  x",
@@ -140,8 +137,8 @@ private:
 		" x ",
 		"   "
 	};
-	std::array<std::array<std::string, stringarrayResolution>*, 10> numbersPointer = {&number_zero, &number_one, &number_two, &number_three, &number_four, &number_five, &number_six, &number_seven, &number_eight, &number_nine};
-	std::array<std::string, stringarrayResolution>* numbers(int number)
+	std::array<std::array<std::string, stringarrayResolution>, 10> numbersPointer = {number_zero, number_one, number_two, number_three, number_four, number_five, number_six, number_seven, number_eight, number_nine};
+	std::array<std::string, stringarrayResolution> numbers(int number)
 	{
 		return numbersPointer[number];
 	};

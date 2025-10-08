@@ -11,7 +11,7 @@ public:
 	Heal &operator=(const Heal &) = default;
 	~Heal() override;
 
-	void activate(Unit* c, Unit* m) override;
+	void Activate(Unit* c, Unit* m) override;
 private:
 	
 };
@@ -22,7 +22,7 @@ Heal::Heal() {
 Heal::~Heal() {
 }
 
-void Heal::activate(Unit* c, [[maybe_unused]] Unit* m){
+void Heal::Activate(Unit* c, [[maybe_unused]] Unit* m){
 	if(c != nullptr)
 	HealSelf(*c, 10);
 }
