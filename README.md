@@ -1,13 +1,18 @@
-#Plan
-* Create a Promodoro timer
-* Override Pomodoro with an Game
+# pomoRPG
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](#license)  
 
-The Idea of PomoRPG is to create an idle game in which the the user manages various timers. By specifying names and selecting skills, users can choose their way of playing. This game will provide you with vaious text- & configfiles.  
-The most important rule is:
-  
-**configure and use** instead of **play**   
+The Idea of PomoRPG is to create an idle game in which the the user manages various timers. This game will provide you with vaious text- & configfiles.  
+You configure timers and let your character “level up” as you work. 
 
-Commands:
+---
+## Features
+- Manage multiple named timers
+- Character stats evolve based on time spend  
+- Commands-driven interface (start, pause, stop, etc.)  
+- Multiple UI views
+- Text-based configuration
+
+## Commands:
 ```
 - save                      saving both timers and characterstats
 - timer [nameOfTimer]       set header timer to [nameOfTimer]
@@ -19,8 +24,10 @@ Commands:
 - start [name]              start a specific timer
 - resume [name]             same as start [name]
 - exit                      exit the app (CTRL + C)
+- help                      toggle help (prints all writable command)
 ```
-UI-Commands:
+
+## UI-Commands:
 ```
 - bigclock
 - charsettings
@@ -30,25 +37,33 @@ UI-Commands:
 - circle
 ```
 
+## Configuration Files
+skilltree.txt — Skills & leveling config
+timerList.txt — List of timers and defaults
+saveFile.txt — Saved timers / character state
+The program reads and writes to these files to maintain persistent state across sessions.
 
-# Lets RPG a bit 
-* create multiple files and folders.(builded)
-* user ist able to save his pomotime and use it as exp.
-* a character is created ( in a new folder/file structure )
-* there must be a reason to stop the clock and take a break
-Example:
-    * level up you char when working (timer goes up)
-    * char needs to sleep/eat/fight/search/brew ...
-        * this will only happen when the user is taking a break (timer goes down)
+## Getting Started
 
-TODO:
-* [ ] ~~create a todo list~~
-* [x] save timers in saveFile:
-* [x] create new timers
-* [x] set name for timers
-* [ ] render last line to see input **seperate**
-* [ ] ~~tap to complete~~
-* [x] render timer in listformat
-* [x] start pomoRPG with specific timer
-* [ ] save addedTime[all timer added into 1 digid] ~~in server~~
+### Prerequisites
 
+- A C++ compiler (supporting C++11 or newer)  
+- CMake  
+- A terminal / shell environment
+
+### Installation
+
+```bash
+git clone https://github.com/adriankraw/pomoRPG.git
+cd pomoRPG
+mkdir build
+cd build
+cmake ..
+```
+
+Let me know if you got any ideas.
+Currently working on
+* [ ] More Skills
+* [ ] Leveling System
+* [ ] Inventory & Items
+* [ ] Create Encounters
