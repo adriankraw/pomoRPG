@@ -64,6 +64,7 @@ bool print_fight = false;
 bool print_circle = false;
 
 logger keyboardLogger("keyboardlogger.log");
+logger skillLogger("skilllogger.log");
 
 struct termios tio_save;
 struct winsize size;
@@ -317,7 +318,7 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 							Area* area = save->Char()->CurrentArea();
 							Monster* monster = area->Getmonster();
 							//Adding all the monsters into a queue
-							keyboardLogger.log(logger::ErrorLevel::Dbg, "found: Fight Event"+*monster->GetName());
+							//keyboardLogger.log(logger::ErrorLevel::Dbg, "found: Fight Event"+*monster->GetName());
 
 							save->Char()->AddMonsterToEventMap(Character::CharEvent::Fight, monster);
 							//print.OpenFightScreen(save->Char(), area, monster); This doesnt make sense right now
@@ -357,13 +358,10 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 					case Character::CharEvent::Fight:
 					{
 						Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
-						Skills* skill = save->Char()->GetSkill();
-						if(skill != nullptr)
-						{
-							skill->Activate(save->Char(), currentMonster);
-						}else{
-							currentMonster->GetAttacked(save->Char()->Atk());
-						}
+						auto* skill = save->Char()->GetSkill();
+						skillLogger.log(logger::ErrorLevel::Warn, skill->name + " activated");
+						skill->Activate(save->Char(), currentMonster);
+
 						if(*currentMonster->GetLife() <= 0)
 						{
 							delete currentMonster;

@@ -10,8 +10,10 @@ public:
 	Fireball &operator=(const Fireball &) = default;
 	~Fireball() override;
 
-	void Activate(Unit* c, Unit* m) override;
+	void Activate(Unit* character, Unit* monster) override;
 private:
+
+	const int fireballDmg{10};
 	
 };
 
@@ -21,7 +23,9 @@ Fireball::Fireball() {
 Fireball::~Fireball() {
 }
 
-void Fireball::Activate(Unit* c, Unit* m){
-	if(c!= nullptr)
-	DmgEnemy(*m, 10);
+void Fireball::Activate(Unit* character, Unit* monster){
+	if(character!= nullptr)
+	{
+		DmgEnemy(monster, fireballDmg);
+	}
 }

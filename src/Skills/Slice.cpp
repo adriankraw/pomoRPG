@@ -10,9 +10,11 @@ public:
 	Slice &operator=(const Slice &) = default;
 	~Slice() override;
 
-	void Activate(Unit* c, Unit* m) override;
+	void Activate(Unit* character, Unit* monster) override;
 
 private:
+
+	const int sliceDmg{15};
 	
 };
 
@@ -22,8 +24,10 @@ Slice::Slice() {
 Slice::~Slice() {
 }
 
-void Slice::Activate(Unit* c, Unit* m)
+void Slice::Activate(Unit* character, Unit* monster)
 {
-	if(c != nullptr && c->life >= 0)
-		DmgEnemy(*m, 15);
+	if(character != nullptr && character->life >= 0)
+	{
+		DmgEnemy(monster, sliceDmg);
+	}
 }

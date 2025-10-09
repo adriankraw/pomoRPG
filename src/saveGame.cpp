@@ -21,7 +21,7 @@ class saveGame{
 private:
 	Character *character;	
 	std::vector<stopwatch> stopwatchList;
-	std::vector<Skills> skillList;
+	std::vector<Skills*> skillList;
 	Skilltree skillTree{};
 
 	void GenerateSave();
@@ -49,7 +49,7 @@ public:
 	void Load();
 	void LoadSaveGame(Character*);
 	void LoadTimers(std::vector<stopwatch>*);
-	void LoadSkills(std::vector<Skills>*);
+	void LoadSkills(std::vector<Skills*>&);
 
 	int GetStopwatchIndex(std::string name);
 	int GetMaxFromStopwatchName(std::string s);
@@ -95,9 +95,9 @@ int saveGame::GetMaxFromStopwatchName(std::string s)
 	int max = 60;
 	for (auto sw: skillList)
 	{
-		if (sw.name == s)
+		if (sw->name == s)
 		{
-			max = sw.expToLevel;
+			max = sw->expToLevel;
 		}
 	}
 	return max;
@@ -199,7 +199,7 @@ void saveGame::Save()
 }
 void saveGame::Load() {
 	LoadSaveGame(character);
-	LoadSkills(&character->skillList);
+	LoadSkills(character->skillList);
 	LoadTimers(&stopwatchList);
 }
 void saveGame::LoadSaveGame(Character* character)
@@ -283,7 +283,7 @@ void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
 	}
 	saveFile.clear();
 }
-void saveGame::LoadSkills(std::vector<Skills>* skillList)
+void saveGame::LoadSkills(std::vector<Skills*>& skillList)
 {
 	std::ifstream saveFile;
 	std::string line("");
@@ -303,7 +303,7 @@ void saveGame::LoadSkills(std::vector<Skills>* skillList)
 				const int skillExp = std::stoi(line.substr(l+3, line.length()-l));
 				saveGameLogger.log(logger::ErrorLevel::Info, startingWith + " " + std::to_string(skillExp));
 				auto& t = skillTree.skillvector.at(startingWith);
-				skillList->push_back(*t.contructor());
+				skillList.push_back(t.contructor());
 				//map Skill + timer to array in Char
 				
 			}

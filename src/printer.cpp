@@ -71,6 +71,7 @@ void printer::characterStats(Character* character){
 	screenbuffer.push_back("RPG:");
 
 	screenbuffer.push_back("Name \t"+character->Name());
+	screenbuffer.push_back("LIFE \t"+std::to_string(character->Life()));
 	screenbuffer.push_back("ATK \t"+std::to_string(character->Atk()));
 	screenbuffer.push_back("Def \t"+std::to_string(character->Def()));
 	screenbuffer.push_back("LVL \t"+std::to_string(character->Lvl()));
@@ -79,7 +80,7 @@ void printer::characterStats(Character* character){
 
 	for(auto& s: character->skillList)
 	{
-		screenbuffer.push_back("Skill: "+ s.name+ std::to_string(s.expToLevel));
+		screenbuffer.push_back("Skill: "+ s->name+ std::to_string(s->expToLevel));
 	}
 
 	screenbuffer.push_back(linebreak);

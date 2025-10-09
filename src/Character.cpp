@@ -14,6 +14,9 @@
 #include "Monster.cpp"
 #include "./Skills/Skills.cpp"
 #include "./Eventable/ItemDrop.cpp"
+#include "logger.cpp"
+
+logger charLogger("character.log");
 
 class Character: public Unit{
 public:
@@ -65,7 +68,7 @@ public:
 	void AddUserItemToEventMap(Character::CharEvent event, ItemDrop* itemDrop);
 	std::vector<std::tuple<Character::CharEvent, void*>>* GetEvents();
 	int currentSkill = 0;
-	std::vector<Skills> skillList{};
+	std::vector<Skills*> skillList{};
 
 private:
 	std::string name;
@@ -80,14 +83,18 @@ private:
 	std::vector<std::tuple<Character::CharEvent, void*>> EventVector;
 
 };
-Character::Character(){};
+Character::Character(){
+	charLogger.log(logger::ErrorLevel::Warn, "baseConstructor used!");
+};
 
 Character::Character(const std::string _name, const int _lvl, const int _exp, const int _expMultiplier):
 	name(_name), 
 	lvl(_lvl),
 	exp(_exp),
 	expMultiplier(_expMultiplier),
-	life(lvl*10){
+	life(_lvl*10)
+{
+	charLogger.log(logger::ErrorLevel::Info, std::to_string(life));
 }
 
 void Character::SetName(const std::string &_name) {
@@ -95,6 +102,7 @@ void Character::SetName(const std::string &_name) {
 }
 void Character::SetLvl(const int &_lvl) {
 	Character::lvl = _lvl;
+	Character::life = _lvl*10;
 }
 void Character::SetExp(const int &_exp) {
 	if(_exp >= GetNextLevelExp()){
@@ -208,7 +216,7 @@ Skills* Character::GetSkill()
 	// skills should have something like a coldown based on moves. 
 	// heal costs you 1 extra move
 	// Firebal costs you 2 extra moves
-	Skills* skill = &skillList.at(currentSkill);
+	Skills* skill = skillList.at(currentSkill);
 	currentSkill = (currentSkill + 1)%skillList.size();
 	return skill;
 }
