@@ -38,9 +38,9 @@ You configure timers and let your character “level up” as you work.
 ```
 
 ## Configuration Files
-skilltree.txt — Skills & leveling config
-timerList.txt — List of timers and defaults
-saveFile.txt — Saved timers / character state
+skilltree.txt — Skills & leveling config  
+timerList.txt — List of timers and defaults  
+saveFile.txt — Saved timers / character state  
 The program reads and writes to these files to maintain persistent state across sessions.
 
 ## Getting Started
@@ -59,6 +59,8 @@ cd pomoRPG
 mkdir build
 cd build
 cmake ..
+cmake --build .
+./start.pomo
 ```
 
 Let me know if you got any ideas.
