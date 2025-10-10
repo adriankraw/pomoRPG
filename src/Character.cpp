@@ -1,6 +1,6 @@
 #pragma once
 
-#include <_stdlib.h>
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -36,10 +36,10 @@ public:
 		Nothing
 	};
 
-	void SetName(const std::string&);
-	void SetLvl(const int&);
-	void SetExp(const int&);
-	void SetExpMultiplier(const int&);
+	void SetName(const std::string& _name);
+	void SetLvl(const int& _lvl);
+	void SetExp(const int& _exp);
+	void SetExpMultiplier(const int& _expMulti);
 
 	std::string Name() const { return Character::name;}
 	int Lvl() const { return Character::lvl;}
@@ -76,6 +76,7 @@ private:
 	int exp;
 	int expMultiplier;
 	int life;
+	int maxLife;
 	std::map<int, int> inventory;
 	std::vector<void (*)()> levelupActions;
 	Area currentArea = Area();
@@ -92,7 +93,8 @@ Character::Character(const std::string _name, const int _lvl, const int _exp, co
 	lvl(_lvl),
 	exp(_exp),
 	expMultiplier(_expMultiplier),
-	life(_lvl*10)
+	life(_lvl*10),
+	maxLife(_lvl*10)
 {
 	charLogger.log(logger::ErrorLevel::Info, std::to_string(life));
 }
@@ -103,6 +105,7 @@ void Character::SetName(const std::string &_name) {
 void Character::SetLvl(const int &_lvl) {
 	Character::lvl = _lvl;
 	Character::life = _lvl*10;
+	Character::maxLife = _lvl*10;
 }
 void Character::SetExp(const int &_exp) {
 	if(_exp >= GetNextLevelExp()){
@@ -124,7 +127,9 @@ void Character::GetAttacked(int value)
 void Character::GetLife(int value)
 {
 	if(value >= 0)
-		life += value;
+	{
+		life = std::min(life+value, maxLife);
+	}
 }
 void Character::AddLife(int value)
 {

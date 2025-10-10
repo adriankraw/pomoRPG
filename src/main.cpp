@@ -53,16 +53,6 @@ int instanceID;
 std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
 std::thread inputReading;
 
-//printer settings
-bool print_help = false;
-bool print_bigClock = true;
-bool print_charsettings = false;
-bool print_input = true;
-bool print_stopwatches = false;
-bool print_eventList = false;
-bool print_fight = false;
-bool print_circle = false;
-
 logger keyboardLogger("keyboardlogger.log");
 logger skillLogger("skilllogger.log");
 
@@ -140,7 +130,7 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 	}
 	return;
 }
-void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, Timer* timer, saveGame* save)
+void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, Timer* timer, saveGame* save, Printer& print)
 {
 	if(keyboardInput->back() == '\n')
 	{
@@ -152,7 +142,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 			*keyboardInput = keyboardInput->substr(0,keyboardInput->find(KeyCode::Btn::Space));
 		}if(*keyboardInput == Commands::commandsMap[Commands::help])
 		{
-			print_help = !print_help;
+			print.print_help = !print.print_help;
 		}else if(*keyboardInput == Commands::commandsMap[Commands::up])
 		{
 			timer->SetState(TimerState::countUp);
@@ -205,22 +195,22 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 			}
 		}else if(*keyboardInput == Commands::commandsMap[Commands::bigclock])
 		{
-			print_bigClock = !print_bigClock;
+			print.print_bigClock = !print.print_bigClock;
 		}else if(*keyboardInput == Commands::commandsMap[Commands::charsettings] || *keyboardInput == Commands::commandsMap[Commands::charstats])
 		{
-			print_charsettings = !print_charsettings;
+			print.print_charsettings = !print.print_charsettings;
 		}else if(*keyboardInput == Commands::commandsMap[Commands::stopwatches])
 		{
-			print_stopwatches = !print_stopwatches;
+			print.print_stopwatches = !print.print_stopwatches;
 		}else if(*keyboardInput == Commands::commandsMap[Commands::fight])
 		{
-			print_fight = !print_fight;
+			print.print_fight = !print.print_fight;
 		}else if(*keyboardInput == Commands::commandsMap[Commands::eventlist])
 		{
-			print_eventList = !print_eventList;
+			print.print_eventList = !print.print_eventList;
 		}else if(*keyboardInput == Commands::commandsMap[Commands::circle])
 		{
-			print_circle = !print_circle;
+			print.print_circle = !print.print_circle;
 		}else if(*keyboardInput == Commands::commandsMap[Commands::exit])
 		{
 			running = false;
@@ -229,7 +219,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 
 	}
 }
-void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &print)
+void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &print)
 {
 	double frame = 0;
 	double exp = 0;
@@ -237,21 +227,21 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 
 	while(timer->isRunning && running)
 	{
-		processInput(keyboardInput, globalTimer, timer, save);
+		processInput(keyboardInput, globalTimer, timer, save, print);
 
-		print.flush();	
+		print.Flush();	
 		startFrame = std::chrono::system_clock::now();
-		print.setSize(size.ws_col, size.ws_row);
-		print.header();
-		if(print_bigClock)
+		print.SetSize(size.ws_col, size.ws_row);
+		print.Header();
+		if(print.print_bigClock)
 		{
-			print.timer(globalTimer);
+			print.Timer(globalTimer);
 		}
-		if(print_charsettings)
+		if(print.print_charsettings)
 		{
-			print.characterStats(save->Char());
+			print.CharacterStats(save->Char());
 		}
-		if(print_stopwatches)
+		if(print.print_stopwatches)
 		{
 			size_t stopWatchListSize = save->GetStopWatchList()->size();
 			for (size_t i = 0; i<stopWatchListSize; ++i) {
@@ -267,31 +257,31 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 				print.Bar(*save->GetStopWatchByIndex(i)->GetName(), seconds, maxCount);
 			}
 		}
-		if(print_eventList)
+		if(print.print_eventList)
 		{
 			print.EventsList(save->Char()->GetEvents());
 		}
-		if(print_circle)
+		if(print.print_circle)
 		{
 			print.Circle(frame);
 		}
-		if(print_fight)
+		if(print.print_fight)
 		{
 
 			std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
-			if(events->size() > 0)
+			if(!events->empty())
 			{
-				Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
+				auto* currentMonster = (Monster*)(std::get<1>(events->at(0)));
 				print.OpenFightScreen(save->Char(),currentMonster);
 			}
 		}
-		if(print_help)
+		if(print.print_help)
 		{
-			print.help();
+			print.Help();
 		}
-		print.printScreen();
+		print.PrintScreen();
 		/* this has to be handled on a different Thread */
-		if(print_input)
+		if(print.print_input)
 		{
 			std::cout << "> " << keyboardInput->c_str() <<"\033[48;5;255m \033[0m \033[0K";
 		}
@@ -351,16 +341,17 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, printer &prin
 
 			/* Handle Events */
 			std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
-			if(print_fight && events->size() > 0)
+			if(print.print_fight && !events->empty())
 			{
 				switch(std::get<0>(events->at(0)))
 				{
 					case Character::CharEvent::Fight:
 					{
-						Monster* currentMonster = (Monster*)(std::get<1>(events->at(0)));
+						auto* currentMonster = (Monster*)(std::get<1>(events->at(0)));
 						auto* skill = save->Char()->GetSkill();
-						skillLogger.log(logger::ErrorLevel::Warn, skill->name + " activated");
+						//skillLogger.log(logger::ErrorLevel::Warn, skill->name + " activated");
 						skill->Activate(save->Char(), currentMonster);
+						save->Char()->GetAttacked(*currentMonster->GetLevel());
 
 						if(*currentMonster->GetLife() <= 0)
 						{
@@ -471,7 +462,7 @@ int main (int argc, char *argv[]) {
 	Game myGame = Game();
 	//websocketStart();
 
-	printer print;
+	Printer print;
 
 	ttyinit();
 
@@ -523,10 +514,10 @@ int main (int argc, char *argv[]) {
 				}
 				if(argument == Commands::commandsMap[Commands::Base::PrintAll])
 				{
-					print_input = true;
-					print_stopwatches = true;
-					print_charsettings = true;
-					print_bigClock = true;
+					print.print_input = true;
+					print.print_stopwatches = true;
+					print.print_charsettings = true;
+					print.print_bigClock = true;
 				}
 			}
 
