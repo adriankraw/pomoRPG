@@ -1,10 +1,9 @@
 #pragma once
-#include "Skills.cpp"
-#include <cstddef>
+#include "Skills.h"
 
 class Heal : public Skills{
 public:
-	Heal();
+	Heal(std::string, const int);
 	Heal(Heal &&) = default;
 	Heal(const Heal &) = default;
 	Heal &operator=(Heal &&) = default;
@@ -13,13 +12,14 @@ public:
 
 	void Activate(Unit* character, Unit* monster) override;
 private:
-
 	const int healPower{10};
-	
+	int cost{2};
 };
 
-Heal::Heal() {
-}
+Heal::Heal(std::string _name, const int _skillExp){
+	name = _name;
+	expToLevel = _skillExp;
+}		
 
 Heal::~Heal() {
 }

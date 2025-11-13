@@ -18,7 +18,8 @@ public:
 public:
 	std::string name;
 	int expToLevel{0};
-	int skillCost{1};
+	int level{1};
+	int cost{1};
 protected:
 	void DmgEnemy(Unit* monster, int value);
 	void HealEnemy(Unit* monster, int value);

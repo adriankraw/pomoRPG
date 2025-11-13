@@ -1,9 +1,9 @@
 #pragma once
-#include "./Skills.cpp"
+#include "Skills.h"
 
 class Slice: public Skills {
 public:
-	Slice();
+	Slice(std::string, const int);
 	Slice(Slice &&) = default;
 	Slice(const Slice &) = default;
 	Slice &operator=(Slice &&) = default;
@@ -15,10 +15,11 @@ public:
 private:
 
 	const int sliceDmg{15};
-	
 };
 
-Slice::Slice() {
+Slice::Slice(std::string _name, const int _skillExp) {
+	name = _name;
+	expToLevel = _skillExp;
 }
 
 Slice::~Slice() {

@@ -1,9 +1,9 @@
 #pragma once
-#include "Skills.cpp"
+#include "Skills.h"
 
 class Fireball : public Skills{
 public:
-	Fireball();
+	Fireball(std::string, const int);
 	Fireball(Fireball &&) = default;
 	Fireball(const Fireball &) = default;
 	Fireball &operator=(Fireball &&) = default;
@@ -17,7 +17,9 @@ private:
 	
 };
 
-Fireball::Fireball() {
+Fireball::Fireball(std::string _name, const int _skillExp) {
+	name = _name;
+	expToLevel = _skillExp;
 }
 
 Fireball::~Fireball() {
