@@ -33,6 +33,8 @@
 #endif
 
 #define frames 30
+#define actionTick 100
+#define eventTick 5000
 
 #include "Character.cpp"
 #include "saveGame.cpp"
@@ -90,6 +92,10 @@ void ttyinit()
     }
     fflush(stdout);
     signal(SIGWINCH, signalHandler);
+
+    write (STDOUT_FILENO, "\e[?47h", 6);
+    //mouse Tracking
+    //write (STDOUT_FILENO, "\e[?9h", 5);
 }
 
 int getkey()
@@ -224,6 +230,7 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &prin
 	double frame = 0;
 	double exp = 0;
 	double eventTimer = 0;
+	double actionTimer = 0;
 
 	while(timer->isRunning && running)
 	{
@@ -298,7 +305,7 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &prin
 					save->GetStopWatchByIndex(i)->GetTimer()->Tick(TimerState::countUp, *save->GetStopWatchByIndex(i)->GetcurrentTime(), deltaTime);
 				}
 
-				if(eventTimer >= 5000) // every 5 seconds 
+				if(eventTimer >= eventTick) // every 5 seconds 
 				{
 					keyboardLogger.log(logger::ErrorLevel::Dbg, "EventTriggered");
 					Character::CharEvent charEvent = save->Char()->GetRandomEvent();
@@ -318,7 +325,7 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &prin
 						{
 							Area* area = save->Char()->CurrentArea();
 							Rarity::Level rarity = area->GetRandomRarety();
-							int itemCode(0), itemAmount(0);
+							int itemCode{0}, itemAmount{0};
 							area->RollItem(&rarity, itemCode, itemAmount);
 							save->Char()->AddUserItemToEventMap(Character::CharEvent::Chest, new ItemDrop(itemCode, itemAmount));
 						}
@@ -338,48 +345,53 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &prin
 				}
 
 			}
-
-			/* Handle Events */
-			std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
-			if(print.print_fight && !events->empty())
+			if(actionTimer >= save->Char()->skillCooldown * actionTick)
 			{
-				switch(std::get<0>(events->at(0)))
+				/* Handle Events */
+				std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
+				if(print.print_fight && !events->empty())
 				{
-					case Character::CharEvent::Fight:
+					switch(std::get<0>(events->at(0)))
 					{
-						auto* currentMonster = (Monster*)(std::get<1>(events->at(0)));
-						auto* skill = save->Char()->GetSkill();
-						//skillLogger.log(logger::ErrorLevel::Warn, skill->name + " activated");
-						skill->Activate(save->Char(), currentMonster);
-						save->Char()->GetAttacked(*currentMonster->GetLevel());
-
-						if(*currentMonster->GetLife() <= 0)
+						case Character::CharEvent::Fight:
 						{
-							delete currentMonster;
-							events->erase(events->begin());
-							//The player should get something for slaying an enemy
-							save->Char()->SetExp(save->Char()->Exp() + 100);
-						}
-					}
-					break;
-					case Character::CharEvent::Chest:
-					{
-						ItemDrop* itemDrop = (ItemDrop*)(std::get<1>(events->at(0)));
-						save->Char()->AddToInventory(itemDrop->itemCode, itemDrop->itemAmount);
-						delete itemDrop;
-						events->erase(events->begin());
-					}
-					break;
-					case Character::CharEvent::Encounter:
-					{
-					}
-					break;
-					case Character::CharEvent::Nothing:
-					{
-					}
-					break;
-				}
+							auto* currentMonster = (Monster*)(std::get<1>(events->at(0)));
+							auto* skill = save->Char()->GetSkill();
+							//skillLogger.log(logger::ErrorLevel::Warn, skill->name + " activated");
+							save->Char()->skillCooldown = skill->cost;
+							skill->Activate(save->Char(), currentMonster);
+							save->Char()->GetAttacked(*currentMonster->GetLevel());
 
+							if(*currentMonster->GetLife() <= 0)
+							{
+								delete currentMonster;
+								events->erase(events->begin());
+								//The player should get something for slaying an enemy
+								save->Char()->SetExp(save->Char()->Exp() + 100);
+							}
+						}
+						break;
+						case Character::CharEvent::Chest:
+						{
+							auto* itemDrop = (ItemDrop*)(std::get<1>(events->at(0)));
+							save->Char()->AddToInventory(itemDrop->itemCode, itemDrop->itemAmount);
+							save->Char()->skillCooldown = 1;
+							delete itemDrop;
+							events->erase(events->begin());
+						}
+						break;
+						case Character::CharEvent::Encounter:
+						{
+						}
+						break;
+						case Character::CharEvent::Nothing:
+						{
+						}
+						break;
+					}
+
+				}
+				actionTimer = 0;
 			}
 
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
@@ -389,6 +401,7 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &prin
 			frame += 0.5f;
 			exp += (deltaTime);
 			eventTimer += deltaTime;
+			actionTimer += deltaTime;
 			if(exp >= 1000)
 			{
 				save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000)*save->Char()->Expmultiplier());
@@ -531,6 +544,7 @@ int main (int argc, char *argv[]) {
 		ProcessFrame(worktimer, timer, mySave, print);
 		std::cout<<std::flush;
 	}
+	write (STDOUT_FILENO, "\e[?47l", 6);
 	std::cout << "\033[?25h";
 	exit(1);
 	return 0;

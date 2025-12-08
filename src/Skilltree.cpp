@@ -2,14 +2,14 @@
 
 #include <map>
 #include <typeindex>
-#include "./Skills/Skills.cpp"
-#include "./Skills/Heal.cpp"
-#include "./Skills/Slice.cpp"
-#include "./Skills/Fireball.cpp"
+#include "./Skills/Skills.h"
+#include "./Skills/Heal.h"
+#include "./Skills/Slice.h"
+#include "./Skills/Fireball.h"
 
 struct SkillType{
 std::type_index index;
-std::function<Skills*()> contructor;
+std::function<Skills*(std::string, const int)> contructor;
 };
 
 class Skilltree {
@@ -24,9 +24,9 @@ private:
 
 Skilltree::Skilltree() {
 	skillvector = {
-	{"Heal",	{ typeid(Heal),		[]() -> Skills* { return new Heal(); } }},
-	{"Slice",	{ typeid(Slice),	[]() -> Skills* { return new Slice(); } }},
-	{"Fireball",	{ typeid(Fireball),	[]() -> Skills* { return new Fireball(); } }},
+	{"Heal",	{ typeid(Heal),		[](std::string name, const int skillExp) -> Skills* { return new Heal(name, skillExp); } }},
+	{"Slice",	{ typeid(Slice),	[](std::string name, const int skillExp) -> Skills* { return new Slice(name, skillExp); } }},
+	{"Fireball",	{ typeid(Fireball),	[](std::string name, const int skillExp) -> Skills* { return new Fireball(name, skillExp); } }},
 	};
 }
 

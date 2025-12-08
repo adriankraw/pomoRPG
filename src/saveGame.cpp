@@ -11,7 +11,7 @@
 
 #include "Character.cpp"
 #include "stopwatch.cpp"
-#include "Skills/Skills.cpp"
+#include "Skills/Skills.h"
 #include "logger.cpp"
 #include "Skilltree.cpp"
 
@@ -303,7 +303,7 @@ void saveGame::LoadSkills(std::vector<Skills*>& skillList)
 				const int skillExp = std::stoi(line.substr(l+3, line.length()-l));
 				saveGameLogger.log(logger::ErrorLevel::Info, startingWith + " " + std::to_string(skillExp));
 				auto& t = skillTree.skillvector.at(startingWith);
-				skillList.push_back(t.contructor());
+				skillList.push_back(t.contructor(startingWith,skillExp));
 				//map Skill + timer to array in Char
 				
 			}

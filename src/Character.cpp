@@ -12,7 +12,7 @@
 
 #include "Area.cpp"
 #include "Monster.cpp"
-#include "./Skills/Skills.cpp"
+#include "Skills/Skills.h"
 #include "./Eventable/ItemDrop.cpp"
 #include "logger.cpp"
 
@@ -67,8 +67,10 @@ public:
 	void AddMonsterToEventMap(Character::CharEvent event, Monster* monster);
 	void AddUserItemToEventMap(Character::CharEvent event, ItemDrop* itemDrop);
 	std::vector<std::tuple<Character::CharEvent, void*>>* GetEvents();
+
 	int currentSkill = 0;
 	std::vector<Skills*> skillList{};
+	int skillCooldown{1};
 
 private:
 	std::string name;

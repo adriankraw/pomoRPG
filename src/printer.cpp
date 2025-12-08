@@ -28,9 +28,11 @@ public:
 	void Circle(int);
 	void Help();
 	void PrintScreen();
+	void CalcLineBreak();
 	void SetSize(int width, int height){
 		screenWidth = width;
 		screenHeight = height;
+		CalcLineBreak();
 	}
 
 	bool print_help = false;
@@ -51,15 +53,18 @@ private:
 };
 
 Printer::Printer() {
-	for(size_t i = 0; i < 60; ++i)
-	{
-		linebreak.append("_");
-	}
+	CalcLineBreak();
 }
 
 Printer::~Printer() {
 }
 
+void Printer::CalcLineBreak(){
+	for(size_t i = 0; i < screenWidth; ++i)
+	{
+		linebreak.append("_");
+	}
+}
 void Printer::Header() {
 
 	screenbuffer.emplace_back("PomoRPG:"+std::to_string(screenWidth)+":"+std::to_string(screenHeight));
@@ -86,10 +91,10 @@ void Printer::CharacterStats(Character* character){
 	screenbuffer.emplace_back("LVL \t"+std::to_string(character->Lvl()));
 	screenbuffer.emplace_back("Exp \t"+std::to_string(character->Exp())+"/"+std::to_string(character->GetNextLevelExp()));
 	screenbuffer.emplace_back("ExpMul \t"+std::to_string(character->Expmultiplier()));
-
-	for(auto& s: character->skillList)
+	
+	for(auto& skill: character->skillList)
 	{
-		screenbuffer.emplace_back("Skill: "+ s->name+ std::to_string(s->expToLevel));
+		screenbuffer.emplace_back("Skill: "+ skill->name +":"+ std::to_string(skill->expToLevel));
 	}
 
 	screenbuffer.emplace_back(linebreak);
