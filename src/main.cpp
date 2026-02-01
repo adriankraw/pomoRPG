@@ -1,8 +1,10 @@
+#include "Eventable/ItemDrop.h"
 #include <cctype>
 #include <chrono>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <ostream>
@@ -164,10 +166,10 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 			//select a Timer
 			if(!additionalInfo.empty())
 			{
-				globalTime.GetHour() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetHour();	
-				globalTime.GetMinute() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetMinute();	
-				globalTime.GetSeconds() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetSeconds();	
-				globalTime.GetMili() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetcurrentTime()->GetMili();	
+				globalTime.GetHour() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetcurrentTime()->GetHour();	
+				globalTime.GetMinute() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetcurrentTime()->GetMinute();	
+				globalTime.GetSeconds() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetcurrentTime()->GetSeconds();	
+				globalTime.GetMili() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetcurrentTime()->GetMili();	
 			}
 		}else if(*keyboardInput == Commands::commandsMap[Commands::add])
 		{
@@ -183,7 +185,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 				if((size_t)save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
 				{
 					keyboardLogger.log(logger::ErrorLevel::Info, "found watch!");
-					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetTimer()->Pause();
+					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetTimer()->Pause();
 				}
 			}else {
 				timer->isPaused = true;
@@ -194,7 +196,7 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 			{
 				if((size_t)save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
 				{
-					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo))->GetTimer()->UnPause();
+					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetTimer()->UnPause();
 				}
 			}else {
 				timer->isPaused = false;
@@ -225,12 +227,13 @@ void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, 
 
 	}
 }
-void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &print)
+void ProcessFrame(Time &globalTimer, Timer *timer, Game *myGame, Printer &print)
 {
 	double frame = 0;
 	double exp = 0;
 	double eventTimer = 0;
 	double actionTimer = 0;
+	saveGame *save = &myGame->save;
 
 	while(timer->isRunning && running)
 	{
@@ -246,27 +249,26 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &prin
 		}
 		if(print.print_charsettings)
 		{
-			print.CharacterStats(save->Char());
+			print.CharacterStats((*save).Char());
 		}
 		if(print.print_stopwatches)
 		{
 			size_t stopWatchListSize = save->GetStopWatchList()->size();
 			for (size_t i = 0; i<stopWatchListSize; ++i) {
-				if(save->GetStopWatchByIndex(i)->GetTimer()->isPaused)
-				{
-					//std::cout << "Stopped: "; // TODO: move to screenbuffer
-				}else{
-					//std::cout << "Going: ";
-				}
-				std::string t = save->GetStopWatchByIndex(i)->GetNameOfCorrespondingSkill();
+				std::string t = save->GetStopWatchByIndex(i).GetNameOfCorrespondingSkill();
 				int maxCount = save->GetMaxFromStopwatchName(t);
-				int seconds = save->GetStopWatchByIndex(i)->GetcurrentTime()->ConvertToSecondsForModulo(maxCount);			
-				print.Bar(*save->GetStopWatchByIndex(i)->GetName(), seconds, maxCount);
+				int seconds = save->GetStopWatchByIndex(i).GetcurrentTime()->ConvertToSecondsForModulo(maxCount);			
+				print.Bar(*save->GetStopWatchByIndex(i).GetName(), seconds, maxCount);
 			}
 		}
 		if(print.print_eventList)
 		{
-			print.EventsList(save->Char()->GetEvents());
+			if(myGame->currentEvent.eventType == Character::CharEvent::Fight)
+			{
+				print.EventsList(save->Char().GetEvents(), myGame->currentEvent.monster);
+			}else{
+				print.EventsList(save->Char().GetEvents());
+			}
 		}
 		if(print.print_circle)
 		{
@@ -275,11 +277,10 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &prin
 		if(print.print_fight)
 		{
 
-			std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
-			if(!events->empty())
+			auto events = save->Char().GetEvents();
+			if(myGame->currentEvent.running && myGame->currentEvent.eventType == Character::CharEvent::Fight)
 			{
-				auto* currentMonster = (Monster*)(std::get<1>(events->at(0)));
-				print.OpenFightScreen(save->Char(),currentMonster);
+				print.OpenFightScreen(save->Char(), myGame->currentEvent.monster);
 			}
 		}
 		if(print.print_help)
@@ -300,34 +301,32 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &prin
 			std::vector<stopwatch>* stopwatchList = save->GetStopWatchList();
 			size_t stopwatchListSize = stopwatchList->size();
 			for (size_t i = 0; i<stopwatchListSize; ++i) {
-				if(save->GetStopWatchByIndex(i)->GetTimer()->isPaused == false)
+				if(save->GetStopWatchByIndex(i).GetTimer()->isPaused == false)
 				{
-					save->GetStopWatchByIndex(i)->GetTimer()->Tick(TimerState::countUp, *save->GetStopWatchByIndex(i)->GetcurrentTime(), deltaTime);
+					save->GetStopWatchByIndex(i).GetTimer()->Tick(TimerState::countUp, *save->GetStopWatchByIndex(i).GetcurrentTime(), deltaTime);
 				}
 
 				if(eventTimer >= eventTick) // every 5 seconds 
 				{
-					keyboardLogger.log(logger::ErrorLevel::Dbg, "EventTriggered");
-					Character::CharEvent charEvent = save->Char()->GetRandomEvent();
+					//keyboardLogger.log(logger::ErrorLevel::Dbg, "EventTriggered");
+					Character::CharEvent charEvent = save->Char().GetRandomEvent();
 					switch(charEvent) {
 						case Character::CharEvent::Fight:
 						{
-							Area* area = save->Char()->CurrentArea();
-							Monster* monster = area->Getmonster();
-							//Adding all the monsters into a queue
-							//keyboardLogger.log(logger::ErrorLevel::Dbg, "found: Fight Event"+*monster->GetName());
+							Area* area = save->Char().CurrentArea();
+							charLogger.log(logger::Info, *area->GetName());
 
-							save->Char()->AddMonsterToEventMap(Character::CharEvent::Fight, monster);
+							save->Char().AddMonsterToEventMap(Character::CharEvent::Fight, *area->Getmonster());
 							//print.OpenFightScreen(save->Char(), area, monster); This doesnt make sense right now
 						}
 						break;
 						case Character::CharEvent::Chest:
 						{
-							Area* area = save->Char()->CurrentArea();
+							Area* area = save->Char().CurrentArea();
 							Rarity::Level rarity = area->GetRandomRarety();
 							int itemCode{0}, itemAmount{0};
 							area->RollItem(&rarity, itemCode, itemAmount);
-							save->Char()->AddUserItemToEventMap(Character::CharEvent::Chest, new ItemDrop(itemCode, itemAmount));
+							save->Char().AddUserItemToEventMap(Character::CharEvent::Chest, new ItemDrop(itemCode, itemAmount));
 						}
 						break;
 						case Character::CharEvent::Encounter:
@@ -339,45 +338,60 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &prin
 							;
 						break;
 						default:
+							charLogger.log(logger::Info, "char Event default triggered");
 						break;
 					}
 					eventTimer = 0;
 				}
 
 			}
-			if(actionTimer >= save->Char()->skillCooldown * actionTick)
+			if(actionTimer >= save->Char().skillCooldown * actionTick)
 			{
 				/* Handle Events */
-				std::vector<std::tuple<Character::CharEvent, void*>>* events = save->Char()->GetEvents();
-				if(print.print_fight && !events->empty())
+				std::vector<std::tuple<Character::CharEvent, std::function<void*()>>> events = save->Char().GetEvents();
+				if(print.print_fight && !events.empty())
 				{
-					switch(std::get<0>(events->at(0)))
+					switch(std::get<0>(events.at(0)))
 					{
 						case Character::CharEvent::Fight:
 						{
-							auto* currentMonster = (Monster*)(std::get<1>(events->at(0)));
-							auto* skill = save->Char()->GetSkill();
-							//skillLogger.log(logger::ErrorLevel::Warn, skill->name + " activated");
-							save->Char()->skillCooldown = skill->cost;
-							skill->Activate(save->Char(), currentMonster);
-							save->Char()->GetAttacked(*currentMonster->GetLevel());
-
-							if(*currentMonster->GetLife() <= 0)
+							if(!myGame->currentEvent.running)
 							{
-								delete currentMonster;
-								events->erase(events->begin());
+								skillLogger.log(logger::ErrorLevel::Info , "setting currentEvent.running");
+								auto event = std::get<std::function<void*()>>(events.at(0));
+								Monster* monster;
+								monster = (Monster*)event();
+								myGame->currentEvent.eventType = Character::CharEvent::Fight;
+								myGame->currentEvent.monster = std::make_shared<Monster>(*monster);
+								myGame->currentEvent.running = true;
+							}
+							auto* skill = save->Char().GetSkill();
+							skillLogger.log(logger::ErrorLevel::Warn, skill->name + " activated");
+							save->Char().skillCooldown = skill->cost;
+
+							skill->Activate(save->Char(), myGame->currentEvent.monster);
+							save->Char().GetAttacked(*myGame->currentEvent.monster->GetLevel());
+
+							if(*myGame->currentEvent.monster->GetLife() <= 0)
+							{
+								events.erase(events.begin());
 								//The player should get something for slaying an enemy
-								save->Char()->SetExp(save->Char()->Exp() + 100);
+								save->Char().SetExp(save->Char().Exp() + 100);
+								myGame->currentEvent.eventType = Character::CharEvent::Nothing;
+								myGame->currentEvent.monster = nullptr;
+								myGame->currentEvent.running = false;
 							}
 						}
 						break;
 						case Character::CharEvent::Chest:
 						{
-							auto* itemDrop = (ItemDrop*)(std::get<1>(events->at(0)));
-							save->Char()->AddToInventory(itemDrop->itemCode, itemDrop->itemAmount);
-							save->Char()->skillCooldown = 1;
+							auto event = std::get<std::function<void*()>>(events.at(0));
+							ItemDrop* itemDrop;
+							itemDrop = (ItemDrop*)event();
+							save->Char().AddToInventory(itemDrop->itemCode, itemDrop->itemAmount);
+							save->Char().skillCooldown = 1;
 							delete itemDrop;
-							events->erase(events->begin());
+							events.erase(events.begin());
 						}
 						break;
 						case Character::CharEvent::Encounter:
@@ -398,13 +412,13 @@ void ProcessFrame(Time &globalTimer, Timer *timer, saveGame *save, Printer &prin
 			endFrame = std::chrono::system_clock::now();
 			deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
 			timer->Tick(globalTimer, deltaTime); //this is to tick the BIG clock. ITS NOT SAVED AS A WATCH
-			frame += 0.5f;
+			frame += 0.5F;
 			exp += (deltaTime);
 			eventTimer += deltaTime;
 			actionTimer += deltaTime;
 			if(exp >= 1000)
 			{
-				save->Char()->SetExp((int)(save->Char()->Exp()+exp/1000)*save->Char()->Expmultiplier());
+				save->Char().SetExp((int)(save->Char().Exp()+exp/1000)*save->Char().Expmultiplier());
 				exp = 0;
 			}
 		}else{
@@ -469,13 +483,13 @@ int main (int argc, char *argv[]) {
 
 	Timer* timer = new Timer(TimerState::countDown);
 	timer->SetState(TimerState::paused);
-	saveGame *mySave = new saveGame();
-	mySave->Load();
 
 	Game myGame = Game();
+	myGame.save = saveGame();
+	myGame.save.Load();
 	//websocketStart();
 
-	Printer print;
+	Printer print{};
 
 	ttyinit();
 
@@ -498,15 +512,15 @@ int main (int argc, char *argv[]) {
 					timer->SetState(TimerState::countUp);
 					if(argc>2)
 					{
-						stopwatch* foundwatch = mySave->GetStopWatchByIndex(mySave->GetStopwatchIndex(argv[i+1]));
+						stopwatch foundwatch = myGame.save.GetStopWatchByIndex(myGame.save.GetStopwatchIndex(argv[i+1]));
 						
-						if(foundwatch == NULL)
+						if(foundwatch.GetTimer() != nullptr)
 						{
-							foundwatch = mySave->AddStopwatch(argv[i+1]);
+							foundwatch = myGame.save.AddStopwatch(argv[i+1]);
 						}
 						
 						Time *found;
-						found = foundwatch->GetcurrentTime();
+						found = foundwatch.GetcurrentTime();
 						timer->SetTime(found->GetHour(),found->GetMinute(),found->GetSeconds(),found->GetMili());
 						worktimer = *found;
 			
@@ -541,7 +555,7 @@ int main (int argc, char *argv[]) {
 	inputReading.detach();
 	while(running)
 	{
-		ProcessFrame(worktimer, timer, mySave, print);
+		ProcessFrame(worktimer, timer, &myGame, print);
 		std::cout<<std::flush;
 	}
 	write (STDOUT_FILENO, "\e[?47l", 6);

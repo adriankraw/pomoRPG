@@ -10,11 +10,12 @@ public:
 	Frostblade &operator=(const Frostblade &) = default;
 	~Frostblade() override;
 
-	void Activate(Unit* character, Unit* monster) override;
+	void Activate(Unit& character, std::shared_ptr<Unit> monster) override;
+
+	int cost{2};	
 private:
 
 	const int fireballDmg{28};
-	int cost{2};	
 };
 
 Frostblade::Frostblade(std::string _name, const int _skillExp) {
@@ -25,8 +26,8 @@ Frostblade::Frostblade(std::string _name, const int _skillExp) {
 Frostblade::~Frostblade() {
 }
 
-void Frostblade::Activate(Unit* character, Unit* monster){
-	if(character!= nullptr)
+void Frostblade::Activate(Unit& character, std::shared_ptr<Unit> monster){
+	if(character.life > 0)
 	{
 		DmgEnemy(monster, fireballDmg);
 	}

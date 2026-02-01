@@ -10,7 +10,7 @@ public:
 	Fireball &operator=(const Fireball &) = default;
 	~Fireball() override;
 
-	void Activate(Unit* character, Unit* monster) override;
+	void Activate(Unit& character, std::shared_ptr<Unit> monster) override;
 private:
 
 	const int fireballDmg{10};
@@ -25,8 +25,8 @@ Fireball::Fireball(std::string _name, const int _skillExp) {
 Fireball::~Fireball() {
 }
 
-void Fireball::Activate(Unit* character, Unit* monster){
-	if(character!= nullptr)
+void Fireball::Activate(Unit& character, std::shared_ptr<Unit> monster){
+	if(character.life > 0)
 	{
 		DmgEnemy(monster, fireballDmg);
 	}

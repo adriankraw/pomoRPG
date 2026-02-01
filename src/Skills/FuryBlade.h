@@ -10,7 +10,7 @@ public:
 	FuryBlade &operator=(const FuryBlade &) = default;
 	~FuryBlade() override;
 
-	void Activate(Unit* character, Unit* monster) override;
+	void Activate(Unit& character, std::shared_ptr<Unit> monster) override;
 
 private:
 
@@ -26,9 +26,9 @@ FuryBlade::FuryBlade(std::string _name, const int _skillExp) {
 FuryBlade::~FuryBlade() {
 }
 
-void FuryBlade::Activate(Unit* character, Unit* monster)
+void FuryBlade::Activate(Unit& character, std::shared_ptr<Unit> monster)
 {
-	if(character != nullptr && character->life >= 0)
+	if(character.life >= 0)
 	{
 		DmgEnemy(monster, sliceDmg);
 	}

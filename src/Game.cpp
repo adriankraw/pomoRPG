@@ -7,6 +7,12 @@
 #include "Character.cpp"
 #include "Skilltree.cpp"
 
+struct Event{
+	bool running = false;
+	Character::CharEvent eventType = Character::CharEvent::Nothing;
+	std::shared_ptr<Monster> monster;
+};
+
 class Game {
 public:
 	Game();
@@ -18,7 +24,9 @@ public:
 	
 	saveGame save;
 	Character player;
-	Skilltree skilltree;
+	Event currentEvent{};
+	Timer globalTimer;
+	Timer screenTimer;
 
 	void setSkilltree();
 

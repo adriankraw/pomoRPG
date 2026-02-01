@@ -19,7 +19,7 @@ logger saveGameLogger("saveGame.log");
 
 class saveGame{
 private:
-	Character *character;	
+	Character character;	
 	std::vector<stopwatch> stopwatchList;
 	std::vector<Skills*> skillList;
 	Skilltree skillTree{};
@@ -29,7 +29,7 @@ public:
 	saveGame();
 	~saveGame();
 	
-	Character* Char(){return character;};
+	Character& Char(){return character;};
 
 	enum SaveGameKeys{
 		lvl, exp, expMultiplier, name
@@ -42,38 +42,39 @@ public:
 	};
 	std::string GetKeyValue(SaveGameKeys);	
 	std::vector<stopwatch>* GetStopWatchList() {return &stopwatchList;};
-	stopwatch* GetStopWatchByIndex(int i) {return &(stopwatchList[i]);};
+	stopwatch& GetStopWatchByIndex(int index) {return stopwatchList[index];};
 	
 	void Save(const saveGame::SaveGameKeys, const std::string);
 	void Save();
 	void Load();
-	void LoadSaveGame(Character*);
+	void LoadSaveGame();
 	void LoadTimers(std::vector<stopwatch>*);
 	void LoadSkills(std::vector<Skills*>&);
 
 	int GetStopwatchIndex(std::string name);
 	int GetMaxFromStopwatchName(std::string s);
-	stopwatch* AddStopwatch(std::string name);
+	stopwatch& AddStopwatch(std::string name);
 };
 
 saveGame::saveGame() {
-	character = new Character();
+	character = Character();
+	saveGameLogger.log(logger::ErrorLevel::Info, "saveGame created" );
 };
 
 std::string saveGame::GetKeyValue(SaveGameKeys key)
 {
 	switch (key) {
 		case saveGame::SaveGameKeys::lvl:
-			return std::to_string(this->character->Lvl());
+			return std::to_string(this->character.Lvl());
 		break;
 		case saveGame::SaveGameKeys::exp:
-			return std::to_string(this->character->Exp());
+			return std::to_string(this->character.Exp());
 		break;
 		case saveGame::SaveGameKeys::name:
-			return this->character->Name();
+			return this->character.Name();
 		break;
 		case saveGame::SaveGameKeys::expMultiplier:
-			return std::to_string(this->character->Expmultiplier());
+			return std::to_string(this->character.Expmultiplier());
 	}
 }
 int saveGame::GetStopwatchIndex(std::string nameOfWatch)
@@ -103,7 +104,7 @@ int saveGame::GetMaxFromStopwatchName(std::string s)
 	return max;
 }
 
-stopwatch* saveGame::AddStopwatch(std::string nameOfWatch)
+stopwatch& saveGame::AddStopwatch(std::string nameOfWatch)
 {
 	stopwatchList.push_back(stopwatch(nameOfWatch));
 	
@@ -198,11 +199,11 @@ void saveGame::Save()
 	saveFile.close();
 }
 void saveGame::Load() {
-	LoadSaveGame(character);
-	LoadSkills(character->skillList);
+	LoadSaveGame();
+	LoadSkills(character.skillList);
 	LoadTimers(&stopwatchList);
 }
-void saveGame::LoadSaveGame(Character* character)
+void saveGame::LoadSaveGame()
 {
 	std::ifstream saveFile;
 	saveFile.open("saveFile.txt");
@@ -217,21 +218,21 @@ void saveGame::LoadSaveGame(Character* character)
 			{
 				const std::string startingWith = line.substr(0, line.find(":::"));
 				
-				if(startingWith.compare(SaveGameKeywords[SaveGameKeys::lvl]) == 0)
+				if(startingWith == SaveGameKeywords[SaveGameKeys::lvl])
 				{
-					character->SetLvl(std::stoi(line.substr(line.find(":::")+3, line.length())));
+					character.SetLvl(std::stoi(line.substr(line.find(":::")+3, line.length())));
 				}
-				if(startingWith.compare(SaveGameKeywords[SaveGameKeys::name]) == 0)
+				if(startingWith == SaveGameKeywords[SaveGameKeys::name])
 				{
-					character->SetName(line.substr(line.find(":::")+3, line.length()));
+					character.SetName(line.substr(line.find(":::")+3, line.length()));
 				}
-				if(startingWith.compare(SaveGameKeywords[SaveGameKeys::exp]) == 0)
+				if(startingWith == SaveGameKeywords[SaveGameKeys::exp])
 				{
-					character->SetExp(std::stoi(line.substr(line.find(":::")+3, line.length())));
+					character.SetExp(std::stoi(line.substr(line.find(":::")+3, line.length())));
 				}
-				if(startingWith.compare(SaveGameKeywords[SaveGameKeys::expMultiplier]) == 0)
+				if(startingWith == SaveGameKeywords[SaveGameKeys::expMultiplier])
 				{
-					character->SetExpMultiplier(std::stoi(line.substr(line.find(":::")+3, line.length())));
+					character.SetExpMultiplier(std::stoi(line.substr(line.find(":::")+3, line.length())));
 				}
 			}
 		}

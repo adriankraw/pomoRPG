@@ -10,7 +10,7 @@ public:
 	MegaHeal &operator=(const MegaHeal &) = default;
 	~MegaHeal() override;
 
-	void Activate(Unit* character, Unit* monster) override;
+	void Activate(Unit& character, std::shared_ptr<Unit> monster) override;
 private:
 
 	const int healPower{45};
@@ -25,8 +25,8 @@ MegaHeal::MegaHeal(std::string _name, const int _skillExp) {
 MegaHeal::~MegaHeal() {
 }
 
-void MegaHeal::Activate(Unit* character, [[maybe_unused]] Unit* monster){
-	if(character != nullptr)
+void MegaHeal::Activate(Unit& character, [[maybe_unused]] std::shared_ptr<Unit> monster){
+	if(character.life>0)
 	{
 		HealSelf(character, healPower);
 	}

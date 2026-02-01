@@ -10,7 +10,7 @@ public:
 	Slice &operator=(const Slice &) = default;
 	~Slice() override;
 
-	void Activate(Unit* character, Unit* monster) override;
+	void Activate(Unit& character, std::shared_ptr<Unit> monster) override;
 
 private:
 
@@ -25,9 +25,9 @@ Slice::Slice(std::string _name, const int _skillExp) {
 Slice::~Slice() {
 }
 
-void Slice::Activate(Unit* character, Unit* monster)
+void Slice::Activate(Unit& character, std::shared_ptr<Unit> monster)
 {
-	if(character != nullptr && character->life >= 0)
+	if(character.life >= 0)
 	{
 		DmgEnemy(monster, sliceDmg);
 	}

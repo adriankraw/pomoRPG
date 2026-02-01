@@ -10,22 +10,22 @@ public:
 	Heal &operator=(const Heal &) = default;
 	~Heal() override;
 
-	void Activate(Unit* character, Unit* monster) override;
+	void Activate(Unit& character, std::shared_ptr<Unit> monster) override;
 private:
 	const int healPower{10};
-	int cost{2};
 };
 
 Heal::Heal(std::string _name, const int _skillExp){
 	name = _name;
 	expToLevel = _skillExp;
+	cost = 2;
 }		
 
 Heal::~Heal() {
 }
 
-void Heal::Activate(Unit* character, [[maybe_unused]] Unit* monster){
-	if(character != nullptr)
+void Heal::Activate(Unit& character, [[maybe_unused]] std::shared_ptr<Unit> monster){
+	if(character.life > 0)
 	{
 		HealSelf(character, healPower);
 	}

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <map>
 #include <ostream>
@@ -13,7 +14,7 @@
 #include "Area.cpp"
 #include "Monster.cpp"
 #include "Skills/Skills.h"
-#include "./Eventable/ItemDrop.cpp"
+#include "./Eventable/ItemDrop.h"
 #include "logger.cpp"
 
 logger charLogger("character.log");
@@ -41,13 +42,13 @@ public:
 	void SetExp(const int& _exp);
 	void SetExpMultiplier(const int& _expMulti);
 
-	std::string Name() const { return Character::name;}
-	int Lvl() const { return Character::lvl;}
-	int Exp() const { return Character::exp;}
-	int Life() const { return Character::life;}
+	std::string Name() const { return name;}
+	int Lvl() const { return lvl;}
+	int Exp() const { return exp;}
+	int Life() const { return life;}
 	int Atk() const { return 2;}
 	int Def() const { return 2;}
-	int Expmultiplier() const { return Character::expMultiplier;}
+	int Expmultiplier() const { return expMultiplier;}
 
 	void GetAttacked(int value) override;
 	void GetLife(int value) override;
@@ -64,9 +65,9 @@ public:
 	void AddToInventory(int, int);
 	void RemoveFromInventory(int, int);
 
-	void AddMonsterToEventMap(Character::CharEvent event, Monster* monster);
+	void AddMonsterToEventMap(Character::CharEvent event, const Monster& monster);
 	void AddUserItemToEventMap(Character::CharEvent event, ItemDrop* itemDrop);
-	std::vector<std::tuple<Character::CharEvent, void*>>* GetEvents();
+	auto& GetEvents();
 
 	int currentSkill = 0;
 	std::vector<Skills*> skillList{};
@@ -77,13 +78,12 @@ private:
 	int lvl;
 	int exp;
 	int expMultiplier;
-	int life;
 	int maxLife;
 	std::map<int, int> inventory;
 	std::vector<void (*)()> levelupActions;
-	Area currentArea = Area();
+	Area currentArea = Area{};
 
-	std::vector<std::tuple<Character::CharEvent, void*>> EventVector;
+	std::vector<std::tuple<Character::CharEvent, std::function<void*()>>> EventVector{}; // change into tuple<CharEvent, EventStruct> struct should contain all the information for the Event to be triggered
 
 };
 Character::Character(){
@@ -95,31 +95,31 @@ Character::Character(const std::string _name, const int _lvl, const int _exp, co
 	lvl(_lvl),
 	exp(_exp),
 	expMultiplier(_expMultiplier),
-	life(_lvl*10),
 	maxLife(_lvl*10)
 {
+	life = _lvl*10;
 	charLogger.log(logger::ErrorLevel::Info, std::to_string(life));
 }
 
 void Character::SetName(const std::string &_name) {
-	Character::name = _name;
+	name = _name;
 }
 void Character::SetLvl(const int &_lvl) {
-	Character::lvl = _lvl;
-	Character::life = _lvl*10;
-	Character::maxLife = _lvl*10;
+	lvl = _lvl;
+	life = _lvl*10;
+	maxLife = _lvl*10;
 }
 void Character::SetExp(const int &_exp) {
 	if(_exp >= GetNextLevelExp()){
-		Character::exp = _exp%GetNextLevelExp();
-  		Character::levelUp();
+		exp = _exp%GetNextLevelExp();
+  		levelUp();
 	}else{
-		Character::exp = _exp;
+		exp = _exp;
 	}
 }
 void Character::SetExpMultiplier(const int &_expMulti)
 {
-	Character::expMultiplier = _expMulti;
+	expMultiplier = _expMulti;
 }
 void Character::GetAttacked(int value)
 {
@@ -135,21 +135,21 @@ void Character::GetLife(int value)
 }
 void Character::AddLife(int value)
 {
-	Character::life += value;
+	life += value;
 }
 void Character::levelUp(){
 	++lvl;
-	for (auto func: Character::levelupActions) {
+	for (auto func: levelupActions) {
 		func();
 	}
 	//save the char
 }
 void Character::addLevelUpAction(void (*action)())
 {
-	Character::levelupActions.push_back(action);
+	levelupActions.push_back(action);
 }
 int Character::GetNextLevelExp(){
-	return std::pow(std::pow(Character::lvl-1,2)+4,2);
+	return std::pow(std::pow(lvl-1,2)+4,2);
 }
 Character::CharEvent Character::GetRandomEvent()
 {
@@ -166,7 +166,7 @@ Character::CharEvent Character::GetRandomEvent()
 
 Area* Character::CurrentArea()
 {
-	return &(Character::currentArea);
+	return &(currentArea);
 }
 
 void Character::AddUserItem(int itemCode, int itemAmount)
@@ -193,29 +193,33 @@ void Character::AddToInventory(int itemCode, int itemAmount)
 }
 void Character::RemoveFromInventory(int itemCode, int itemAmount)
 {
-	if(Character::inventory.find(itemCode) != Character::inventory.end())
+	if(inventory.find(itemCode) != inventory.end())
 	{
-		if(Character::inventory[itemCode] > itemAmount)
+		if(inventory[itemCode] > itemAmount)
 		{
-			Character::inventory[itemCode] -= itemAmount;
-		} else if (Character::inventory[itemCode] == itemAmount) {
-			Character::inventory.erase(Character::inventory.find(itemCode));
+			inventory[itemCode] -= itemAmount;
+		} else if (inventory[itemCode] == itemAmount) {
+			inventory.erase(inventory.find(itemCode));
 		}
 		
 	}
 }
-void Character::AddMonsterToEventMap(Character::CharEvent event, Monster* monster)
+void Character::AddMonsterToEventMap(Character::CharEvent event, const Monster& monster)
 {
-	Character::EventVector.push_back(std::tuple<Character::CharEvent, void*>(event, monster));
+	EventVector.emplace_back(std::tuple(event, [monster](){
+		return new Monster(monster);
+	}));
+	charLogger.log(logger::ErrorLevel::Dbg, "ListSize:" + std::to_string(EventVector.size()));
 }
 void Character::AddUserItemToEventMap(Character::CharEvent event, ItemDrop* itemDrop)
 {
-	Character::EventVector.push_back(std::tuple<Character::CharEvent, void*>(event, itemDrop));
+	EventVector.emplace_back(std::tuple(event, [&](){return new ItemDrop(0,1);}));
+	charLogger.log(logger::ErrorLevel::Dbg, "ListSize:" + std::to_string(EventVector.size()));
 }
 
-std::vector<std::tuple<Character::CharEvent, void*>> * Character::GetEvents()
+auto& Character::GetEvents()
 {
-	return &(Character::EventVector);
+	return EventVector;
 }
 
 Skills* Character::GetSkill()
@@ -224,6 +228,7 @@ Skills* Character::GetSkill()
 	// heal costs you 1 extra move
 	// Firebal costs you 2 extra moves
 	Skills* skill = skillList.at(currentSkill);
+	charLogger.log(logger::ErrorLevel::Info, skill->name);;
 	currentSkill = (currentSkill + 1)%skillList.size();
 	return skill;
 }

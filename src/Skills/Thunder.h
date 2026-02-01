@@ -10,7 +10,7 @@ public:
 	Thunder &operator=(const Thunder &) = default;
 	~Thunder() override;
 
-	void Activate(Unit* character, Unit* monster) override;
+	void Activate(Unit& character, std::shared_ptr<Unit> monster) override;
 private:
 
 	const int fireballDmg{17};
@@ -25,8 +25,8 @@ Thunder::Thunder(std::string _name, const int _skillExp) {
 Thunder::~Thunder() {
 }
 
-void Thunder::Activate(Unit* character, Unit* monster){
-	if(character!= nullptr)
+void Thunder::Activate(Unit& character, std::shared_ptr<Unit> monster){
+	if(character.life>0)
 	{
 		DmgEnemy(monster, fireballDmg);
 	}

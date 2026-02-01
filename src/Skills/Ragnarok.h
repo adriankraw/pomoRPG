@@ -10,7 +10,7 @@ public:
 	Ragnarok &operator=(const Ragnarok &) = default;
 	~Ragnarok() override;
 
-	void Activate(Unit* character, Unit* monster) override;
+	void Activate(Unit& character, std::shared_ptr<Unit> monster) override;
 private:
 
 	const int fireballDmg{53};
@@ -25,8 +25,8 @@ Ragnarok::Ragnarok(std::string _name, const int _skillExp) {
 Ragnarok::~Ragnarok() {
 }
 
-void Ragnarok::Activate(Unit* character, Unit* monster){
-	if(character!= nullptr)
+void Ragnarok::Activate(Unit& character, std::shared_ptr<Unit> monster){
+	if(character.life>0)
 	{
 		DmgEnemy(monster, fireballDmg);
 	}

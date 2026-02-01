@@ -1,12 +1,15 @@
+#include <cassert>
 #include <cstddef>
+#include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
 
 #include "render.cpp"
 #include "Character.cpp"
-#include "Eventable/ItemDrop.cpp"
+#include "Eventable/ItemDrop.h"
 #include "Commands.cpp"
+#include "logger.cpp"
 
 class Printer{
 public:
@@ -20,11 +23,11 @@ public:
 
 	void Header();
 	void Timer(Time &currentTime);
-	void CharacterStats(Character* character);
+	void CharacterStats(Character& character);
 	void Flush();
 	void Bar(std::string, int, int);
-	void OpenFightScreen(Character* character, Monster* monster);
-	void EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events);
+	void OpenFightScreen(Character& character, std::shared_ptr<Monster>& monster);
+	void EventsList(std::vector<std::tuple<Character::CharEvent, std::function<void*()>>>& events, std::shared_ptr<Monster> currentMonster);
 	void Circle(int);
 	void Help();
 	void PrintScreen();
@@ -50,6 +53,8 @@ private:
 	std::string linebreak = "";
 	int screenWidth = 0;
 	int screenHeight = 0;
+
+	logger charlogger{"printer.log"};
 };
 
 Printer::Printer() {
@@ -81,20 +86,20 @@ void Printer::Timer(Time &currentTime){
 	screenbuffer.emplace_back("\033[0m");
 	screenbuffer.emplace_back(linebreak);
 }
-void Printer::CharacterStats(Character* character){
+void Printer::CharacterStats(Character& character){
 	screenbuffer.emplace_back("RPG:");
 
-	screenbuffer.emplace_back("Name \t"+character->Name());
-	screenbuffer.emplace_back("LIFE \t"+std::to_string(character->Life()));
-	screenbuffer.emplace_back("ATK \t"+std::to_string(character->Atk()));
-	screenbuffer.emplace_back("Def \t"+std::to_string(character->Def()));
-	screenbuffer.emplace_back("LVL \t"+std::to_string(character->Lvl()));
-	screenbuffer.emplace_back("Exp \t"+std::to_string(character->Exp())+"/"+std::to_string(character->GetNextLevelExp()));
-	screenbuffer.emplace_back("ExpMul \t"+std::to_string(character->Expmultiplier()));
+	screenbuffer.emplace_back("Name \t"+character.Name());
+	screenbuffer.emplace_back("LIFE \t"+std::to_string(character.Life()));
+	screenbuffer.emplace_back("ATK \t"+std::to_string(character.Atk()));
+	screenbuffer.emplace_back("Def \t"+std::to_string(character.Def()));
+	screenbuffer.emplace_back("LVL \t"+std::to_string(character.Lvl()));
+	screenbuffer.emplace_back("Exp \t"+std::to_string(character.Exp())+"/"+std::to_string(character.GetNextLevelExp()));
+	screenbuffer.emplace_back("ExpMul \t"+std::to_string(character.Expmultiplier()));
 	
-	for(auto& skill: character->skillList)
+	for(auto& skill: character.skillList)
 	{
-		screenbuffer.emplace_back("Skill: "+ skill->name +":"+ std::to_string(skill->expToLevel));
+		screenbuffer.emplace_back("Skill: "+ skill->name +":"+ std::to_string(skill->expToLevel)+" cost:"+std::to_string(skill->cost));
 	}
 
 	screenbuffer.emplace_back(linebreak);
@@ -130,13 +135,13 @@ void Printer::Flush(){
 	screenbuffer.clear();
 }
 
-void Printer::OpenFightScreen(Character* character, Monster* monster)
+void Printer::OpenFightScreen(Character& character, std::shared_ptr<Monster>& monster)
 {
 	screenbuffer.emplace_back("--------------------------Player---------------------------");
-	screenbuffer.emplace_back("Name: "+character->Name() );
-	screenbuffer.emplace_back("LVL: "+std::to_string(character->Lvl()));
-	screenbuffer.emplace_back("Life: "+std::to_string(character->Life()));
-	screenbuffer.emplace_back("Atk: "+std::to_string(character->Atk()));
+	screenbuffer.emplace_back("Name: "+character.Name() );
+	screenbuffer.emplace_back("LVL: "+std::to_string(character.Lvl()));
+	screenbuffer.emplace_back("Life: "+std::to_string(character.Life()));
+	screenbuffer.emplace_back("Atk: "+std::to_string(character.Atk()));
 
 	screenbuffer.emplace_back("--------------------------Monster--------------------------");
 	screenbuffer.emplace_back("Name: "+ *monster->GetName() );
@@ -144,36 +149,36 @@ void Printer::OpenFightScreen(Character* character, Monster* monster)
 	screenbuffer.emplace_back("Life: "+std::to_string(*monster->GetLife()) );
 	screenbuffer.emplace_back(linebreak);
 }
-void Printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* events)
+void Printer::EventsList(std::vector<std::tuple<Character::CharEvent, std::function<void*()>>>& events, std::shared_ptr<Monster> currentMonster = nullptr)
 {
 	screenbuffer.emplace_back(linebreak);
 	screenbuffer.emplace_back("MonsterList: ");
 	const int eventlistLength{10};
-	if(!events->empty())
+	if(!events.empty())
 	{
-		size_t eventsSize = events->size();
+		size_t eventsSize = events.size();
 		for(size_t i = 0; i < eventsSize; ++i)
 		{
 			if(i<eventlistLength)
 			{
-				switch(std::get<0>(events->at(i)))
+				switch(std::get<Character::CharEvent>(events.at(i)))
 				{
 					case Character::CharEvent::Fight:
 					{
 						std::string eventDesc;
-						auto* monster = (Monster*)(std::get<1>(events->at(i)));
-						eventDesc.append("[LVL:"+std::to_string(*monster->GetLevel())+"] ");
-						eventDesc.append(*monster->GetName());
-						eventDesc.append(" Life:"+std::to_string(*monster->GetLife())+"/"+std::to_string(*monster->GetMaxLife()));
+						if(i == 0 && currentMonster != nullptr)
+						{
+							eventDesc.append("[Fight] "+*currentMonster->GetName());
+						}else{
+							eventDesc.append("[Fight] Monster Encountered");
+						}
 						screenbuffer.emplace_back(eventDesc);
 					}
 					break;
 					case Character::CharEvent::Chest:
 					{
 						std::string eventDesc;
-						eventDesc.append("[DROP:] ");
-						ItemDrop* itemdrop = (ItemDrop*)(std::get<1>(events->at(i))); 
-						eventDesc.append(" Itemcode:"+std::to_string(itemdrop->itemCode)+" amount:"+ std::to_string(itemdrop->itemAmount));
+						eventDesc.append("[DROP] Item found");
 						screenbuffer.emplace_back(eventDesc);
 					}
 					break;
@@ -186,11 +191,8 @@ void Printer::EventsList(std::vector<std::tuple<Character::CharEvent, void*>>* e
 					}
 					break;
 				}
-				if(std::get<0>(events->at(i)) == Character::CharEvent::Fight)
-				{
-				}
 			}else {
-				screenbuffer.emplace_back("Additional Events: "+std::to_string(events->size()-10));
+				screenbuffer.emplace_back("Additional Events: "+std::to_string(events.size()-eventlistLength));
 				break;
 			}
 		}

@@ -10,7 +10,7 @@ public:
 	Cleave &operator=(const Cleave &) = default;
 	~Cleave() override;
 
-	void Activate(Unit* character, Unit* monster) override;
+	void Activate(Unit& character, std::shared_ptr<Unit> monster) override;
 
 private:
 
@@ -27,9 +27,9 @@ Cleave::Cleave(std::string _name, const int _skillExp) {
 Cleave::~Cleave() {
 }
 
-void Cleave::Activate(Unit* character, Unit* monster)
+void Cleave::Activate(Unit& character, std::shared_ptr<Unit> monster)
 {
-	if(character != nullptr && character->life >= 0)
+	if(character.life >= 0)
 	{
 		DmgEnemy(monster, sliceDmg);
 	}
