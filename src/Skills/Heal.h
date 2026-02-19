@@ -18,13 +18,14 @@ private:
 Heal::Heal(std::string _name, const int _skillExp){
 	name = _name;
 	expToLevel = _skillExp;
-	cost = 2;
+	cost = 10;
 }		
 
 Heal::~Heal() {
 }
 
 void Heal::Activate(Unit& character, [[maybe_unused]] std::shared_ptr<Unit> monster){
+	animationType = Char::AnimationType::HEAL;
 	if(character.life > 0)
 	{
 		HealSelf(character, healPower);

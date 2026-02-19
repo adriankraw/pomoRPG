@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Timer.cpp"
 #include <string>
 
@@ -11,7 +13,7 @@ public:
 	stopwatch &operator=(const stopwatch &) = default;
 	~stopwatch();
 
-	Time* GetcurrentTime();
+	Time& GetcurrentTime();
 	std::string GetcurrentTimeAsString();
 	Timer* GetTimer();
 	std::string* GetName();
@@ -26,26 +28,26 @@ private:
 
 stopwatch::stopwatch(std::string _nameOfActivity, std::string _nameOfSkill = "")
 {
-	stopwatch::nameOfActivity = _nameOfActivity;
-	stopwatch::currentTime = Time();
-	stopwatch::timer = Timer(TimerState::countUp, currentTime);
-	stopwatch::nameOfSkill = _nameOfSkill;
+	nameOfActivity = _nameOfActivity;
+	currentTime = Time();
+	timer = Timer(TimerState::countUp, currentTime);
+	nameOfSkill = _nameOfSkill;
 }
 
 stopwatch::stopwatch(std::string _nameOfActivity, Time _currentTime, std::string _nameOfSkill = "")
 {
-	stopwatch::nameOfActivity = _nameOfActivity;
-	stopwatch::currentTime = _currentTime;
-	stopwatch::timer = Timer(TimerState::countUp, stopwatch::currentTime);
-	stopwatch::nameOfSkill = _nameOfSkill;
+	nameOfActivity = _nameOfActivity;
+	currentTime = _currentTime;
+	timer = Timer(TimerState::countUp, stopwatch::currentTime);
+	nameOfSkill = _nameOfSkill;
 }
 
 stopwatch::~stopwatch() {
 }
 
-Time* stopwatch::GetcurrentTime()
+Time& stopwatch::GetcurrentTime()
 {
-	return &currentTime;
+	return currentTime;
 }
 
 std::string stopwatch::GetcurrentTimeAsString()

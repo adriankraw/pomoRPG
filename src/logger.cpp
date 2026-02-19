@@ -29,6 +29,7 @@ public:
 	~logger();
 
 	void log(ErrorLevel, std::string);
+	void logInfo(std::string);
 
 private:
 	std::string path;
@@ -74,6 +75,11 @@ void logger::log(logger::ErrorLevel errLevel, std::string text)
 		loggerFile.flush();
 	}
 	loggerFile.close();
+}
+
+void logger::logInfo(std::string text)
+{
+	log(logger::ErrorLevel::Info, text);
 }
 
 logger::~logger() {

@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "./../Character/Unit.h"
+#include "./../Character/enums.h"
 #include <string>
 
 class Skills {
@@ -20,6 +21,7 @@ public:
 	int expToLevel{0};
 	int level{1};
 	int cost{1};
+	Char::AnimationType animationType = Char::AnimationType::ATTACK;
 protected:
 	void DmgEnemy(std::shared_ptr<Unit> & monster, int value);
 	void HealEnemy(std::shared_ptr<Unit> & monster, int value);

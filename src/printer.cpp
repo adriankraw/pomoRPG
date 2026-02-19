@@ -1,7 +1,11 @@
+#pragma once
+
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <functional>
 #include <iostream>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -25,10 +29,10 @@ public:
 	void Timer(Time &currentTime);
 	void CharacterStats(Character& character);
 	void Flush();
-	void Bar(std::string, int, int);
+	void Bar(std::string,int, int, int);
 	void OpenFightScreen(Character& character, std::shared_ptr<Monster>& monster);
 	void EventsList(std::vector<std::tuple<Character::CharEvent, std::function<void*()>>>& events, std::shared_ptr<Monster> currentMonster);
-	void Circle(int);
+	void PrintSkillAnimation(Char::AnimationType type);
 	void Help();
 	void PrintScreen();
 	void CalcLineBreak();
@@ -38,18 +42,36 @@ public:
 		CalcLineBreak();
 	}
 
-	bool print_help = false;
 	bool print_bigClock = true;
+	int print_bigClockX = 0;
+	int print_bigClockY = 1;
 	bool print_charsettings = false;
+	int print_charsettingsX = 0;
+	int print_charsettingsY = 9;
 	bool print_input = true;
+	int print_inputX = 0;
+	int print_inputY = 0; //special case
 	bool print_stopwatches = false;
+	int print_stopwatchX = 0;
+	int print_stopwatchY = 22;
 	bool print_eventList = false;
+	int print_eventListX = 0;
+	int print_eventListY = 30;
 	bool print_fight = false;
+	int print_fightX = 0;
+	int print_fightY = 32;
 	bool print_circle = false;
+	int print_circleX = 0;
+	int print_circleY = 50;
+	bool skillAnimation_isRunning = false;
+	int skillAnimaionFrames = 0;
+	bool print_help = false;
+	int print_helpX = 0;
+	int print_helpY = 45;
 
 private:
-	render ren{};
-	std::vector<std::string> screenbuffer;
+	render ren;
+	std::vector<std::string> screenbuffer = {50, "\s"};
 	std::string linebreak = "";
 	int screenWidth = 0;
 	int screenHeight = 0;
@@ -59,53 +81,74 @@ private:
 
 Printer::Printer() {
 	CalcLineBreak();
+	std::cout << "\033[2J" << std::flush;
+	screenbuffer.reserve(50);
+	for(auto iter = screenbuffer.begin(); iter != screenbuffer.end(); ++iter)
+	{
+		iter->clear();
+		for(size_t spaces = 0; spaces < screenWidth; ++spaces)
+		{
+			iter->push_back(' ');
+		}
+	}
 }
 
 Printer::~Printer() {
+	screenbuffer.clear();
+	std::cout << std::flush;
 }
 
 void Printer::CalcLineBreak(){
-	for(size_t i = 0; i < screenWidth; ++i)
+	linebreak = "";
+	if(screenHeight> 5)
+	screenbuffer.resize(screenHeight-2," ");
+
+	if(screenWidth > 5)
+	for(size_t i = 0; i < (screenWidth-5); ++i)
 	{
-		linebreak.append("_");
+		linebreak.append("-");	
 	}
 }
 void Printer::Header() {
-
-	screenbuffer.emplace_back("PomoRPG:"+std::to_string(screenWidth)+":"+std::to_string(screenHeight));
-	screenbuffer.emplace_back(linebreak);
+	int lastLine = 0;
+	screenbuffer[lastLine] = "PomoRPG:"+std::to_string(screenWidth)+":"+std::to_string(screenHeight);
+	screenbuffer[++lastLine] = linebreak;
 }
 void Printer::Timer(Time &currentTime){
+	int lastLine = print_bigClockY;
 	ren.renderTime(currentTime);
-	screenbuffer.emplace_back("\033[1m");
+	screenbuffer[++lastLine] = "\033[1m";
 	size_t resultSize = ren.result.size();
 	for(size_t i = 0; i < resultSize; ++i)
 	{
-		screenbuffer.emplace_back(ren.result[i]);
+		screenbuffer[++lastLine] = (ren.result[i]);
 	}
-	screenbuffer.emplace_back("\033[0m");
-	screenbuffer.emplace_back(linebreak);
+	screenbuffer[++lastLine] = "\033[0m";
+	screenbuffer[++lastLine] = linebreak;
 }
 void Printer::CharacterStats(Character& character){
-	screenbuffer.emplace_back("RPG:");
+	int lastLine = print_charsettingsY;
+	screenbuffer[++lastLine]= "RPG:";
 
-	screenbuffer.emplace_back("Name \t"+character.Name());
-	screenbuffer.emplace_back("LIFE \t"+std::to_string(character.Life()));
-	screenbuffer.emplace_back("ATK \t"+std::to_string(character.Atk()));
-	screenbuffer.emplace_back("Def \t"+std::to_string(character.Def()));
-	screenbuffer.emplace_back("LVL \t"+std::to_string(character.Lvl()));
-	screenbuffer.emplace_back("Exp \t"+std::to_string(character.Exp())+"/"+std::to_string(character.GetNextLevelExp()));
-	screenbuffer.emplace_back("ExpMul \t"+std::to_string(character.Expmultiplier()));
-	
+	screenbuffer[++lastLine] = "Name \t"+character.Name();
+	screenbuffer[++lastLine] = "LIFE \t"+std::to_string(character.Life());
+	screenbuffer[++lastLine] = "ATK \t"+std::to_string(character.Atk());
+	screenbuffer[++lastLine] = "Def \t"+std::to_string(character.Def());
+	screenbuffer[++lastLine] = "LVL \t"+std::to_string(character.Lvl());
+	screenbuffer[++lastLine] = "Exp \t"+std::to_string(character.Exp())+"/"+std::to_string(character.GetNextLevelExp());
+	screenbuffer[++lastLine] = "ExpMul \t"+std::to_string(character.Expmultiplier());
+	int skillcount = 0;	
 	for(auto& skill: character.skillList)
 	{
-		screenbuffer.emplace_back("Skill: "+ skill->name +":"+ std::to_string(skill->expToLevel)+" cost:"+std::to_string(skill->cost));
+		screenbuffer[++lastLine] = "Skill: "+ skill->name +":"+ std::to_string(skill->expToLevel)+" cost:"+std::to_string(skill->cost);
+		skillcount++;
 	}
 
-	screenbuffer.emplace_back(linebreak);
+	screenbuffer[++lastLine] = linebreak;
 }
-void Printer::Bar(std::string pretext, int state, int max)
+void Printer::Bar(std::string pretext,int index, int state, int max)
 {
+	int lastLine = print_stopwatchY+index;
 	std::string bar = pretext+" |";
 	for(int i = 0; i < max; ++i)
 	{
@@ -128,31 +171,33 @@ void Printer::Bar(std::string pretext, int state, int max)
 	bar.append("|");
 	bar.append("from: ");
 	bar.append(std::to_string(max));
-	screenbuffer.emplace_back(bar);
+	screenbuffer[++lastLine] = (bar);
 }
 void Printer::Flush(){
 	std::cout << "\033[H" << std::flush;
-	screenbuffer.clear();
+	//screenbuffer.clear();
 }
 
 void Printer::OpenFightScreen(Character& character, std::shared_ptr<Monster>& monster)
 {
-	screenbuffer.emplace_back("--------------------------Player---------------------------");
-	screenbuffer.emplace_back("Name: "+character.Name() );
-	screenbuffer.emplace_back("LVL: "+std::to_string(character.Lvl()));
-	screenbuffer.emplace_back("Life: "+std::to_string(character.Life()));
-	screenbuffer.emplace_back("Atk: "+std::to_string(character.Atk()));
+	int lastLine = print_fightY;
+	screenbuffer[++lastLine] = ("--------------------------Player---------------------------");
+	screenbuffer[++lastLine] = ("Name: "+character.Name() );
+	screenbuffer[++lastLine] = ("LVL: "+std::to_string(character.Lvl()));
+	screenbuffer[++lastLine] = ("Life: "+std::to_string(character.Life()));
+	screenbuffer[++lastLine] = ("Atk: "+std::to_string(character.Atk()));
 
-	screenbuffer.emplace_back("--------------------------Monster--------------------------");
-	screenbuffer.emplace_back("Name: "+ *monster->GetName() );
-	screenbuffer.emplace_back("LVL: "+std::to_string(*monster->GetLevel()) );
-	screenbuffer.emplace_back("Life: "+std::to_string(*monster->GetLife()) );
-	screenbuffer.emplace_back(linebreak);
+	screenbuffer[++lastLine] = ("--------------------------Monster--------------------------");
+	screenbuffer[++lastLine] = ("Name: "+ *monster->GetName() );
+	screenbuffer[++lastLine] = ("LVL: "+std::to_string(*monster->GetLevel()) );
+	screenbuffer[++lastLine] = ("Life: "+std::to_string(*monster->GetLife()) );
+	screenbuffer[++lastLine] = (linebreak);
 }
 void Printer::EventsList(std::vector<std::tuple<Character::CharEvent, std::function<void*()>>>& events, std::shared_ptr<Monster> currentMonster = nullptr)
 {
-	screenbuffer.emplace_back(linebreak);
-	screenbuffer.emplace_back("MonsterList: ");
+	int lastLine = print_eventListY;
+	screenbuffer[++lastLine] = (linebreak);
+	screenbuffer[++lastLine] = ("MonsterList: ");
 	const int eventlistLength{10};
 	if(!events.empty())
 	{
@@ -172,14 +217,14 @@ void Printer::EventsList(std::vector<std::tuple<Character::CharEvent, std::funct
 						}else{
 							eventDesc.append("[Fight] Monster Encountered");
 						}
-						screenbuffer.emplace_back(eventDesc);
+						screenbuffer[++lastLine] = (eventDesc);
 					}
 					break;
 					case Character::CharEvent::Chest:
 					{
 						std::string eventDesc;
 						eventDesc.append("[DROP] Item found");
-						screenbuffer.emplace_back(eventDesc);
+						screenbuffer[++lastLine] = (eventDesc);
 					}
 					break;
 					case Character::CharEvent::Encounter:
@@ -192,55 +237,81 @@ void Printer::EventsList(std::vector<std::tuple<Character::CharEvent, std::funct
 					break;
 				}
 			}else {
-				screenbuffer.emplace_back("Additional Events: "+std::to_string(events.size()-eventlistLength));
+				screenbuffer[++lastLine] = ("Additional Events: "+std::to_string(events.size()-eventlistLength));
 				break;
 			}
 		}
 	}else
 	{
-		screenbuffer.emplace_back("No Events found");
+		screenbuffer[++lastLine] = ("No Events found");
 	}
-	screenbuffer.emplace_back(linebreak);
+	screenbuffer[++lastLine] = (linebreak);
 }
-void Printer::Circle(int frame)
+void Printer::PrintSkillAnimation(Char::AnimationType type)
 {
-	const int resolution = 10;
+	if(skillAnimation_isRunning == false) return;
+
+	std::string color = "\033[0m";
+	if(type == Char::AnimationType::ATTACK)	color = "\033[38;2;100;0;0m";
+	if(type == Char::AnimationType::HEAL)	color = "\033[38;2;0;100;0m";
+	
+	int lastLine = print_circleY;
+	screenbuffer[lastLine] = linebreak;
+	screenbuffer[++lastLine] = color;
+	lastLine++;
 	const float piShort = 3.141592F;
-	std::string output;
-	const int xVal = std::round((std::sin((float)frame/piShort)+1)*(resolution-1));
-	const int yVal = std::round((std::cos((float)frame/piShort)+1)*resolution/2);
+
+	const int resolution = 5;
+	//const int xVal = std::round((std::sin((float)skillAnimaionFrames/piShort)+1)*resolution*5);
+	//const int yVal = std::round((std::cos((float)skillAnimaionFrames/piShort)+1)*resolution*2);
+	const double animSize = screenWidth/2.0f;
+	const double anim = animSize - skillAnimaionFrames/(30.0f/screenWidth);
+	const int xVal = round(animSize - anim);
 
 	for(size_t yCoord = 0; yCoord < resolution; ++yCoord)
 	{
-		if(yCoord!=yVal){
-			screenbuffer.emplace_back("");
-		}else {
-			for (float j = 0; j < xVal; ++j)
+		screenbuffer[lastLine].clear();
+		for(int c = 0;c < screenWidth-5; ++c)
+		{
+			screenbuffer[lastLine].append(" ");
+			if(c == xVal)
 			{
-				output.append(" ");
+				screenbuffer[lastLine].append("█");
 			}
-			output.append("X");
-			screenbuffer.emplace_back(output);
 		}
+		lastLine++;
+	}
+
+	color = "\033[0m";
+	screenbuffer[lastLine] = color;
+	screenbuffer[++lastLine] = linebreak;
+
+	skillAnimaionFrames++;
+	if(anim <= 0)
+	{
+		skillAnimation_isRunning = false;
+		print_circle = false;
+		skillAnimaionFrames = 0;
 	}
 }
 void Printer::Help()
 {
+	int lastLine = print_helpY;
 	std::string text;
 	for(auto commendsIter = Commands::commandsMap.begin();commendsIter != Commands::commandsMap.end(); ++commendsIter)
 	{
 		if((int)(text.length()+commendsIter->second.length()) >= screenWidth)
 		{
-			screenbuffer.emplace_back(text);
+			screenbuffer[++lastLine] = (text);
 			text.clear();
 		}
 		text.append(commendsIter->second); 
-		if(std::next(commendsIter,1) != Commands::commandsMap.end())
+		if(std::next(commendsIter, 1) != Commands::commandsMap.end())
 		{
-			text.append("|");
+			text.append(" | ") ;
 		}
 	}
-	screenbuffer.emplace_back(text);
+	screenbuffer[++lastLine] = (text);
 }
 void Printer::PrintScreen()
 {
@@ -253,15 +324,23 @@ void Printer::PrintScreen()
 		{
 			break;
 		}
+		std::string linenumber = "";
+		if(i<10)
+		{
+			linenumber = " "+std::to_string(i)+"|";
+		}else{
+			linenumber = std::to_string(i)+"|";
+		}
 		if(screenbuffer.at(i).size() > (size_t)screenWidth)
 		{
-			text.append(screenbuffer.at(i).substr(0,screenWidth) + "\n");
+
+			text.append(linenumber+screenbuffer.at(i).substr(0,screenWidth) + "\n");
 		}else{
-			for(size_t y = screenbuffer.at(i).size(); y < screenWidth; ++y)
+			for(size_t y = screenbuffer.at(i).size()-3; y < screenWidth; ++y)
 			{
 				text.append("\033[0K");
 			}
-			text.append(screenbuffer.at(i) + "\n");
+			text.append(linenumber+screenbuffer.at(i) + "\n");
 		}
 
         }
@@ -270,5 +349,13 @@ void Printer::PrintScreen()
 		text.append("\033[0K\n");
 	}
 	std::cout << text;
-	screenbuffer.clear();
+	for(auto iter = screenbuffer.begin(); iter != screenbuffer.end(); ++iter)
+	{
+		iter->clear();
+		for(size_t spaces = 0; spaces < screenWidth-5; ++spaces)
+		{
+			iter->push_back(' ');
+		}
+	}
+	//screenbuffer.clear();
 }

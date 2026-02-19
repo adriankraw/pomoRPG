@@ -1,2 +1,2 @@
 #! /bin/bash
-./build/pomoRPG -printall -countup Coding
+./build/pomoRPG -printall -countup -timer Coding

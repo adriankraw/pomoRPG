@@ -1,20 +1,15 @@
-#include "Eventable/ItemDrop.h"
 #include <cctype>
-#include <chrono>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
-#include <functional>
 #include <iostream>
 #include <memory>
 #include <ostream>
-#include <ratio>
 #include <string>
 #include <sys/resource.h>
 #include <sys/signal.h>
 #include <sys/ttycom.h>
 #include <thread>
-#include <vector>
 
 #if defined(__APPLE__)
 	#include <sys/termios.h>
@@ -34,12 +29,6 @@
 	#include "boost/beast/websocket/stream.hpp"
 #endif
 
-#define frames 30
-#define actionTick 100
-#define eventTick 5000
-
-#include "Character.cpp"
-#include "saveGame.cpp"
 #include "Timer.cpp"
 #include "printer.cpp"
 #include "KeyCode.h"
@@ -47,11 +36,6 @@
 #include "Game.cpp"
 #include "logger.cpp"
 
-bool running = true;
-
-std::chrono::time_point<std::chrono::system_clock> startFrame;
-std::chrono::time_point<std::chrono::system_clock> endFrame;
-double deltaTime(0);
 int instanceID;
 
 std::shared_ptr<std::string> keyboardInput = std::make_shared<std::string>();
@@ -76,12 +60,13 @@ void signalHandler(int i)
     }
 }
 
-void ttyinit()
+void ttyinit(Game* game)
 {
     tcgetattr(STDIN_FILENO,&tio_save);
     atexit(ttyreset);
     struct termios tio;
     tcgetattr(STDIN_FILENO,&tio);
+    
 
     tio.c_lflag &= ~(IXON);
     tio.c_lflag &= ~(ECHO | ICANON | ISIG);
@@ -90,7 +75,7 @@ void ttyinit()
     winsize _size;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &_size)>= 0 )
     {
-	size = _size;
+	game->SetWindowSize(_size.ws_col, _size.ws_row);
     }
     fflush(stdout);
     signal(SIGWINCH, signalHandler);
@@ -138,295 +123,6 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 	}
 	return;
 }
-void processInput(std::shared_ptr<std::string> keyboardInput, Time& globalTime, Timer* timer, saveGame* save, Printer& print)
-{
-	if(keyboardInput->back() == '\n')
-	{
-		std::string additionalInfo;
-		keyboardInput->pop_back();
-		if((*keyboardInput).find(KeyCode::Btn::Space) != std::string::npos)
-		{
-			additionalInfo = keyboardInput->substr(keyboardInput->find(KeyCode::Btn::Space)+1,keyboardInput->length());
-			*keyboardInput = keyboardInput->substr(0,keyboardInput->find(KeyCode::Btn::Space));
-		}if(*keyboardInput == Commands::commandsMap[Commands::help])
-		{
-			print.print_help = !print.print_help;
-		}else if(*keyboardInput == Commands::commandsMap[Commands::up])
-		{
-			timer->SetState(TimerState::countUp);
-		}else if(*keyboardInput == Commands::commandsMap[Commands::down])
-		{
-			timer->SetState(TimerState::countDown);
-		}else if(*keyboardInput == Commands::commandsMap[Commands::save])
-		{
-			save->Save();
-		}else if(*keyboardInput == Commands::commandsMap[Commands::timer])
-		{
-			keyboardLogger.log(logger::ErrorLevel::Warn,"changing timer to: "+ additionalInfo);
-			//select a Timer
-			if(!additionalInfo.empty())
-			{
-				globalTime.GetHour() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetcurrentTime()->GetHour();	
-				globalTime.GetMinute() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetcurrentTime()->GetMinute();	
-				globalTime.GetSeconds() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetcurrentTime()->GetSeconds();	
-				globalTime.GetMili() = save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetcurrentTime()->GetMili();	
-			}
-		}else if(*keyboardInput == Commands::commandsMap[Commands::add])
-		{
-			if(!additionalInfo.empty())
-			{
-				save->AddStopwatch(additionalInfo);
-			}
-		}else if(*keyboardInput == Commands::commandsMap[Commands::pause] || *keyboardInput == Commands::commandsMap[Commands::stop])
-		{
-			if(!additionalInfo.empty())
-			{
-				keyboardLogger.log(logger::ErrorLevel::Warn,"stopped: "+ additionalInfo);
-				if((size_t)save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
-				{
-					keyboardLogger.log(logger::ErrorLevel::Info, "found watch!");
-					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetTimer()->Pause();
-				}
-			}else {
-				timer->isPaused = true;
-			}
-		}else if(*keyboardInput == Commands::commandsMap[Commands::start] || *keyboardInput == Commands::commandsMap[Commands::resume])
-		{
-			if(!additionalInfo.empty())
-			{
-				if((size_t)save->GetStopwatchIndex(additionalInfo) != save->GetStopWatchList()->size())
-				{
-					save->GetStopWatchByIndex(save->GetStopwatchIndex(additionalInfo)).GetTimer()->UnPause();
-				}
-			}else {
-				timer->isPaused = false;
-			}
-		}else if(*keyboardInput == Commands::commandsMap[Commands::bigclock])
-		{
-			print.print_bigClock = !print.print_bigClock;
-		}else if(*keyboardInput == Commands::commandsMap[Commands::charsettings] || *keyboardInput == Commands::commandsMap[Commands::charstats])
-		{
-			print.print_charsettings = !print.print_charsettings;
-		}else if(*keyboardInput == Commands::commandsMap[Commands::stopwatches])
-		{
-			print.print_stopwatches = !print.print_stopwatches;
-		}else if(*keyboardInput == Commands::commandsMap[Commands::fight])
-		{
-			print.print_fight = !print.print_fight;
-		}else if(*keyboardInput == Commands::commandsMap[Commands::eventlist])
-		{
-			print.print_eventList = !print.print_eventList;
-		}else if(*keyboardInput == Commands::commandsMap[Commands::circle])
-		{
-			print.print_circle = !print.print_circle;
-		}else if(*keyboardInput == Commands::commandsMap[Commands::exit])
-		{
-			running = false;
-		}
-		keyboardInput->clear();
-
-	}
-}
-void ProcessFrame(Time &globalTimer, Timer *timer, Game *myGame, Printer &print)
-{
-	double frame = 0;
-	double exp = 0;
-	double eventTimer = 0;
-	double actionTimer = 0;
-	saveGame *save = &myGame->save;
-
-	while(timer->isRunning && running)
-	{
-		processInput(keyboardInput, globalTimer, timer, save, print);
-
-		print.Flush();	
-		startFrame = std::chrono::system_clock::now();
-		print.SetSize(size.ws_col, size.ws_row);
-		print.Header();
-		if(print.print_bigClock)
-		{
-			print.Timer(globalTimer);
-		}
-		if(print.print_charsettings)
-		{
-			print.CharacterStats((*save).Char());
-		}
-		if(print.print_stopwatches)
-		{
-			size_t stopWatchListSize = save->GetStopWatchList()->size();
-			for (size_t i = 0; i<stopWatchListSize; ++i) {
-				std::string t = save->GetStopWatchByIndex(i).GetNameOfCorrespondingSkill();
-				int maxCount = save->GetMaxFromStopwatchName(t);
-				int seconds = save->GetStopWatchByIndex(i).GetcurrentTime()->ConvertToSecondsForModulo(maxCount);			
-				print.Bar(*save->GetStopWatchByIndex(i).GetName(), seconds, maxCount);
-			}
-		}
-		if(print.print_eventList)
-		{
-			if(myGame->currentEvent.eventType == Character::CharEvent::Fight)
-			{
-				print.EventsList(save->Char().GetEvents(), myGame->currentEvent.monster);
-			}else{
-				print.EventsList(save->Char().GetEvents());
-			}
-		}
-		if(print.print_circle)
-		{
-			print.Circle(frame);
-		}
-		if(print.print_fight)
-		{
-
-			auto events = save->Char().GetEvents();
-			if(myGame->currentEvent.running && myGame->currentEvent.eventType == Character::CharEvent::Fight)
-			{
-				print.OpenFightScreen(save->Char(), myGame->currentEvent.monster);
-			}
-		}
-		if(print.print_help)
-		{
-			print.Help();
-		}
-		print.PrintScreen();
-		/* this has to be handled on a different Thread */
-		if(print.print_input)
-		{
-			std::cout << "> " << keyboardInput->c_str() <<"\033[48;5;255m \033[0m \033[0K";
-		}
-		std::cout << "\033[?25l"; //Make Cursor invisible
-
-		//logic
-		if(!timer->isPaused) {
-
-			std::vector<stopwatch>* stopwatchList = save->GetStopWatchList();
-			size_t stopwatchListSize = stopwatchList->size();
-			for (size_t i = 0; i<stopwatchListSize; ++i) {
-				if(save->GetStopWatchByIndex(i).GetTimer()->isPaused == false)
-				{
-					save->GetStopWatchByIndex(i).GetTimer()->Tick(TimerState::countUp, *save->GetStopWatchByIndex(i).GetcurrentTime(), deltaTime);
-				}
-
-				if(eventTimer >= eventTick) // every 5 seconds 
-				{
-					//keyboardLogger.log(logger::ErrorLevel::Dbg, "EventTriggered");
-					Character::CharEvent charEvent = save->Char().GetRandomEvent();
-					switch(charEvent) {
-						case Character::CharEvent::Fight:
-						{
-							Area* area = save->Char().CurrentArea();
-							charLogger.log(logger::Info, *area->GetName());
-
-							save->Char().AddMonsterToEventMap(Character::CharEvent::Fight, *area->Getmonster());
-							//print.OpenFightScreen(save->Char(), area, monster); This doesnt make sense right now
-						}
-						break;
-						case Character::CharEvent::Chest:
-						{
-							Area* area = save->Char().CurrentArea();
-							Rarity::Level rarity = area->GetRandomRarety();
-							int itemCode{0}, itemAmount{0};
-							area->RollItem(&rarity, itemCode, itemAmount);
-							save->Char().AddUserItemToEventMap(Character::CharEvent::Chest, new ItemDrop(itemCode, itemAmount));
-						}
-						break;
-						case Character::CharEvent::Encounter:
-							//coud be: you encounter some new place;
-							//This is how you are supposed to find the RaidBoss of this Area;
-						break;
-						case Character::CharEvent::Nothing:
-							//PlaceHolder for Nothing was found, Good luck next Time;
-							;
-						break;
-						default:
-							charLogger.log(logger::Info, "char Event default triggered");
-						break;
-					}
-					eventTimer = 0;
-				}
-
-			}
-			if(actionTimer >= save->Char().skillCooldown * actionTick)
-			{
-				/* Handle Events */
-				std::vector<std::tuple<Character::CharEvent, std::function<void*()>>> events = save->Char().GetEvents();
-				if(print.print_fight && !events.empty())
-				{
-					switch(std::get<0>(events.at(0)))
-					{
-						case Character::CharEvent::Fight:
-						{
-							if(!myGame->currentEvent.running)
-							{
-								skillLogger.log(logger::ErrorLevel::Info , "setting currentEvent.running");
-								auto event = std::get<std::function<void*()>>(events.at(0));
-								Monster* monster;
-								monster = (Monster*)event();
-								myGame->currentEvent.eventType = Character::CharEvent::Fight;
-								myGame->currentEvent.monster = std::make_shared<Monster>(*monster);
-								myGame->currentEvent.running = true;
-							}
-							auto* skill = save->Char().GetSkill();
-							skillLogger.log(logger::ErrorLevel::Warn, skill->name + " activated");
-							save->Char().skillCooldown = skill->cost;
-
-							skill->Activate(save->Char(), myGame->currentEvent.monster);
-							save->Char().GetAttacked(*myGame->currentEvent.monster->GetLevel());
-
-							if(*myGame->currentEvent.monster->GetLife() <= 0)
-							{
-								events.erase(events.begin());
-								//The player should get something for slaying an enemy
-								save->Char().SetExp(save->Char().Exp() + 100);
-								myGame->currentEvent.eventType = Character::CharEvent::Nothing;
-								myGame->currentEvent.monster = nullptr;
-								myGame->currentEvent.running = false;
-							}
-						}
-						break;
-						case Character::CharEvent::Chest:
-						{
-							auto event = std::get<std::function<void*()>>(events.at(0));
-							ItemDrop* itemDrop;
-							itemDrop = (ItemDrop*)event();
-							save->Char().AddToInventory(itemDrop->itemCode, itemDrop->itemAmount);
-							save->Char().skillCooldown = 1;
-							delete itemDrop;
-							events.erase(events.begin());
-						}
-						break;
-						case Character::CharEvent::Encounter:
-						{
-						}
-						break;
-						case Character::CharEvent::Nothing:
-						{
-						}
-						break;
-					}
-
-				}
-				actionTimer = 0;
-			}
-
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
-			endFrame = std::chrono::system_clock::now();
-			deltaTime = std::chrono::duration<double, std::milli>(endFrame-startFrame).count();
-			timer->Tick(globalTimer, deltaTime); //this is to tick the BIG clock. ITS NOT SAVED AS A WATCH
-			frame += 0.5F;
-			exp += (deltaTime);
-			eventTimer += deltaTime;
-			actionTimer += deltaTime;
-			if(exp >= 1000)
-			{
-				save->Char().SetExp((int)(save->Char().Exp()+exp/1000)*save->Char().Expmultiplier());
-				exp = 0;
-			}
-		}else{
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000/frames));
-		}
-	};
-}
-
 #if defined(NETWORK)
 void websocketStart()
 {
@@ -475,26 +171,13 @@ void websocketStart()
 
 
 int main (int argc, char *argv[]) {
-	
-	instanceID = std::rand();
-
-	Time worktimer{0,0,0,0};
-	running = true;
-
-	Timer* timer = new Timer(TimerState::countDown);
-	timer->SetState(TimerState::paused);
-
 	Game myGame = Game();
-	myGame.save = saveGame();
-	myGame.save.Load();
+	
+	myGame.Start();
 	//websocketStart();
 
-	Printer print{};
+	ttyinit(&myGame);
 
-	ttyinit();
-
-	std::cout << "\033[2J \033[1H" <<"Starting PomoRPG... \n";
-	std::cout << "welcome to your own liddle pomodoro timer \n \n";
 	if(argc > 1)
 	{	
 		for (int i = 1; i < argc; ++i) {
@@ -508,56 +191,38 @@ int main (int argc, char *argv[]) {
 				}
 				if(argument == Commands::commandsMap[Commands::Base::CountUp])
 				{
-					//countUp
-					timer->SetState(TimerState::countUp);
-					if(argc>2)
-					{
-						stopwatch foundwatch = myGame.save.GetStopWatchByIndex(myGame.save.GetStopwatchIndex(argv[i+1]));
-						
-						if(foundwatch.GetTimer() != nullptr)
-						{
-							foundwatch = myGame.save.AddStopwatch(argv[i+1]);
-						}
-						
-						Time *found;
-						found = foundwatch.GetcurrentTime();
-						timer->SetTime(found->GetHour(),found->GetMinute(),found->GetSeconds(),found->GetMili());
-						worktimer = *found;
-			
-					}else {
-						timer->SetTime(0, 0, 0, 0);
-						worktimer.resetTime();
-					}
+					//countup
 				}
 				if(argument == Commands::commandsMap[Commands::Base::CountDown])
 				{
 					//countdown
-					timer->SetState(TimerState::countDown);
 				}
-				if(argument == Commands::commandsMap[Commands::Base::CountDown])
+				if(argument == Commands::commandsMap[Commands::Base::timer])
 				{
-					//countdown
-					timer->SetState(TimerState::countDown);
+					myGame.globalTimer = &myGame.GetStopWatchByIndex(
+						myGame.GetStopwatchIndex(argv[i+1])).GetcurrentTime();	
 				}
 				if(argument == Commands::commandsMap[Commands::Base::PrintAll])
 				{
-					print.print_input = true;
-					print.print_stopwatches = true;
-					print.print_charsettings = true;
-					print.print_bigClock = true;
+					myGame.gameManager.print.print_input = true;
+					myGame.gameManager.print.print_stopwatches = true;
+					myGame.gameManager.print.print_charsettings = true;
+					myGame.gameManager.print.print_bigClock = true;
+					myGame.gameManager.print.print_eventList = true;
+					myGame.gameManager.print.print_fight = true;
 				}
 			}
 
 		}
 	}
-	timer->isRunning = true;
 	inputReading = std::thread(&sleepfuntion, keyboardInput);
 	inputReading.detach();
-	while(running)
+	while(myGame.isRunning)
 	{
-		ProcessFrame(worktimer, timer, &myGame, print);
-		std::cout<<std::flush;
+		myGame.SetInput(keyboardInput);
+		myGame.Update();
 	}
+	std::cout<<std::flush;
 	write (STDOUT_FILENO, "\e[?47l", 6);
 	std::cout << "\033[?25h";
 	exit(1);

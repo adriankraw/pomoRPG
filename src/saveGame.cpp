@@ -1,317 +1,245 @@
 #pragma once
+#include "Character.cpp"
+#include "Skilltree.cpp"
+#include "stopwatch.cpp"
 #include <cstddef>
 #include <cstring>
 #include <fstream>
 #include <ios>
 #include <iostream>
 #include <map>
-#include <ostream>
 #include <string>
 #include <vector>
 
-#include "Character.cpp"
-#include "stopwatch.cpp"
-#include "Skills/Skills.h"
-#include "logger.cpp"
-#include "Skilltree.cpp"
-
-logger saveGameLogger("saveGame.log");
-
-class saveGame{
-private:
-	Character character;	
-	std::vector<stopwatch> stopwatchList;
-	std::vector<Skills*> skillList;
-	Skilltree skillTree{};
-
-	void GenerateSave();
-public:
-	saveGame();
-	~saveGame();
-	
-	Character& Char(){return character;};
+namespace save_game{
 
 	enum SaveGameKeys{
 		lvl, exp, expMultiplier, name
 	};
 	std::map<SaveGameKeys, std::string> SaveGameKeywords{
-		{saveGame::SaveGameKeys::lvl, "lvl"},
-		{saveGame::SaveGameKeys::exp, "exp"},
-		{saveGame::SaveGameKeys::expMultiplier, "expMultiplier"},
-		{saveGame::SaveGameKeys::name, "name"},
+		{SaveGameKeys::lvl, "lvl"},
+		{SaveGameKeys::exp, "exp"},
+		{SaveGameKeys::expMultiplier, "expMultiplier"},
+		{SaveGameKeys::name, "name"},
 	};
-	std::string GetKeyValue(SaveGameKeys);	
-	std::vector<stopwatch>* GetStopWatchList() {return &stopwatchList;};
-	stopwatch& GetStopWatchByIndex(int index) {return stopwatchList[index];};
-	
-	void Save(const saveGame::SaveGameKeys, const std::string);
-	void Save();
-	void Load();
-	void LoadSaveGame();
-	void LoadTimers(std::vector<stopwatch>*);
-	void LoadSkills(std::vector<Skills*>&);
 
-	int GetStopwatchIndex(std::string name);
-	int GetMaxFromStopwatchName(std::string s);
-	stopwatch& AddStopwatch(std::string name);
-};
-
-saveGame::saveGame() {
-	character = Character();
-	saveGameLogger.log(logger::ErrorLevel::Info, "saveGame created" );
-};
-
-std::string saveGame::GetKeyValue(SaveGameKeys key)
-{
-	switch (key) {
-		case saveGame::SaveGameKeys::lvl:
-			return std::to_string(this->character.Lvl());
-		break;
-		case saveGame::SaveGameKeys::exp:
-			return std::to_string(this->character.Exp());
-		break;
-		case saveGame::SaveGameKeys::name:
-			return this->character.Name();
-		break;
-		case saveGame::SaveGameKeys::expMultiplier:
-			return std::to_string(this->character.Expmultiplier());
-	}
-}
-int saveGame::GetStopwatchIndex(std::string nameOfWatch)
-{
-	int index = 0;
-	for(auto watch: stopwatchList)
+	std::string GetKeyValue(Character& character, SaveGameKeys key)
 	{
-		if(*watch.GetName() == nameOfWatch)
-		{
-			
+		switch (key) {
+			case SaveGameKeys::lvl:
+				return std::to_string(character.Lvl());
 			break;
-		}
-		++index;
-	}
-	return index;
-}
-int saveGame::GetMaxFromStopwatchName(std::string s)
-{
-	int max = 60;
-	for (auto sw: skillList)
-	{
-		if (sw->name == s)
-		{
-			max = sw->expToLevel;
+			case SaveGameKeys::exp:
+				return std::to_string(character.Exp());
+			break;
+			case SaveGameKeys::name:
+				return character.Name();
+			break;
+			case SaveGameKeys::expMultiplier:
+				return std::to_string(character.Expmultiplier());
 		}
 	}
-	return max;
-}
 
-stopwatch& saveGame::AddStopwatch(std::string nameOfWatch)
-{
-	stopwatchList.push_back(stopwatch(nameOfWatch));
-	
-	return saveGame::GetStopWatchByIndex(GetStopwatchIndex(nameOfWatch));
-}
 
-void saveGame::GenerateSave(){
-	std::fstream saveFile("saveFile.txt", std::ios::in);
-	//muss ich noch schreiben... will aber gerade nicht.
-}
+	void GenerateSave(){
+		std::fstream saveFile("saveFile.txt", std::ios::in);
+		//muss ich noch schreiben... will aber gerade nicht.
+	}
 
-void saveGame::Save(const saveGame::SaveGameKeys Keyword, const std::string value) {	
-	std::fstream saveFile;
+	void Save(const SaveGameKeys Keyword, const std::string value) {	
+		std::fstream saveFile;
 
-	saveFile.open("saveFile.txt", std::ios::in);
-	std::string line = "";
-	std::string newFile = "";
-	const std::string key = saveGame::SaveGameKeywords[Keyword].c_str();
-	if(saveFile.is_open())
-	{
-		while(std::getline(saveFile, line))
+		saveFile.open("saveFile.txt", std::ios::in);
+		std::string line = "";
+		std::string newFile = "";
+		const std::string key = SaveGameKeywords[Keyword].c_str();
+		if(saveFile.is_open())
 		{
-			if(line.find(key)!=line.npos)
+			while(std::getline(saveFile, line))
 			{
-				std::string startingWith = line.substr(0, line.find(":::"));
-				
-				newFile.append(startingWith+":::");
-				newFile.append(value);
-				newFile.append("\n");
+				if(line.find(key)!=line.npos)
+				{
+					std::string startingWith = line.substr(0, line.find(":::"));
+					
+					newFile.append(startingWith+":::");
+					newFile.append(value);
+					newFile.append("\n");
+				}
+				else{
+					newFile.append(line+"\n");
+				}
+				line.clear();
 			}
-			else{
-				newFile.append(line+"\n");
-			}
-			line.clear();
+			saveFile.flush();
+			saveFile.clear();
+			saveFile.close();
 		}
-		saveFile.flush();
+
+		saveFile.open("saveFile.txt", std::ios::out);
+		if(saveFile.is_open())
+		{
+			saveFile << newFile;
+			saveFile.flush();
+			saveFile.close();
+		}
+	};
+	void Save(Character& character, std::vector<stopwatch>& stopwatchList)
+	{
+		std::fstream saveFile;
+
+		saveFile.open("saveFile.txt", std::ios::out);
+		if(saveFile.is_open())
+		{
+			for (auto key : SaveGameKeywords) {
+				std::string text;
+				text.append(key.second.c_str());
+				text.append(":::");
+				text.append(GetKeyValue(character, key.first));
+				text.append("\n");
+				saveFile << text;
+				saveFile.flush();
+			}
+			saveFile.close();
+		}	
 		saveFile.clear();
-		saveFile.close();
-	}
 
-	saveFile.open("saveFile.txt", std::ios::out);
-	if(saveFile.is_open())
-	{
-		saveFile << newFile;
-		saveFile.flush();
-		saveFile.close();
-	}
-};
-void saveGame::Save()
-{
-	std::fstream saveFile;
-
-	saveFile.open("saveFile.txt", std::ios::out);
-	if(saveFile.is_open())
-	{
-		for (auto key : saveGame::SaveGameKeywords) {
-			std::string text;
-			text.append(key.second.c_str());
-			text.append(":::");
-			text.append(this->GetKeyValue(key.first));
-			text.append("\n");
-			saveFile << text;
-			saveFile.flush();
-		}
-		saveFile.close();
-	}	
-	saveFile.clear();
-
-	saveFile.open("timerList.txt");
-	if(saveFile.is_open())
-	{
-		for(auto iterator = stopwatchList.begin(); iterator != stopwatchList.end(); ++iterator) 
+		saveFile.open("timerList.txt");
+		if(saveFile.is_open())
 		{
-			std::string text;
-			text.append(*iterator->GetName());
-			text.append(":::");
-			text.append(iterator->GetcurrentTimeAsString());
-			text.append(":::");
-			if(iterator->GetTimer()->isPaused)
+			for(auto iterator = stopwatchList.begin(); iterator != stopwatchList.end(); ++iterator) 
 			{
-				text.append("stopped");
-			}else
-			{
-				text.append("started");
-			}
-			text.append("\n");
-			saveFile << text;
-			text = "";
-			saveFile.flush();
-		}
-	}
-	saveFile.close();
-}
-void saveGame::Load() {
-	LoadSaveGame();
-	LoadSkills(character.skillList);
-	LoadTimers(&stopwatchList);
-}
-void saveGame::LoadSaveGame()
-{
-	std::ifstream saveFile;
-	saveFile.open("saveFile.txt");
-	std::string line("");
-	if(saveFile.is_open())
-	{
-		while (std::getline(saveFile, line))
-		{
-			if(line == "") continue;
-
-			if(line.find(":::") != 0)
-			{
-				const std::string startingWith = line.substr(0, line.find(":::"));
-				
-				if(startingWith == SaveGameKeywords[SaveGameKeys::lvl])
+				std::string text;
+				text.append(*iterator->GetName());
+				text.append(":::");
+				text.append(iterator->GetcurrentTimeAsString());
+				text.append(":::");
+				if(iterator->GetTimer()->isPaused)
 				{
-					character.SetLvl(std::stoi(line.substr(line.find(":::")+3, line.length())));
-				}
-				if(startingWith == SaveGameKeywords[SaveGameKeys::name])
+					text.append("stopped");
+				}else
 				{
-					character.SetName(line.substr(line.find(":::")+3, line.length()));
+					text.append("started");
 				}
-				if(startingWith == SaveGameKeywords[SaveGameKeys::exp])
-				{
-					character.SetExp(std::stoi(line.substr(line.find(":::")+3, line.length())));
-				}
-				if(startingWith == SaveGameKeywords[SaveGameKeys::expMultiplier])
-				{
-					character.SetExpMultiplier(std::stoi(line.substr(line.find(":::")+3, line.length())));
-				}
+				text.append("\n");
+				saveFile << text;
+				text = "";
+				saveFile.flush();
 			}
 		}
 		saveFile.close();
 	}
-	saveFile.clear();
-}
-void saveGame::LoadTimers(std::vector<stopwatch>* stopwatchList)
-{
-	std::ifstream saveFile;
-	saveFile.open("timerList.txt");
-	std::string line("");
-	if(saveFile.is_open())
+
+	void LoadSaveGame(Character& character)
 	{
-		while (std::getline(saveFile, line)) 
+		std::ifstream saveFile;
+		saveFile.open("saveFile.txt");
+		std::string line("");
+		if(saveFile.is_open())
 		{
-			if(line == "") continue;
-
-			if(line.find(":::") != 0)
+			while (std::getline(saveFile, line))
 			{
-				int l = line.find(":::");
-				const std::string startingWith = line.substr(0, l);
-				int ll = line.find(":::",l+3);
-				int lll = line.find(":::",ll+3);
+				if(line == "") continue;
 
-				std::string timeStamp = line.substr(l+3,ll-l-3);
-				int hIndex = timeStamp.find("h");
-				int mIndex = timeStamp.find("m");
-				int sIndex = timeStamp.find("s");
-				int miliIndex = timeStamp.find("mili"); 
-
-				int hour = std::stoi(timeStamp.substr(0,hIndex));
-				int minute = std::stoi( timeStamp.substr(hIndex+1, mIndex-hIndex-1));
-				int seconds = std::stoi(timeStamp.substr(mIndex+1, sIndex-mIndex-1));
-				int mili = std::stoi(timeStamp.substr(sIndex+1, timeStamp.length()-miliIndex-3));
-
-				const std::string startState = line.substr(ll+3, lll-ll-3);
-
-				const std::string skillBind = line.substr(lll+3);
-				
-				stopwatch nextWatch(startingWith, Time(hour,minute,seconds,mili), skillBind);
-				if(startState == "stopped")
+				if(line.find(":::") != 0)
 				{
-					nextWatch.GetTimer()->Pause();
+					const std::string startingWith = line.substr(0, line.find(":::"));
+					
+					if(startingWith == SaveGameKeywords[SaveGameKeys::lvl])
+					{
+						character.SetLvl(std::stoi(line.substr(line.find(":::")+3, line.length())));
+					}
+					if(startingWith == SaveGameKeywords[SaveGameKeys::name])
+					{
+						character.SetName(line.substr(line.find(":::")+3, line.length()));
+					}
+					if(startingWith == SaveGameKeywords[SaveGameKeys::exp])
+					{
+						character.SetExp(std::stoi(line.substr(line.find(":::")+3, line.length())));
+					}
+					if(startingWith == SaveGameKeywords[SaveGameKeys::expMultiplier])
+					{
+						character.SetExpMultiplier(std::stoi(line.substr(line.find(":::")+3, line.length())));
+					}
 				}
-				stopwatchList->push_back(nextWatch);
 			}
+			saveFile.close();
 		}
+		saveFile.clear();
 	}
-	saveFile.clear();
-}
-void saveGame::LoadSkills(std::vector<Skills*>& skillList)
-{
-	std::ifstream saveFile;
-	std::string line("");
-	saveFile.open("skilltree.txt");
-	line = "";
-	if(saveFile.is_open())
+	void LoadTimers(std::vector<stopwatch>& stopwatchList)
 	{
-		saveGameLogger.log(logger::ErrorLevel::Info, "reading skilltree");
-		while(std::getline(saveFile, line))
+		std::ifstream saveFile;
+		saveFile.open("timerList.txt");
+		std::string line("");
+		if(saveFile.is_open())
 		{
-			if(line == "") continue;
-
-			if(line.find(":::") != 0)
+			while (std::getline(saveFile, line)) 
 			{
-				int l = line.find(":::");
-				const std::string startingWith = line.substr(0, l);
-				const int skillExp = std::stoi(line.substr(l+3, line.length()-l));
-				saveGameLogger.log(logger::ErrorLevel::Info, startingWith + " " + std::to_string(skillExp));
-				auto& t = skillTree.skillvector.at(startingWith);
-				skillList.push_back(t.contructor(startingWith,skillExp));
-				//map Skill + timer to array in Char
-				
+				if(line == "") continue;
+
+				if(line.find(":::") != 0)
+				{
+					int l = line.find(":::");
+					const std::string startingWith = line.substr(0, l);
+					int ll = line.find(":::",l+3);
+					int lll = line.find(":::",ll+3);
+
+					std::string timeStamp = line.substr(l+3,ll-l-3);
+					int hIndex = timeStamp.find("h");
+					int mIndex = timeStamp.find("m");
+					int sIndex = timeStamp.find("s");
+					int miliIndex = timeStamp.find("mili"); 
+
+					int hour = std::stoi(timeStamp.substr(0,hIndex));
+					int minute = std::stoi( timeStamp.substr(hIndex+1, mIndex-hIndex-1));
+					int seconds = std::stoi(timeStamp.substr(mIndex+1, sIndex-mIndex-1));
+					int mili = std::stoi(timeStamp.substr(sIndex+1, timeStamp.length()-miliIndex-3));
+
+					const std::string startState = line.substr(ll+3, lll-ll-3);
+
+					const std::string skillBind = line.substr(lll+3);
+					
+					stopwatch nextWatch(startingWith, Time(hour,minute,seconds,mili), skillBind);
+					if(startState == "stopped")
+					{
+						nextWatch.GetTimer()->Pause();
+					}
+					stopwatchList.push_back(nextWatch);
+				}
 			}
 		}
+		saveFile.clear();
 	}
-	saveFile.clear();
-}
+	void LoadSkills(std::vector<Skills*>& skillList, Skilltree& skillTree)
+	{
+		std::ifstream saveFile;
+		std::string line("");
+		saveFile.open("skilltree.txt");
+		line = "";
+		if(saveFile.is_open())
+		{
+			while(std::getline(saveFile, line))
+			{
+				if(line == "") continue;
 
-saveGame::~saveGame() {
+				if(line.find(":::") != 0)
+				{
+					int l = line.find(":::");
+					const std::string startingWith = line.substr(0, l);
+					const int skillExp = std::stoi(line.substr(l+3, line.length()-l));
+					auto& t = skillTree.skillvector.at(startingWith);
+					skillList.push_back(t.contructor(startingWith,skillExp));
+					//map Skill + timer to array in Char
+					
+				}
+			}
+		}
+		saveFile.clear();
+	}
+
+	void LoadAreas(std::vector<Area>& areas)
+	{
+		areas.emplace_back(Area());
+	}
+
 }

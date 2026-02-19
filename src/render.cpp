@@ -1,3 +1,4 @@
+#pragma once
 #include <array>
 #include <string>
 #include <list>
@@ -59,82 +60,81 @@ public:
 	}
 
 private:
-
 	std::array<std::string, stringarrayResolution> number_zero = {
-		"xxxx",
-		"x  x",
-		"x  x",
-		"x  x",
-		"xxxx"
+		"████",
+		"█  █",
+		"█  █",
+		"█  █",
+		"████"
 	};
 	std::array<std::string, stringarrayResolution> number_one = {
-		"   x",
-		"   x",
-		"   x",
-		"   x",
-		"   x"
+		"   █",
+		"   █",
+		"   █",
+		"   █",
+		"   █"
 	};
 	std::array<std::string, stringarrayResolution> number_two = {
-		"xxxx",
-		"x  x",
-		"  x ",
-		" x  ",
-		"xxxx"
+		"████",
+		"█  █",
+		"  █ ",
+		" █  ",
+		"████"
 	};
 	std::array<std::string, stringarrayResolution> number_three = {
-		"xxxx",
-		"   x",
-		" xxx",
-		"   x",
-		"xxxx"
+		"████",
+		"   █",
+		" ███",
+		"   █",
+		"████"
 	};
 	std::array<std::string, stringarrayResolution> number_four = {
-		"x  x",
-		"x  x",
-		"xxxx",
-		"   x",
-		"   x"
+		"█  █",
+		"█  █",
+		"████",
+		"   █",
+		"   █"
 	};
 	std::array<std::string, stringarrayResolution> number_five = {
-		"xxxx",
-		"x   ",
-		"xxxx",
-		"   x",
-		"xxxx"
+		"████",
+		"█   ",
+		"████",
+		"   █",
+		"████"
 	};
 	std::array<std::string, stringarrayResolution> number_six = {
-		"xxxx",
-		"x   ",
-		"xxxx",
-		"x  x",
-		"xxxx"
+		"████",
+		"█   ",
+		"████",
+		"█  █",
+		"████"
 	};
 	std::array<std::string, stringarrayResolution> number_seven = {
-		"xxxx",
-		"x  x",
-		"   x",
-		"   x",
-		"   x",
+		"████",
+		"█  █",
+		"   █",
+		"   █",
+		"   █",
 	};
 	std::array<std::string, stringarrayResolution> number_eight = {
-		"xxxx",
-		"x  x",
-		"xxxx",
-		"x  x",
-		"xxxx"
+		"████",
+		"█  █",
+		"████",
+		"█  █",
+		"████"
 	};
 	std::array<std::string, stringarrayResolution> number_nine = {
-		"xxxx",
-		"x  x",
-		"xxxx",
-		"   x",
-		"xxxx"
+		"████",
+		"█  █",
+		"████",
+		"   █",
+		"████"
 	};
 	std::array<std::string, stringarrayResolution> number_space = {
 		"   ",
-		" x ",
+		" █ ",
 		"   ",
-		" x ",
+		" █ ",
 		"   "
 	};
 	std::array<std::array<std::string, stringarrayResolution>, 10> numbersPointer = {number_zero, number_one, number_two, number_three, number_four, number_five, number_six, number_seven, number_eight, number_nine};

@@ -7,7 +7,13 @@
 
 class Area {
 public:
+	struct AreaProps{
+		std::string name;
+		int level;
+		int monsterLevel;
+	};
 	Area();
+	Area(const AreaProps&);
 	Area(Area &&) = default;
 	Area(const Area &) = default;
 	Area &operator=(Area &&) = default;
@@ -18,18 +24,25 @@ public:
 	Monster* Getmonster();
 	Rarity::Level GetRandomRarety();
 
-	void RollItem(Rarity::Level*, int&, int&);
+	void RollItem(Rarity::Level* rarity, int &itemCode, int &itemAmount);
 
 private:
 	std::string name;
 	int areaLevel = 0;
 	Rarity rarity;
-	std::vector<Monster> monsterList{Monster(1000)};
+	std::vector<Monster> monsterList;
 };
 
 Area::Area() {
 	name = "Office";
 	areaLevel = 0;
+	monsterList = {Monster(1000)};
+	Area::rarity = Rarity();
+}
+Area::Area(const Area::AreaProps& props) {
+	name = props.name;
+	areaLevel = props.level;
+	monsterList = {Monster(props.monsterLevel * 1000)};
 	Area::rarity = Rarity();
 }
 
@@ -55,8 +68,8 @@ void Area::RollItem(Rarity::Level* rarity, int &itemCode, int &itemAmount )
 {
 	if(rarity != nullptr)
 	{
-		itemCode = 0;
-		itemAmount = 1;
+		itemCode = itemCode;
+		itemAmount = itemAmount;
 	}else{
 		itemCode = 0;
 		itemAmount = 0;

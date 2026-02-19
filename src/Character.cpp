@@ -37,6 +37,8 @@ public:
 		Nothing
 	};
 
+
+
 	void SetName(const std::string& _name);
 	void SetLvl(const int& _lvl);
 	void SetExp(const int& _exp);
@@ -66,10 +68,11 @@ public:
 	void RemoveFromInventory(int, int);
 
 	void AddMonsterToEventMap(Character::CharEvent event, const Monster& monster);
-	void AddUserItemToEventMap(Character::CharEvent event, ItemDrop* itemDrop);
+	void AddUserItemToEventMap(Character::CharEvent event, const ItemDrop& itemDrop);
 	auto& GetEvents();
 
 	int currentSkill = 0;
+	Char::AnimationType skillAnimationType = Char::AnimationType::ATTACK;
 	std::vector<Skills*> skillList{};
 	int skillCooldown{1};
 
@@ -211,9 +214,11 @@ void Character::AddMonsterToEventMap(Character::CharEvent event, const Monster& 
 	}));
 	charLogger.log(logger::ErrorLevel::Dbg, "ListSize:" + std::to_string(EventVector.size()));
 }
-void Character::AddUserItemToEventMap(Character::CharEvent event, ItemDrop* itemDrop)
+void Character::AddUserItemToEventMap(Character::CharEvent event, const ItemDrop& itemDrop)
 {
-	EventVector.emplace_back(std::tuple(event, [&](){return new ItemDrop(0,1);}));
+	EventVector.emplace_back(std::tuple(event, [itemDrop](){
+		return new ItemDrop(itemDrop);
+	}));
 	charLogger.log(logger::ErrorLevel::Dbg, "ListSize:" + std::to_string(EventVector.size()));
 }
 

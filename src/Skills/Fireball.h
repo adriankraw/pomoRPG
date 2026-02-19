@@ -20,12 +20,14 @@ private:
 Fireball::Fireball(std::string _name, const int _skillExp) {
 	name = _name;
 	expToLevel = _skillExp;
+	cost = 10;
 }
 
 Fireball::~Fireball() {
 }
 
 void Fireball::Activate(Unit& character, std::shared_ptr<Unit> monster){
+	animationType = Char::AnimationType::ATTACK;
 	if(character.life > 0)
 	{
 		DmgEnemy(monster, fireballDmg);

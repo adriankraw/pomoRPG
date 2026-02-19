@@ -15,6 +15,11 @@ public:
 	int& GetSeconds() {return second;}
 	int& GetMili() {return mili;}
 
+	void SetHour(int value) { hour = value;}
+	void SetMinute(int value) { minute = value;}
+	void SetSeconds(int value) { second = value;}
+	void SetMili(int value) { mili = value;}
+
 	int ConvertToSecondsForModulo(int);
 
 	void addTime(Time&, const double);
