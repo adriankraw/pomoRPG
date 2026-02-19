@@ -36,6 +36,7 @@ public:
 	void Help();
 	void PrintScreen();
 	void CalcLineBreak();
+	std::string CalcYOffsetString(int yOffset);
 	void SetSize(int width, int height){
 		screenWidth = width;
 		screenHeight = height;
@@ -109,6 +110,14 @@ void Printer::CalcLineBreak(){
 		linebreak.append("-");	
 	}
 }
+std::string Printer::CalcYOffsetString(int yOffset){
+	std::string offset = "";
+	for(size_t i = 0; i < yOffset; ++i)
+	{
+		offset += " ";
+	}
+	return offset; 
+}
 void Printer::Header() {
 	int lastLine = 0;
 	screenbuffer[lastLine] = "PomoRPG:"+std::to_string(screenWidth)+":"+std::to_string(screenHeight);
@@ -119,9 +128,10 @@ void Printer::Timer(Time &currentTime){
 	ren.renderTime(currentTime);
 	screenbuffer[++lastLine] = "\033[1m";
 	size_t resultSize = ren.result.size();
+	std::string offset = CalcYOffsetString(0);
 	for(size_t i = 0; i < resultSize; ++i)
 	{
-		screenbuffer[++lastLine] = (ren.result[i]);
+		screenbuffer[++lastLine] = offset+(ren.result[i]);
 	}
 	screenbuffer[++lastLine] = "\033[0m";
 	screenbuffer[++lastLine] = linebreak;

@@ -1,5 +1,6 @@
 #include <cctype>
 #include <csignal>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -48,6 +49,8 @@ struct termios tio_save;
 struct winsize size;
 void ttyreset()
 {
+
+	write (STDOUT_FILENO, "\e[?47l", 6);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &tio_save);
 }
 
@@ -67,6 +70,7 @@ void ttyinit(Game* game)
     struct termios tio;
     tcgetattr(STDIN_FILENO,&tio);
     
+    write (STDOUT_FILENO, "\e[?47h", 6);
 
     tio.c_lflag &= ~(IXON);
     tio.c_lflag &= ~(ECHO | ICANON | ISIG);
@@ -80,7 +84,6 @@ void ttyinit(Game* game)
     fflush(stdout);
     signal(SIGWINCH, signalHandler);
 
-    write (STDOUT_FILENO, "\e[?47h", 6);
     //mouse Tracking
     //write (STDOUT_FILENO, "\e[?9h", 5);
 }
@@ -96,6 +99,15 @@ int getkey()
         len = buf[0];
 
     return len;
+}
+std::string TabComplete(std::string input)
+{
+	for(auto iter = Commands::commandsMap.begin(); iter != Commands::commandsMap.end(); iter++)
+	{
+		size_t pos = iter->second.find(input);
+		if(pos!=iter->second.npos) return iter->second.substr(pos+input.size(), iter->second.npos);
+	}
+	return "";
 }
 void sleepfuntion(std::shared_ptr<std::string> cinText)
 {
@@ -115,6 +127,9 @@ void sleepfuntion(std::shared_ptr<std::string> cinText)
 			}else if(c == KeyCode::Btn::CTRL_C)
 			{
 				*cinText += "exit\n";
+			}else if(c == KeyCode::Btn::Tab)
+			{
+				*cinText += TabComplete(*cinText);
 			}
 			else {
 				*cinText += c;
@@ -223,8 +238,8 @@ int main (int argc, char *argv[]) {
 		myGame.Update();
 	}
 	std::cout<<std::flush;
-	write (STDOUT_FILENO, "\e[?47l", 6);
 	std::cout << "\033[?25h";
+	ttyreset();
 	exit(1);
 	return 0;
 }
