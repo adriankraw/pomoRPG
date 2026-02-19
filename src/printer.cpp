@@ -56,7 +56,7 @@ public:
 	int print_stopwatchY = 22;
 	bool print_eventList = false;
 	int print_eventListX = 0;
-	int print_eventListY = 30;
+	int print_eventListY = 27;
 	bool print_fight = false;
 	int print_fightX = 0;
 	int print_fightY = 32;
@@ -262,37 +262,73 @@ void Printer::PrintSkillAnimation(Char::AnimationType type)
 	const float piShort = 3.141592F;
 
 	const int resolution = 5;
-	//const int xVal = std::round((std::sin((float)skillAnimaionFrames/piShort)+1)*resolution*5);
-	//const int yVal = std::round((std::cos((float)skillAnimaionFrames/piShort)+1)*resolution*2);
-	const double animSize = screenWidth/2.0f;
-	const double anim = animSize - skillAnimaionFrames/(30.0f/screenWidth);
-	const int xVal = round(animSize - anim);
-
-	for(size_t yCoord = 0; yCoord < resolution; ++yCoord)
+	int xVal = 0;
+	switch (type)
 	{
-		screenbuffer[lastLine].clear();
-		for(int c = 0;c < screenWidth-5; ++c)
+		case Char::AnimationType::HEAL:
 		{
-			screenbuffer[lastLine].append(" ");
-			if(c == xVal)
+			xVal = std::round((std::sin((float)skillAnimaionFrames/piShort))*resolution);
+			//const int yVal = std::round((std::cos((float)skillAnimaionFrames/piShort)+1)*resolution*2);
+			for(size_t yCoord = 0; yCoord < resolution; ++yCoord)
 			{
-				screenbuffer[lastLine].append("█");
+				screenbuffer[lastLine].clear();
+				std::string s = " ";
+				if(xVal <= yCoord)
+				{
+					s = "█";
+				}
+				for(int c = 0;c < screenWidth-5; ++c)
+				{
+					screenbuffer[lastLine].append(s);
+				}
+				lastLine++;
+			}
+			color = "\033[0m";
+			screenbuffer[lastLine] = color;
+			screenbuffer[++lastLine] = linebreak;
+
+			skillAnimaionFrames++;
+			if(skillAnimaionFrames >= 20)
+			{
+				skillAnimation_isRunning = false;
+				print_circle = false;
+				skillAnimaionFrames = 0;
 			}
 		}
-		lastLine++;
+		break;
+		case Char::AnimationType::ATTACK:
+		{
+			const double animSize = screenWidth/2.0f;
+			const double anim = animSize - skillAnimaionFrames/(30.0f/screenWidth);
+			xVal = round(animSize - anim);
+			for(size_t yCoord = 0; yCoord < resolution; ++yCoord)
+			{
+				screenbuffer[lastLine].clear();
+				for(int c = 0;c < screenWidth-5; ++c)
+				{
+					screenbuffer[lastLine].append(" ");
+					if(c == xVal)
+					{
+						screenbuffer[lastLine].append("█");
+					}
+				}
+				lastLine++;
+			}
+			color = "\033[0m";
+			screenbuffer[lastLine] = color;
+			screenbuffer[++lastLine] = linebreak;
+
+			skillAnimaionFrames++;
+			if(anim <= 0)
+			{
+				skillAnimation_isRunning = false;
+				print_circle = false;
+				skillAnimaionFrames = 0;
+			}
+		}
+		break;
 	}
 
-	color = "\033[0m";
-	screenbuffer[lastLine] = color;
-	screenbuffer[++lastLine] = linebreak;
-
-	skillAnimaionFrames++;
-	if(anim <= 0)
-	{
-		skillAnimation_isRunning = false;
-		print_circle = false;
-		skillAnimaionFrames = 0;
-	}
 }
 void Printer::Help()
 {

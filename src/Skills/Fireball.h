@@ -20,7 +20,7 @@ private:
 Fireball::Fireball(std::string _name, const int _skillExp) {
 	name = _name;
 	expToLevel = _skillExp;
-	cost = 10;
+	cost = 3;
 }
 
 Fireball::~Fireball() {

@@ -21,7 +21,7 @@ struct Event{
 
 struct Manager{
 	const int frames = 30;
-	const int actionTick = 100;
+	const int actionTick = 1000;
 	const int eventTick = 5000;
 	int screenWidth = 0;
 	int screenHeight = 0;
