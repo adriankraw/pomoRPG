@@ -64,6 +64,8 @@ public:
 	Time* globalTimer = new Time(1,0,0,0);
 	std::vector<stopwatch> stopwatchList{};
 	std::vector<Area> areas{};
+	std::vector<Monster> monsters{};
+	// Try to use a list fatstructs for monsters, and zero initiaite them, and see how it goes. spawning a Monster should then only be "get a random'ish INTEGER"
 	Skilltree skilltree{};
 
 	void SaveGame();
@@ -122,15 +124,24 @@ void Game::Update(){
 	gameManager.print.Flush();
 	gameManager.print.SetSize(gameManager.screenWidth, gameManager.screenHeight);
 	gameManager.print.Header();
-	if(gameManager.print.print_bigClock)
+	if(gameManager.print.windows[Printer::windowType::bigclock].isDrawn)
 	{
 		gameManager.print.Timer(*globalTimer);
 	}
-	if(gameManager.print.print_charsettings)
+	if(gameManager.print.windows[Printer::windowType::eventlist].isDrawn)
+	{
+		if(currentEvent.eventType == Character::CharEvent::Fight)
+		{
+			gameManager.print.EventsList(player.GetEvents(), currentEvent.monster);
+		}else{
+			gameManager.print.EventsList(player.GetEvents());
+		}
+	}
+	if(gameManager.print.windows[Printer::windowType::charsettings].isDrawn)
 	{
 		gameManager.print.CharacterStats(player);
 	}
-	if(gameManager.print.print_stopwatches)
+	if(gameManager.print.windows[Printer::windowType::stopwatches].isDrawn)
 	{
 		size_t stopWatchListSize = stopwatchList.size();
 		for (size_t i = 0; i<stopWatchListSize; ++i) {
@@ -140,20 +151,12 @@ void Game::Update(){
 			gameManager.print.Bar(*GetStopWatchByIndex(i).GetName(), i, seconds, maxCount);
 		}
 	}
-	if(gameManager.print.print_eventList)
-	{
-		if(currentEvent.eventType == Character::CharEvent::Fight)
-		{
-			gameManager.print.EventsList(player.GetEvents(), currentEvent.monster);
-		}else{
-			gameManager.print.EventsList(player.GetEvents());
-		}
-	}
-	if(gameManager.print.print_circle)
+
+	if(gameManager.print.windows[Printer::windowType::skillAnimation].isDrawn)
 	{
 		gameManager.print.PrintSkillAnimation(player.skillAnimationType);
 	}
-	if(gameManager.print.print_fight)
+	if(gameManager.print.windows[Printer::windowType::fight].isDrawn)
 	{
 		auto events = player.GetEvents();
 		if(currentEvent.running && currentEvent.eventType == Character::CharEvent::Fight)
@@ -161,13 +164,13 @@ void Game::Update(){
 			gameManager.print.OpenFightScreen(player, currentEvent.monster);
 		}
 	}
-	if(gameManager.print.print_help)
+	if(gameManager.print.windows[Printer::windowType::help].isDrawn)
 	{
 		gameManager.print.Help();
 	}
 	gameManager.print.PrintScreen();
 	/* this has to be handled on a different Thread */
-	if(gameManager.print.print_input)
+	if(gameManager.print.windows[Printer::windowType::input].isDrawn)
 	{
 		std::cout << "> " << *currentInput <<"\033[48;5;255m \033[0m \033[0K";
 	}
@@ -221,10 +224,10 @@ void Game::Update(){
 			}
 
 		}
-		if(gameManager.print.print_fight && frameData.actionTimer >= player.skillCooldown * gameManager.actionTick)
+		if(gameManager.print.windows[Printer::windowType::fight].isDrawn && frameData.actionTimer >= player.skillCooldown * gameManager.actionTick)
 		{
 			std::vector<std::tuple<Character::CharEvent, std::function<void*()>>>& events = player.GetEvents();
-			if(gameManager.print.print_fight && !events.empty())
+			if(!events.empty())
 			{
 				switch(std::get<Character::CharEvent>(events.at(0)))
 				{
@@ -245,8 +248,8 @@ void Game::Update(){
 
 						skill->Activate(player, currentEvent.monster);
 						player.skillAnimationType = skill->animationType;
-						gameManager.print.print_circle = true;	
-						gameManager.print.skillAnimation_isRunning = true;
+						gameManager.print.windows[Printer::windowType::skillAnimation].isDrawn = true;	
+						gameManager.print.windows[Printer::windowType::skillAnimation].animatin_isRunning = true;
 						player.GetAttacked(*currentEvent.monster->GetLevel());
 
 						if(*currentEvent.monster->GetLife() <= 0)
@@ -322,7 +325,7 @@ void Game::ProcessInput()
 			*currentInput = currentInput->substr(0,currentInput->find(KeyCode::Btn::Space));
 		}if(*currentInput == Commands::commandsMap[Commands::help])
 		{
-			gameManager.print.print_help = !gameManager.print.print_help;
+			gameManager.print.ToggleWindow(Printer::windowType::help);
 		}else if(*currentInput == Commands::commandsMap[Commands::up])
 		{
 			//screenTimer.SetState(TimerState::countUp);
@@ -369,23 +372,23 @@ void Game::ProcessInput()
 			}
 		}else if(*currentInput == Commands::commandsMap[Commands::bigclock])
 		{
-			gameManager.print.print_bigClock = !gameManager.print.print_bigClock;
+			gameManager.print.ToggleWindow(Printer::windowType::bigclock);
 		}else if(*currentInput == Commands::commandsMap[Commands::charsettings] || *currentInput == Commands::commandsMap[Commands::charstats])
 		{
-			gameManager.print.print_charsettings = !gameManager.print.print_charsettings;
+			gameManager.print.ToggleWindow(Printer::windowType::charsettings);
 		}else if(*currentInput == Commands::commandsMap[Commands::stopwatches])
 		{
-			gameManager.print.print_stopwatches = !gameManager.print.print_stopwatches;
+			gameManager.print.ToggleWindow(Printer::windowType::stopwatches);
 		}else if(*currentInput == Commands::commandsMap[Commands::fight])
 		{
-			gameManager.print.print_fight = !gameManager.print.print_fight;
+			gameManager.print.ToggleWindow(Printer::windowType::fight);
 		}else if(*currentInput == Commands::commandsMap[Commands::eventlist])
 		{
-			gameManager.print.print_eventList = !gameManager.print.print_eventList;
+			gameManager.print.ToggleWindow(Printer::windowType::eventlist);
 		}else if(*currentInput == Commands::commandsMap[Commands::circle])
 		{
-			gameManager.print.print_circle = !gameManager.print.print_circle;
-			gameManager.print.skillAnimation_isRunning = true;
+			gameManager.print.ToggleWindow(Printer::windowType::skillAnimation);
+			gameManager.print.windows[Printer::windowType::skillAnimation].animatin_isRunning = true;
 		}else if(*currentInput == Commands::commandsMap[Commands::exit])
 		{
 			isRunning = false;

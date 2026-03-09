@@ -1,7 +1,9 @@
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <codecvt>
 #include <cstddef>
 #include <functional>
 #include <iostream>
@@ -24,6 +26,29 @@ public:
 	Printer &operator=(const Printer &) = default;
 	~Printer();
 
+	enum windowType{
+		empty,
+		bigclock,
+		charsettings,
+		input,
+		stopwatches,
+		eventlist,
+		fight,
+		skillAnimation,
+		help,
+	};
+
+	struct window{
+		bool isDrawn = false;
+		bool border = false;	
+		int positionX = 0;
+		int positionY = 0;
+		int width = 0;
+		int height = 0;
+		int animationframe = 0;
+		bool animatin_isRunning = false;
+		char* text[1024];
+	};
 
 	void Header();
 	void Timer(Time &currentTime);
@@ -36,40 +61,41 @@ public:
 	void Help();
 	void PrintScreen();
 	void CalcLineBreak();
-	std::string CalcYOffsetString(int yOffset);
 	void SetSize(int width, int height){
 		screenWidth = width;
 		screenHeight = height;
 		CalcLineBreak();
 	}
+	void PassStringToBuffer(int index, std::string string);
+	void CreateBox(window& _window);
 
-	bool print_bigClock = true;
-	int print_bigClockX = 0;
-	int print_bigClockY = 1;
-	bool print_charsettings = false;
-	int print_charsettingsX = 0;
-	int print_charsettingsY = 9;
-	bool print_input = true;
-	int print_inputX = 0;
-	int print_inputY = 0; //special case
-	bool print_stopwatches = false;
-	int print_stopwatchX = 0;
-	int print_stopwatchY = 22;
-	bool print_eventList = false;
-	int print_eventListX = 0;
-	int print_eventListY = 27;
-	bool print_fight = false;
-	int print_fightX = 0;
-	int print_fightY = 32;
-	bool print_circle = false;
-	int print_circleX = 0;
-	int print_circleY = 50;
-	bool skillAnimation_isRunning = false;
-	int skillAnimaionFrames = 0;
-	bool print_help = false;
-	int print_helpX = 0;
-	int print_helpY = 45;
-
+	void ToggleWindow(windowType type);
+	std::map<windowType, window> windows = {
+		{windowType::bigclock,		{ .isDrawn = true, .border = true, 
+			.positionX = 0, .positionY = 1, .width = 50, .height = 6}
+		},
+		{windowType::charsettings,	{ .isDrawn = true, .border = true, 
+			.positionX = 70,.positionY = 1, .width = 40, .height = 15}
+		},
+		{windowType::input,		{ .isDrawn = true, .border = false, 
+			.positionX = 0, .positionY = 0, .width = 0, .height = 0}
+		},
+		{windowType::stopwatches,	{ .isDrawn = true, .border = true, 
+			.positionX = 5, .positionY = 17, .width = 0, .height = 5}
+		},
+		{windowType::eventlist,		{ .isDrawn = true, .border = true, 
+			.positionX = 0, .positionY = 9, .width = 0, .height = 7}
+		},
+		{windowType::fight,		{ .isDrawn = true, .border = true, 
+			.positionX = 0, .positionY = 36, .width = 0, .height = 0}
+		},
+		{windowType::skillAnimation,	{ .isDrawn = true, .border = false, 
+			.positionX = 0, .positionY = 50, .width = 0, .height = 0}
+		},
+		{windowType::help,		{ .isDrawn = true, .border = false, 
+			.positionX = 0, .positionY = 49, .width = 0, .height = 0}
+		},
+	};
 private:
 	render ren;
 	std::vector<std::string> screenbuffer = {50, "\s"};
@@ -89,8 +115,13 @@ Printer::Printer() {
 		iter->clear();
 		for(size_t spaces = 0; spaces < screenWidth; ++spaces)
 		{
-			iter->push_back(' ');
+			iter->push_back('\s');
 		}
+	}
+	std::string x = "█";
+	for(auto iter = 0; iter < x.size(); ++iter)
+	{
+		charLogger.logInfo(std::to_string(x.at(iter)));
 	}
 }
 
@@ -102,7 +133,7 @@ Printer::~Printer() {
 void Printer::CalcLineBreak(){
 	linebreak = "";
 	if(screenHeight> 5)
-	screenbuffer.resize(screenHeight-2," ");
+	screenbuffer.resize(screenHeight-2,"\s");
 
 	if(screenWidth > 5)
 	for(size_t i = 0; i < (screenWidth-5); ++i)
@@ -110,55 +141,58 @@ void Printer::CalcLineBreak(){
 		linebreak.append("-");	
 	}
 }
-std::string Printer::CalcYOffsetString(int yOffset){
-	std::string offset = "";
-	for(size_t i = 0; i < yOffset; ++i)
-	{
-		offset += " ";
-	}
-	return offset; 
-}
+
 void Printer::Header() {
 	int lastLine = 0;
-	screenbuffer[lastLine] = "PomoRPG:"+std::to_string(screenWidth)+":"+std::to_string(screenHeight);
-	screenbuffer[++lastLine] = linebreak;
+	PassStringToBuffer(lastLine, "PomoRPG:"+std::to_string(screenWidth)+":"+std::to_string(screenHeight));
 }
 void Printer::Timer(Time &currentTime){
-	int lastLine = print_bigClockY;
+	int lastLine = windows[bigclock].positionY;
 	ren.renderTime(currentTime);
-	screenbuffer[++lastLine] = "\033[1m";
+	std::string offsetX = "";
+	if(windows[bigclock].positionX > 0) {
+		offsetX.resize(windows[bigclock].positionX, ' ');
+	}
+
+	PassStringToBuffer(lastLine, offsetX+"---BigClock");
 	size_t resultSize = ren.result.size();
-	std::string offset = CalcYOffsetString(0);
 	for(size_t i = 0; i < resultSize; ++i)
 	{
-		screenbuffer[++lastLine] = offset+(ren.result[i]);
+		PassStringToBuffer(++lastLine, offsetX+(ren.result[i]));
 	}
-	screenbuffer[++lastLine] = "\033[0m";
-	screenbuffer[++lastLine] = linebreak;
+	//PassStringToBuffer(++lastLine, offsetX+"\033[0m");
+	windows[bigclock].height = lastLine+1-windows[bigclock].positionY;
+	CreateBox(windows[bigclock]);
 }
 void Printer::CharacterStats(Character& character){
-	int lastLine = print_charsettingsY;
-	screenbuffer[++lastLine]= "RPG:";
+	int lastLine = windows[charsettings].positionY;
+	std::string offsetX = "";
+	if(windows[charsettings].positionX > 0) {
+		offsetX.resize(windows[charsettings].positionX, ' ');
+	}
+	PassStringToBuffer(lastLine, offsetX+"---CharStats");
+	PassStringToBuffer(++lastLine, offsetX+"RPG:");
 
-	screenbuffer[++lastLine] = "Name \t"+character.Name();
-	screenbuffer[++lastLine] = "LIFE \t"+std::to_string(character.Life());
-	screenbuffer[++lastLine] = "ATK \t"+std::to_string(character.Atk());
-	screenbuffer[++lastLine] = "Def \t"+std::to_string(character.Def());
-	screenbuffer[++lastLine] = "LVL \t"+std::to_string(character.Lvl());
-	screenbuffer[++lastLine] = "Exp \t"+std::to_string(character.Exp())+"/"+std::to_string(character.GetNextLevelExp());
-	screenbuffer[++lastLine] = "ExpMul \t"+std::to_string(character.Expmultiplier());
+	PassStringToBuffer(++lastLine, offsetX+"Name      "+character.Name());
+	PassStringToBuffer(++lastLine, offsetX+"LIFE      "+std::to_string(character.Life()));
+	PassStringToBuffer(++lastLine, offsetX+"ATK       "+std::to_string(character.Atk()));
+	PassStringToBuffer(++lastLine, offsetX+"Def       "+std::to_string(character.Def()));
+	PassStringToBuffer(++lastLine, offsetX+"LVL       "+std::to_string(character.Lvl()));
+	PassStringToBuffer(++lastLine, offsetX+"Exp       "+std::to_string(character.Exp())+"/"+std::to_string(character.GetNextLevelExp()));
+	PassStringToBuffer(++lastLine, offsetX+"ExpMul    "+std::to_string(character.Expmultiplier()));
 	int skillcount = 0;	
 	for(auto& skill: character.skillList)
 	{
-		screenbuffer[++lastLine] = "Skill: "+ skill->name +":"+ std::to_string(skill->expToLevel)+" cost:"+std::to_string(skill->cost);
+		PassStringToBuffer(++lastLine, offsetX+"Skill:    "+ skill->name +": "+ std::to_string(skill->expToLevel)+" cost: "+std::to_string(skill->cost));
 		skillcount++;
 	}
 
-	screenbuffer[++lastLine] = linebreak;
+	windows[charsettings].height = lastLine+2-windows[charsettings].positionY;
+	CreateBox(windows[charsettings]);
 }
 void Printer::Bar(std::string pretext,int index, int state, int max)
 {
-	int lastLine = print_stopwatchY+index;
+	int lastLine = windows[stopwatches].positionY+index;
 	std::string bar = pretext+" |";
 	for(int i = 0; i < max; ++i)
 	{
@@ -181,7 +215,7 @@ void Printer::Bar(std::string pretext,int index, int state, int max)
 	bar.append("|");
 	bar.append("from: ");
 	bar.append(std::to_string(max));
-	screenbuffer[++lastLine] = (bar);
+	screenbuffer[lastLine++] = (bar);
 }
 void Printer::Flush(){
 	std::cout << "\033[H" << std::flush;
@@ -190,7 +224,7 @@ void Printer::Flush(){
 
 void Printer::OpenFightScreen(Character& character, std::shared_ptr<Monster>& monster)
 {
-	int lastLine = print_fightY;
+	int lastLine = windows[fight].positionY;
 	screenbuffer[++lastLine] = ("--------------------------Player---------------------------");
 	screenbuffer[++lastLine] = ("Name: "+character.Name() );
 	screenbuffer[++lastLine] = ("LVL: "+std::to_string(character.Lvl()));
@@ -205,10 +239,11 @@ void Printer::OpenFightScreen(Character& character, std::shared_ptr<Monster>& mo
 }
 void Printer::EventsList(std::vector<std::tuple<Character::CharEvent, std::function<void*()>>>& events, std::shared_ptr<Monster> currentMonster = nullptr)
 {
-	int lastLine = print_eventListY;
-	screenbuffer[++lastLine] = (linebreak);
-	screenbuffer[++lastLine] = ("MonsterList: ");
-	const int eventlistLength{10};
+	int lastLine = windows[eventlist].positionY;
+	int height = windows[eventlist].height;
+	const int eventlistLength = height>2?height-2:0;
+
+	PassStringToBuffer(lastLine, "Eventqueue: ");
 	if(!events.empty())
 	{
 		size_t eventsSize = events.size();
@@ -216,25 +251,25 @@ void Printer::EventsList(std::vector<std::tuple<Character::CharEvent, std::funct
 		{
 			if(i<eventlistLength)
 			{
+				std::string eventDesc = "";
+				eventDesc.append(std::to_string(i+1)+": ");
 				switch(std::get<Character::CharEvent>(events.at(i)))
 				{
 					case Character::CharEvent::Fight:
 					{
-						std::string eventDesc;
 						if(i == 0 && currentMonster != nullptr)
 						{
 							eventDesc.append("[Fight] "+*currentMonster->GetName());
 						}else{
 							eventDesc.append("[Fight] Monster Encountered");
 						}
-						screenbuffer[++lastLine] = (eventDesc);
+						PassStringToBuffer(++lastLine, eventDesc);
 					}
 					break;
 					case Character::CharEvent::Chest:
 					{
-						std::string eventDesc;
 						eventDesc.append("[DROP] Item found");
-						screenbuffer[++lastLine] = (eventDesc);
+						PassStringToBuffer(++lastLine, eventDesc);
 					}
 					break;
 					case Character::CharEvent::Encounter:
@@ -247,25 +282,26 @@ void Printer::EventsList(std::vector<std::tuple<Character::CharEvent, std::funct
 					break;
 				}
 			}else {
-				screenbuffer[++lastLine] = ("Additional Events: "+std::to_string(events.size()-eventlistLength));
+				PassStringToBuffer(++lastLine, "Additional Events: "+std::to_string(events.size()-eventlistLength));
 				break;
 			}
 		}
 	}else
 	{
-		screenbuffer[++lastLine] = ("No Events found");
+		PassStringToBuffer(++lastLine, "No Events found");
 	}
-	screenbuffer[++lastLine] = (linebreak);
+	windows[windowType::eventlist].width = 0; //this will force the width to be recalculated each frame
+	CreateBox(windows[windowType::eventlist]);
 }
 void Printer::PrintSkillAnimation(Char::AnimationType type)
 {
-	if(skillAnimation_isRunning == false) return;
+	if(windows[skillAnimation].isDrawn == false) return;
 
 	std::string color = "\033[0m";
 	if(type == Char::AnimationType::ATTACK)	color = "\033[38;2;100;0;0m";
 	if(type == Char::AnimationType::HEAL)	color = "\033[38;2;0;100;0m";
 	
-	int lastLine = print_circleY;
+	int lastLine = windows[skillAnimation].positionY;
 	screenbuffer[lastLine] = linebreak;
 	screenbuffer[++lastLine] = color;
 	lastLine++;
@@ -277,7 +313,7 @@ void Printer::PrintSkillAnimation(Char::AnimationType type)
 	{
 		case Char::AnimationType::HEAL:
 		{
-			xVal = std::round((std::sin((float)skillAnimaionFrames/piShort))*resolution);
+			xVal = std::round((std::sin((float)windows[skillAnimation].animationframe/piShort))*resolution);
 			//const int yVal = std::round((std::cos((float)skillAnimaionFrames/piShort)+1)*resolution*2);
 			for(size_t yCoord = 0; yCoord < resolution; ++yCoord)
 			{
@@ -297,19 +333,19 @@ void Printer::PrintSkillAnimation(Char::AnimationType type)
 			screenbuffer[lastLine] = color;
 			screenbuffer[++lastLine] = linebreak;
 
-			skillAnimaionFrames++;
-			if(skillAnimaionFrames >= 20)
+			windows[skillAnimation].animationframe++;
+			if(windows[skillAnimation].animationframe >= 20)
 			{
-				skillAnimation_isRunning = false;
-				print_circle = false;
-				skillAnimaionFrames = 0;
+				windows[skillAnimation].animatin_isRunning = false;
+				windows[skillAnimation].isDrawn = false;
+				windows[skillAnimation].animationframe = 0;
 			}
 		}
 		break;
 		case Char::AnimationType::ATTACK:
 		{
 			const double animSize = screenWidth/2.0f;
-			const double anim = animSize - skillAnimaionFrames/(30.0f/screenWidth);
+			const double anim = animSize - windows[skillAnimation].animationframe/(30.0f/screenWidth);
 			xVal = round(animSize - anim);
 			for(size_t yCoord = 0; yCoord < resolution; ++yCoord)
 			{
@@ -328,12 +364,12 @@ void Printer::PrintSkillAnimation(Char::AnimationType type)
 			screenbuffer[lastLine] = color;
 			screenbuffer[++lastLine] = linebreak;
 
-			skillAnimaionFrames++;
+			windows[skillAnimation].animationframe++;
 			if(anim <= 0)
 			{
-				skillAnimation_isRunning = false;
-				print_circle = false;
-				skillAnimaionFrames = 0;
+				windows[skillAnimation].animatin_isRunning = false;
+				windows[skillAnimation].isDrawn = false;
+				windows[skillAnimation].animationframe = 0;
 			}
 		}
 		break;
@@ -342,7 +378,7 @@ void Printer::PrintSkillAnimation(Char::AnimationType type)
 }
 void Printer::Help()
 {
-	int lastLine = print_helpY;
+	int lastLine = windows[help].positionY;
 	std::string text;
 	for(auto commendsIter = Commands::commandsMap.begin();commendsIter != Commands::commandsMap.end(); ++commendsIter)
 	{
@@ -359,11 +395,13 @@ void Printer::Help()
 	}
 	screenbuffer[++lastLine] = (text);
 }
+
 void Printer::PrintScreen()
 {
+	//buffer to stdout
 	if(screenbuffer.empty()) { return; }
 	std::string text;
-
+	
 	for(size_t i = 0; i < screenbuffer.size(); ++i)
         {
 		if((int)i > screenHeight-1)
@@ -405,3 +443,86 @@ void Printer::PrintScreen()
 	}
 	//screenbuffer.clear();
 }
+/*
+ * Pass string to buffer
+ */
+void Printer::PassStringToBuffer(int index, std::string additionalString)
+{
+	int bufferlineLength = screenbuffer[index].length();
+	for(auto charIndex = 0; charIndex < bufferlineLength; ++charIndex)
+	{
+		if(screenbuffer[index][charIndex] != ' ') continue;
+		if(additionalString[charIndex]    == ' ') continue;
+		if(additionalString[charIndex]    == '\0') break;
+
+		screenbuffer[index][charIndex] = additionalString[charIndex];
+	}
+	if(additionalString.length()<bufferlineLength)
+	{
+		screenbuffer[index][additionalString.length()] = ' ';
+	}
+	screenbuffer[index][bufferlineLength] = '\0';
+}
+
+/*
+Create a Box around our window
+*/
+void Printer::CreateBox(window& _window)
+{
+	size_t bufferSize	= screenbuffer.size();
+	size_t startIndexY	= _window.positionY;
+	size_t startIndexX	= _window.positionX;
+	size_t endIndexY	= startIndexY + _window.height;
+
+	if(_window.width == 0)
+	{
+		for(size_t lineIndex = startIndexY; lineIndex < endIndexY; ++lineIndex)
+		{
+			if(lineIndex >= bufferSize) { break; }
+			for(size_t charIndex = startIndexX; charIndex < screenbuffer[lineIndex].size(); ++charIndex)
+			{
+				if(screenbuffer[lineIndex][charIndex] <= 31) continue;
+
+				if(screenbuffer[lineIndex][charIndex] != ' ' && charIndex > _window.width)
+				{
+					_window.width = charIndex;
+				}
+			}
+			if(_window.width == 0) _window.width = screenbuffer[lineIndex].size();
+
+			_window.width -= startIndexX;
+		}
+		_window.width++;
+	}
+
+	size_t endIndexX	= startIndexX + _window.width;
+	if(endIndexY < startIndexY || endIndexX < startIndexX) return;
+	for(size_t index = startIndexY; index <= endIndexY; ++index)
+	{
+		if(index >= bufferSize) { break; }
+		if( index == startIndexY)
+		{
+			for(size_t x = startIndexX; x < endIndexX; ++x)
+			{
+				if(screenbuffer[index][x] == ' ') {
+					screenbuffer[index][x] = '-';
+				}
+			}
+			continue;
+		}
+		if( index == endIndexY){
+			for(size_t x = startIndexX; x < endIndexX; ++x)
+			{
+				screenbuffer[index][x] = '-';
+			}
+			break;
+		}
+		screenbuffer[index][startIndexX-1] = '|';
+		screenbuffer[index][endIndexX]	   = '|';
+	}
+}
+
+void Printer::ToggleWindow(Printer::windowType type){
+	windows[type].isDrawn = !windows[type].isDrawn;
+}
+

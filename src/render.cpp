@@ -60,81 +60,82 @@ public:
 	}
 
 private:
+	// █
 	std::array<std::string, stringarrayResolution> number_zero = {
-		"████",
-		"█  █",
-		"█  █",
-		"█  █",
-		"████"
+		"####",
+		"#  #",
+		"#  #",
+		"#  #",
+		"####"
 	};
 	std::array<std::string, stringarrayResolution> number_one = {
-		"   █",
-		"   █",
-		"   █",
-		"   █",
-		"   █"
+		"   #",
+		"   #",
+		"   #",
+		"   #",
+		"   #"
 	};
 	std::array<std::string, stringarrayResolution> number_two = {
-		"████",
-		"█  █",
-		"  █ ",
-		" █  ",
-		"████"
+		"####",
+		"#  #",
+		"  # ",
+		" #  ",
+		"####"
 	};
 	std::array<std::string, stringarrayResolution> number_three = {
-		"████",
-		"   █",
-		" ███",
-		"   █",
-		"████"
+		"####",
+		"   #",
+		" ###",
+		"   #",
+		"####"
 	};
 	std::array<std::string, stringarrayResolution> number_four = {
-		"█  █",
-		"█  █",
-		"████",
-		"   █",
-		"   █"
+		"#  #",
+		"#  #",
+		"####",
+		"   #",
+		"   #"
 	};
 	std::array<std::string, stringarrayResolution> number_five = {
-		"████",
-		"█   ",
-		"████",
-		"   █",
-		"████"
+		"####",
+		"#   ",
+		"####",
+		"   #",
+		"####"
 	};
 	std::array<std::string, stringarrayResolution> number_six = {
-		"████",
-		"█   ",
-		"████",
-		"█  █",
-		"████"
+		"####",
+		"#   ",
+		"####",
+		"#  #",
+		"####"
 	};
 	std::array<std::string, stringarrayResolution> number_seven = {
-		"████",
-		"█  █",
-		"   █",
-		"   █",
-		"   █",
+		"####",
+		"#  #",
+		"   #",
+		"   #",
+		"   #",
 	};
 	std::array<std::string, stringarrayResolution> number_eight = {
-		"████",
-		"█  █",
-		"████",
-		"█  █",
-		"████"
+		"####",
+		"#  #",
+		"####",
+		"#  #",
+		"####"
 	};
 	std::array<std::string, stringarrayResolution> number_nine = {
-		"████",
-		"█  █",
-		"████",
-		"   █",
-		"████"
+		"####",
+		"#  #",
+		"####",
+		"   #",
+		"####"
 	};
 	std::array<std::string, stringarrayResolution> number_space = {
 		"   ",
-		" █ ",
+		" # ",
 		"   ",
-		" █ ",
+		" # ",
 		"   "
 	};
 	std::array<std::array<std::string, stringarrayResolution>, 10> numbersPointer = {number_zero, number_one, number_two, number_three, number_four, number_five, number_six, number_seven, number_eight, number_nine};

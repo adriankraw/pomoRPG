@@ -50,7 +50,8 @@ struct winsize size;
 void ttyreset()
 {
 
-	write (STDOUT_FILENO, "\e[?47l", 6);
+	write (STDOUT_FILENO, "\033[?1049l", 9);
+	write (STDOUT_FILENO, "\033[?7l", 5);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &tio_save);
 }
 
@@ -70,7 +71,8 @@ void ttyinit(Game* game)
     struct termios tio;
     tcgetattr(STDIN_FILENO,&tio);
     
-    write (STDOUT_FILENO, "\e[?47h", 6);
+    write (STDOUT_FILENO, "\033[?1049h", 9);
+    write (STDOUT_FILENO, "\033[?7l", 5);
 
     tio.c_lflag &= ~(IXON);
     tio.c_lflag &= ~(ECHO | ICANON | ISIG);
@@ -219,12 +221,12 @@ int main (int argc, char *argv[]) {
 				}
 				if(argument == Commands::commandsMap[Commands::Base::PrintAll])
 				{
-					myGame.gameManager.print.print_input = true;
-					myGame.gameManager.print.print_stopwatches = true;
-					myGame.gameManager.print.print_charsettings = true;
-					myGame.gameManager.print.print_bigClock = true;
-					myGame.gameManager.print.print_eventList = true;
-					myGame.gameManager.print.print_fight = true;
+					myGame.gameManager.print.windows[Printer::windowType::input].isDrawn = true;
+					myGame.gameManager.print.windows[Printer::windowType::stopwatches].isDrawn = true;
+					myGame.gameManager.print.windows[Printer::windowType::charsettings].isDrawn = true;
+					myGame.gameManager.print.windows[Printer::windowType::bigclock].isDrawn = true;
+					myGame.gameManager.print.windows[Printer::windowType::eventlist].isDrawn = true;
+					myGame.gameManager.print.windows[Printer::windowType::fight].isDrawn = true;
 				}
 			}
 
